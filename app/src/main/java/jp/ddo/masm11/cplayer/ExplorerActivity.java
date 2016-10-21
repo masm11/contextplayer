@@ -36,18 +36,42 @@ public class ExplorerActivity extends AppCompatActivity {
     }
     
     private static class FileAdapter extends ArrayAdapter<FileItem> {
+	private LayoutInflater inflater;
 	public FileAdapter(Context context, ArrayList<FileItem> items) {
 	    super(context, R.layout.list_explorer, items);
+	    inflater = LayoutInflater.from(context);
 	}
 	
 	public View getView(int position, View convertView, ViewGroup parent) {
-	    LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-	    View view = inflater.inflate(R.layout.list_explorer, parent, false);
-	    TextView textView = (TextView) view.findViewById(R.id.text);
-	    assert textView != null;
-	    textView.setText("foo");
+	    if (convertView == null)
+		convertView = inflater.inflate(R.layout.list_explorer, parent, false);
 	    
-	    return view;
+	    FileItem item = getItem(position);
+	    TextView textView;
+	    String str;
+	    
+	    textView = (TextView) convertView.findViewById(R.id.filename);
+	    assert textView != null;
+	    str = item.getFilename();
+	    if (item.isDir())
+		str = str + "/";
+	    textView.setText(str);
+	    
+	    textView = (TextView) convertView.findViewById(R.id.title);
+	    assert textView != null;
+	    str = item.getTitle();
+	    if (str == null)
+		str = "unknown title";
+	    textView.setText(str);
+	    
+	    textView = (TextView) convertView.findViewById(R.id.artist);
+	    assert textView != null;
+	    str = item.getArtist();
+	    if (str == null)
+		str = "unknown artist";
+	    textView.setText(str);
+	    
+	    return convertView;
 	}
     }
     
