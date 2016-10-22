@@ -19,6 +19,8 @@
         </activity>
         <activity android:name=".ExplorerActivity">
         </activity>
+        <service android:name=".PlayerService">
+        </service>
     </application>
 
 </manifest>

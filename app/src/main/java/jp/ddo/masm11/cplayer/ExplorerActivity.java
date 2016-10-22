@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.view.LayoutInflater;
 import android.media.MediaMetadataRetriever;
 import android.webkit.MimeTypeMap;
+import android.content.Intent;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -165,6 +166,8 @@ public class ExplorerActivity extends AppCompatActivity {
 		    if (item.getFilename().equals(".."))
 			dir = curDir.getParentFile();
 		    renewAdapter(dir);
+		} else {
+		    play(item.getFile());
 		}
 	    }
 	});
@@ -244,5 +247,12 @@ public class ExplorerActivity extends AppCompatActivity {
 	textView.setText(relPath);
 	
 	curDir = newDir;
+    }
+    
+    private void play(File file) {
+	Intent intent = new Intent(this, PlayerService.class);
+	intent.setAction("PLAY");
+	intent.putExtra("path", file.getAbsolutePath());
+	startService(intent);
     }
 }
