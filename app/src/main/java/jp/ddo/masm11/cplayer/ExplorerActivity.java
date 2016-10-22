@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.AdapterView;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,16 @@ import java.util.ArrayList;
 public class ExplorerActivity extends AppCompatActivity {
     private static MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
     
+    public static boolean isAudioType(String mimeType) {
+	if (mimeType == null)
+	    return false;
+	if (mimeType.startsWith("audio/"))
+	    return true;
+	if (mimeType.equals("application/ogg"))
+	    return true;
+	return false;
+    }
+    
     private static class FileItem {
 	private File file;
 	private String title;
@@ -27,8 +38,10 @@ public class ExplorerActivity extends AppCompatActivity {
 	    this.file = file;
 	    if (!file.isDirectory()) {
 		String ext = mimeTypeMap.getFileExtensionFromUrl(file.toURI().toString());
+		android.util.Log.d("ExplorerActivity", "ext=" + ext);
 		mimeType = mimeTypeMap.getMimeTypeFromExtension(ext);
-		if (mimeType != null && mimeType.startsWith("audio/")) {
+		android.util.Log.d("ExplorerActivity", "mimeType=" + mimeType);
+		if (isAudioType(mimeType)) {
 		    MediaMetadataRetriever retr = new MediaMetadataRetriever();
 		    try {
 			retr.setDataSource(file.getAbsolutePath());
@@ -55,6 +68,9 @@ public class ExplorerActivity extends AppCompatActivity {
 	}
 	public String getMimeType() {
 	    return mimeType;
+	}
+	public File getFile() {
+	    return file;
 	}
     }
     
@@ -99,6 +115,7 @@ public class ExplorerActivity extends AppCompatActivity {
     }
     
     private File rootDir;	// /sdcard/Music これより上には戻れない
+    private File topDir;
     private File curDir;
     private FileAdapter adapter;
     
@@ -110,7 +127,61 @@ public class ExplorerActivity extends AppCompatActivity {
 	adapter = new FileAdapter(this, new ArrayList<FileItem>());
 	
 	rootDir = new File("/sdcard/Music");
-	renewAdapter(rootDir);
+	topDir = rootDir;
+	renewAdapter(topDir);
+	
+	ListView listView = (ListView) findViewById(R.id.list);
+	assert listView != null;
+	listView.setOnItemClickListener(new ListView.OnItemClickListener() {
+	    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		ListView listView = (ListView) parent;
+		FileItem item = (FileItem) listView.getItemAtPosition(position);
+		android.util.Log.d("ExplorerActivity", "clicked=" + item.getFilename());
+		
+		if (item.isDir()) {
+		    File dir = item.getFile();
+		    if (item.getFilename().equals(".."))
+			dir = curDir.getParentFile();
+		    renewAdapter(dir);
+		}
+	    }
+	});
+	listView.setOnItemLongClickListener(new ListView.OnItemLongClickListener() {
+	    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+		ListView listView = (ListView) parent;
+		FileItem item = (FileItem) listView.getItemAtPosition(position);
+		android.util.Log.d("ExplorerActivity", "longclicked=" + item.getFilename());
+		
+		if (item.isDir()) {
+		    File dir = item.getFile();
+		    if (item.getFilename().equals(".."))
+			dir = curDir.getParentFile();
+		    setTopDir(dir);
+		    return true;
+		} else
+		    return false;
+	    }
+	});
+    }
+    
+    private void setTopDir(File newDir) {
+	topDir = newDir;
+	
+	// topDir からの相対で curDir を表示
+	String topPath = topDir.toString();
+	String curPath = curDir.toString();
+	String relPath = curPath;
+	if (curPath.startsWith(topPath)) {
+	    relPath = curPath.substring(topPath.length());
+	    if (relPath.startsWith("/"))
+		relPath = relPath.substring(1);
+	    if (relPath.length() == 0)
+		relPath = ".";
+	    relPath += "/";
+	}
+	TextView textView = (TextView) findViewById(R.id.path);
+	assert textView != null;
+	textView.setText(relPath);
     }
     
     private void renewAdapter(File newDir) {
@@ -122,12 +193,33 @@ public class ExplorerActivity extends AppCompatActivity {
 	}
 	// fixme: sort
 	
+	android.util.Log.d("ExplorerActivity", "newDir=" + newDir.toString());
+	android.util.Log.d("ExplorerActivity", "rootDir=" + rootDir.toString());
+	if (!newDir.equals(rootDir))
+	    items.add(0, new FileItem(new File(newDir, "..")));
+	
 	adapter.clear();
 	adapter.addAll(items);
 	
 	ListView listView = (ListView) findViewById(R.id.list);
 	assert listView != null;
 	listView.setAdapter(adapter);
+	
+	// topDir からの相対で newDir を表示
+	String topPath = topDir.toString();
+	String newPath = newDir.toString();
+	String relPath = newPath;
+	if (newPath.startsWith(topPath)) {
+	    relPath = newPath.substring(topPath.length());
+	    if (relPath.startsWith("/"))
+		relPath = relPath.substring(1);
+	    if (relPath.length() == 0)
+		relPath = ".";
+	    relPath += "/";
+	}
+	TextView textView = (TextView) findViewById(R.id.path);
+	assert textView != null;
+	textView.setText(relPath);
 	
 	curDir = newDir;
     }
