@@ -9,17 +9,37 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
+import android.media.MediaMetadataRetriever;
+import android.webkit.MimeTypeMap;
 
 import java.io.File;
 import java.util.ArrayList;
 
 public class ExplorerActivity extends AppCompatActivity {
+    private static MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+    
     private static class FileItem {
 	private File file;
 	private String title;
 	private String artist;
+	private String mimeType;
 	public FileItem(File file) {
 	    this.file = file;
+	    if (!file.isDirectory()) {
+		String ext = mimeTypeMap.getFileExtensionFromUrl(file.toURI().toString());
+		mimeType = mimeTypeMap.getMimeTypeFromExtension(ext);
+		if (mimeType != null && mimeType.startsWith("audio/")) {
+		    MediaMetadataRetriever retr = new MediaMetadataRetriever();
+		    try {
+			retr.setDataSource(file.getAbsolutePath());
+			title = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+			artist = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+		    } catch (Exception e) {
+			android.util.Log.i("ExplorerActivity", "exception", e);
+		    }
+		    retr.release();
+		}
+	    }
 	}
 	public boolean isDir() {
 	    return file.isDirectory();
@@ -32,6 +52,9 @@ public class ExplorerActivity extends AppCompatActivity {
 	}
 	public String getFilename() {
 	    return file.getName();
+	}
+	public String getMimeType() {
+	    return mimeType;
 	}
     }
     
