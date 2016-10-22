@@ -87,28 +87,50 @@ public class ExplorerActivity extends AppCompatActivity {
 	    
 	    FileItem item = getItem(position);
 	    TextView textView;
+	    View view;
 	    String str;
 	    
-	    textView = (TextView) convertView.findViewById(R.id.filename);
-	    assert textView != null;
-	    str = item.getFilename();
-	    if (item.isDir())
-		str = str + "/";
-	    textView.setText(str);
-	    
-	    textView = (TextView) convertView.findViewById(R.id.title);
-	    assert textView != null;
-	    str = item.getTitle();
-	    if (str == null)
-		str = "unknown title";
-	    textView.setText(str);
-	    
-	    textView = (TextView) convertView.findViewById(R.id.artist);
-	    assert textView != null;
-	    str = item.getArtist();
-	    if (str == null)
-		str = "unknown artist";
-	    textView.setText(str);
+	    if (!item.isDir()) {
+		textView = (TextView) convertView.findViewById(R.id.filename);
+		assert textView != null;
+		str = item.getFilename();
+		textView.setText(str);
+		
+		textView = (TextView) convertView.findViewById(R.id.title);
+		assert textView != null;
+		str = item.getTitle();
+		if (str == null)
+		    str = "unknown title";
+		textView.setText(str);
+		
+		textView = (TextView) convertView.findViewById(R.id.artist);
+		assert textView != null;
+		str = item.getArtist();
+		if (str == null)
+		    str = "unknown artist";
+		textView.setText(str);
+		
+		view = convertView.findViewById(R.id.for_file);
+		assert view != null;
+		view.setVisibility(View.VISIBLE);
+		
+		view = convertView.findViewById(R.id.for_dir);
+		assert view != null;
+		view.setVisibility(View.GONE);
+	    } else {
+		textView = (TextView) convertView.findViewById(R.id.dirname);
+		assert textView != null;
+		str = item.getFilename() + "/";
+		textView.setText(str);
+		
+		view = convertView.findViewById(R.id.for_file);
+		assert view != null;
+		view.setVisibility(View.GONE);
+		
+		view = convertView.findViewById(R.id.for_dir);
+		assert view != null;
+		view.setVisibility(View.VISIBLE);
+	    }
 	    
 	    return convertView;
 	}
