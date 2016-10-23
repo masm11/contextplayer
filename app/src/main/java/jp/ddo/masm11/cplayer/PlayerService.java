@@ -180,6 +180,7 @@ public class PlayerService extends Service {
     private void setTopDir(String path) {
 	topDir = path;
 	// 「次の曲」が変わる可能性があるので、enqueue しなおす。
-	enqueueNext();
+	if (curPlayer != null)
+	    enqueueNext();
     }
 }
