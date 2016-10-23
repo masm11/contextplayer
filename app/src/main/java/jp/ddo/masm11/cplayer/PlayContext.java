@@ -24,7 +24,7 @@ public class PlayContext extends Model {
 	super();
     }
     
-    public static PlayContext find(int id) {
+    public static PlayContext find(long id) {
 	return new Select()
 		.from(PlayContext.class)
 		.where("id = ?", id)

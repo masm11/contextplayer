@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 		
 		Intent i = new Intent(MainActivity.this, ExplorerActivity.class);
+		i.putExtra("CONTEXT_ID", ctxt.getId());
 		startActivity(i);
 	    }
 	});

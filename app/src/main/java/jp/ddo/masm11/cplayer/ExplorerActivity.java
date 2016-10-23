@@ -142,6 +142,7 @@ public class ExplorerActivity extends AppCompatActivity {
     private File topDir;
     private File curDir;
     private FileAdapter adapter;
+    private PlayContext ctxt;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,9 +151,18 @@ public class ExplorerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_explorer);
 	
 	adapter = new FileAdapter(this, new ArrayList<FileItem>());
-	
 	rootDir = new File("/sdcard/Music");
-	topDir = rootDir;
+	
+	Intent intent = getIntent();
+	long ctxtId = -1;
+	if (intent != null)
+	    ctxtId = intent.getLongExtra("CONTEXT_ID", -1);
+	if (ctxtId != -1)
+	    ctxt = PlayContext.find(ctxtId);
+	if (ctxt == null)
+	    ctxt = new PlayContext();
+	
+	topDir = new File(ctxt.topDir);
 	renewAdapter(topDir);
 	
 	ListView listView = (ListView) findViewById(R.id.list);
@@ -214,6 +224,9 @@ public class ExplorerActivity extends AppCompatActivity {
 	intent.setAction("SET_TOPDIR");
 	intent.putExtra("path", newDir.getAbsolutePath());
 	startService(intent);
+	
+	ctxt.topDir = newDir.getAbsolutePath();
+	ctxt.save();
     }
     
     private void renewAdapter(File newDir) {
@@ -224,7 +237,6 @@ public class ExplorerActivity extends AppCompatActivity {
 	    Log.d("%s", files[i].toString());
 	    items.add(new FileItem(files[i]));
 	}
-	// fixme: sort
 	
 	Log.d("newDir=%s", newDir.toString());
 	Log.d("rootDir=%s", rootDir.toString());
