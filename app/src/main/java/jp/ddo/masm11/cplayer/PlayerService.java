@@ -18,6 +18,8 @@ public class PlayerService extends Service {
     
     @Override
     public void onCreate() {
+	Log.init(getExternalCacheDir());
+	
 	topDir = "/sdcard/Music";
     }
     
@@ -26,7 +28,6 @@ public class PlayerService extends Service {
 	String action = intent != null ? intent.getAction() : null;
 	if (action != null) {
 	    String path;
-	    int ctxt;
 	    switch (action) {
 	    case "PLAY":
 		path = intent.getStringExtra("path");
@@ -40,7 +41,7 @@ public class PlayerService extends Service {
 		path = intent.getStringExtra("path");
 		if (path == null)
 		    break;
-		// setTopDir(path);
+		setTopDir(path);
 		break;
 	    }
 	}
@@ -53,7 +54,7 @@ public class PlayerService extends Service {
     }
     
     private void play(String path) {
-	android.util.Log.i("PlayerService", "path=" + path);
+	Log.i("path=%s", path);
 	playingPath = path;
 	
 	try {
@@ -62,7 +63,7 @@ public class PlayerService extends Service {
 		curPlayer = null;
 	    }
 	} catch (Exception e) {
-	    android.util.Log.e("cplayer", "exception", e);
+	    Log.e(e, "exception");
 	}
 	try {
 	    if (nextPlayer != null) {
@@ -70,12 +71,12 @@ public class PlayerService extends Service {
 		nextPlayer = null;
 	    }
 	} catch (Exception e) {
-	    android.util.Log.e("cplayer", "exception", e);
+	    Log.e(e, "exception");
 	}
 	
 	Object[] ret = createMediaPlayer(playingPath);
 	if (ret == null) {
-	    android.util.Log.w("cplayer", "No data found.");
+	    Log.w("No audio file found.");
 	    return;
 	}
 	curPlayer = (MediaPlayer) ret[0];
@@ -83,7 +84,7 @@ public class PlayerService extends Service {
 	try {
 	    curPlayer.start();
 	} catch (Exception e) {
-	    android.util.Log.e("cplayer", "exception", e);
+	    Log.e(e, "exception");
 	}
     }
     
@@ -94,12 +95,12 @@ public class PlayerService extends Service {
 		nextPlayer = null;
 	    }
 	} catch (Exception e) {
-	    android.util.Log.e("cplayer", "exception", e);
+	    Log.e(e, "exception");
 	}
 	
 	Object[] ret = createMediaPlayer(selectNext(playingPath));
 	if (ret == null) {
-	    android.util.Log.w("cplayer", "No data found.");
+	    Log.w("No audio file found.");
 	    return;
 	}
 	nextPlayer = (MediaPlayer) ret[0];
@@ -107,7 +108,7 @@ public class PlayerService extends Service {
 	try {
 	    curPlayer.setNextMediaPlayer(nextPlayer);
 	} catch (Exception e) {
-	    android.util.Log.e("cplayer", "exception", e);
+	    Log.e(e, "exception");
 	}
     }
     
@@ -124,7 +125,7 @@ public class PlayerService extends Service {
 		
 		player = MediaPlayer.create(this, Uri.parse("file://" + path));
 		if (player == null) {
-		    android.util.Log.w("PlayerService", "MediaPlayer.create() failed: " + path);
+		    Log.w("MediaPlayer.create() failed: %s", path);
 		    path = selectNext(path);
 		    continue;
 		}
@@ -142,7 +143,7 @@ public class PlayerService extends Service {
 		
 		return new Object[] { player, path };
 	    } catch (Exception e) {
-		android.util.Log.e("cplayer", "exception", e);
+		Log.e(e, "exception");
 	    }
 	    
 	    return null;
@@ -174,5 +175,11 @@ public class PlayerService extends Service {
 	    else
 		scanResult.add(file.getAbsolutePath());
 	}
+    }
+    
+    private void setTopDir(String path) {
+	topDir = path;
+	// 「次の曲」が変わる可能性があるので、enqueue しなおす。
+	enqueueNext();
     }
 }

@@ -39,9 +39,9 @@ public class ExplorerActivity extends AppCompatActivity {
 	    this.file = file;
 	    if (!file.isDirectory()) {
 		String ext = mimeTypeMap.getFileExtensionFromUrl(file.toURI().toString());
-		android.util.Log.d("ExplorerActivity", "ext=" + ext);
+		Log.d("ext=%s", ext);
 		mimeType = mimeTypeMap.getMimeTypeFromExtension(ext);
-		android.util.Log.d("ExplorerActivity", "mimeType=" + mimeType);
+		Log.d("mimeType=%s", mimeType);
 		if (isAudioType(mimeType)) {
 		    MediaMetadataRetriever retr = new MediaMetadataRetriever();
 		    try {
@@ -49,7 +49,7 @@ public class ExplorerActivity extends AppCompatActivity {
 			title = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
 			artist = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
 		    } catch (Exception e) {
-			android.util.Log.i("ExplorerActivity", "exception", e);
+			Log.i(e, "exception");
 		    }
 		    retr.release();
 		}
@@ -144,6 +144,7 @@ public class ExplorerActivity extends AppCompatActivity {
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+	Log.init(getExternalCacheDir());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explorer);
 	
@@ -159,7 +160,7 @@ public class ExplorerActivity extends AppCompatActivity {
 	    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		ListView listView = (ListView) parent;
 		FileItem item = (FileItem) listView.getItemAtPosition(position);
-		android.util.Log.d("ExplorerActivity", "clicked=" + item.getFilename());
+		Log.d("clicked=%s", item.getFilename());
 		
 		if (item.isDir()) {
 		    File dir = item.getFile();
@@ -175,7 +176,7 @@ public class ExplorerActivity extends AppCompatActivity {
 	    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 		ListView listView = (ListView) parent;
 		FileItem item = (FileItem) listView.getItemAtPosition(position);
-		android.util.Log.d("ExplorerActivity", "longclicked=" + item.getFilename());
+		Log.d("longclicked=%s", item.getFilename());
 		
 		if (item.isDir()) {
 		    File dir = item.getFile();
@@ -207,19 +208,24 @@ public class ExplorerActivity extends AppCompatActivity {
 	TextView textView = (TextView) findViewById(R.id.path);
 	assert textView != null;
 	textView.setText(relPath);
+	
+	Intent intent = new Intent(this, PlayerService.class);
+	intent.setAction("SET_TOPDIR");
+	intent.putExtra("path", newDir.getAbsolutePath());
+	startService(intent);
     }
     
     private void renewAdapter(File newDir) {
 	File[] files = newDir.listFiles();
 	ArrayList<FileItem> items = new ArrayList<FileItem>();
 	for (int i = 0; i < files.length; i++) {
-	    android.util.Log.d("ContextPlayer", files[i].toString());
+	    Log.d("%s", files[i].toString());
 	    items.add(new FileItem(files[i]));
 	}
 	// fixme: sort
 	
-	android.util.Log.d("ExplorerActivity", "newDir=" + newDir.toString());
-	android.util.Log.d("ExplorerActivity", "rootDir=" + rootDir.toString());
+	Log.d("newDir=%s", newDir.toString());
+	Log.d("rootDir=%s", rootDir.toString());
 	if (!newDir.equals(rootDir))
 	    items.add(0, new FileItem(new File(newDir, "..")));
 	
