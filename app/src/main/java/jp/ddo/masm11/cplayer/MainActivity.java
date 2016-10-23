@@ -21,6 +21,14 @@ public class MainActivity extends AppCompatActivity {
 	Button btn = (Button) findViewById(R.id.btn);
 	btn.setOnClickListener(new View.OnClickListener() {
 	    public void onClick(View view) {
+		PlayContext ctxt = PlayContext.find(1);
+		if (ctxt == null) {
+		    ctxt = new PlayContext();
+		    ctxt.name = "Context #1";
+		    ctxt.topDir = "/sdcard/Music";
+		    ctxt.save();
+		}
+		
 		Intent i = new Intent(MainActivity.this, ExplorerActivity.class);
 		startActivity(i);
 	    }
