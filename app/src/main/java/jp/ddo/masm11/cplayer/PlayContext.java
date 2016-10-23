@@ -8,10 +8,10 @@ import com.activeandroid.annotation.Table;
 @Table(name = "PlayContexts")
 public class PlayContext extends Model {
     
-    @Column(name = "name")
+    @Column(name = "name", notNull = true)
     public String name;
     
-    @Column(name = "topdir")
+    @Column(name = "topdir", notNull = true)
     public String topDir;
     
     @Column(name = "path")
