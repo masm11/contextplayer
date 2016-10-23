@@ -73,37 +73,17 @@ public class PlayerService extends Service {
 	    android.util.Log.e("cplayer", "exception", e);
 	}
 	
-	HashSet<String> tested = new HashSet<>();
-	while (true) {
-	    try {
-		if (tested.contains(playingPath)) {
-		    // 再生できるものがない…
-		    break;
-		}
-		tested.add(playingPath);
-		
-		curPlayer = MediaPlayer.create(this, Uri.parse("file://" + playingPath));
-		if (curPlayer == null) {
-		    android.util.Log.w("PlayerService", "MediaPlayer.create() failed: " + playingPath);
-		    playingPath = selectNext(playingPath);
-		    continue;
-		}
-		curPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-		    @Override
-		    public void onCompletion(MediaPlayer mp) {
-			playingPath = nextPath;
-			curPlayer = nextPlayer;
-			mp.release();
-			nextPath = null;
-			nextPlayer = null;
-			enqueueNext();
-		    }
-		});
-		curPlayer.start();
-		break;
-	    } catch (Exception e) {
-		android.util.Log.e("cplayer", "exception", e);
-	    }
+	Object[] ret = createMediaPlayer(playingPath);
+	if (ret == null) {
+	    android.util.Log.w("cplayer", "No data found.");
+	    return;
+	}
+	curPlayer = (MediaPlayer) ret[0];
+	playingPath = (String) ret[1];
+	try {
+	    curPlayer.start();
+	} catch (Exception e) {
+	    android.util.Log.e("cplayer", "exception", e);
 	}
     }
     
@@ -117,23 +97,38 @@ public class PlayerService extends Service {
 	    android.util.Log.e("cplayer", "exception", e);
 	}
 	
+	Object[] ret = createMediaPlayer(selectNext(playingPath));
+	if (ret == null) {
+	    android.util.Log.w("cplayer", "No data found.");
+	    return;
+	}
+	nextPlayer = (MediaPlayer) ret[0];
+	nextPath = (String) ret[1];
+	try {
+	    curPlayer.setNextMediaPlayer(nextPlayer);
+	} catch (Exception e) {
+	    android.util.Log.e("cplayer", "exception", e);
+	}
+    }
+    
+    private Object[] createMediaPlayer(String path) {
 	HashSet<String> tested = new HashSet<>();
-	nextPath = selectNext(playingPath);
+	MediaPlayer player = null;
 	while (true) {
 	    try {
-		if (tested.contains(nextPath)) {
+		if (path == null || tested.contains(path)) {
 		    // 再生できるものがない…
-		    break;
+		    return null;
 		}
-		tested.add(nextPath);
+		tested.add(path);
 		
-		nextPlayer = MediaPlayer.create(this, Uri.parse("file://" + nextPath));
-		if (nextPlayer == null) {
-		    android.util.Log.w("PlayerService", "MediaPlayer.create() failed: " + nextPath);
-		    nextPath = selectNext(nextPath);
+		player = MediaPlayer.create(this, Uri.parse("file://" + path));
+		if (player == null) {
+		    android.util.Log.w("PlayerService", "MediaPlayer.create() failed: " + path);
+		    path = selectNext(path);
 		    continue;
 		}
-		nextPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+		player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 		    @Override
 		    public void onCompletion(MediaPlayer mp) {
 			playingPath = nextPath;
@@ -144,11 +139,13 @@ public class PlayerService extends Service {
 			enqueueNext();
 		    }
 		});
-		curPlayer.setNextMediaPlayer(nextPlayer);
-		break;
+		
+		return new Object[] { player, path };
 	    } catch (Exception e) {
 		android.util.Log.e("cplayer", "exception", e);
 	    }
+	    
+	    return null;
 	}
     }
     
