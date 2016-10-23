@@ -18,20 +18,20 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 	
+	if (PlayContext.all().size() == 0) {
+	    PlayContext ctxt = new PlayContext();
+	    ctxt.name = "Default Context";
+	    ctxt.topDir = "/sdcard/Music";
+	    ctxt.save();
+	}
+	
 	Button btn = (Button) findViewById(R.id.btn);
 	btn.setOnClickListener(new View.OnClickListener() {
 	    public void onClick(View view) {
-		PlayContext ctxt = PlayContext.find(1);
-		if (ctxt == null) {
-		    ctxt = new PlayContext();
-		    ctxt.name = "Context #1";
-		    ctxt.topDir = "/sdcard/Music";
-		    ctxt.save();
-		}
 		
 //		Intent i = new Intent(MainActivity.this, ExplorerActivity.class);
 		Intent i = new Intent(MainActivity.this, ContextActivity.class);
-		i.putExtra("CONTEXT_ID", ctxt.getId());
+//		i.putExtra("CONTEXT_ID", ctxt.getId());
 		startActivity(i);
 	    }
 	});
