@@ -88,6 +88,17 @@ public class PlayerService extends Service {
 		    playingPath = selectNext(playingPath);
 		    continue;
 		}
+		curPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+		    @Override
+		    public void onCompletion(MediaPlayer mp) {
+			playingPath = nextPath;
+			curPlayer = nextPlayer;
+			mp.release();
+			nextPath = null;
+			nextPlayer = null;
+			enqueueNext();
+		    }
+		});
 		curPlayer.start();
 		break;
 	    } catch (Exception e) {
@@ -122,6 +133,17 @@ public class PlayerService extends Service {
 		    nextPath = selectNext(nextPath);
 		    continue;
 		}
+		nextPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+		    @Override
+		    public void onCompletion(MediaPlayer mp) {
+			playingPath = nextPath;
+			curPlayer = nextPlayer;
+			mp.release();
+			nextPath = null;
+			nextPlayer = null;
+			enqueueNext();
+		    }
+		});
 		curPlayer.setNextMediaPlayer(nextPlayer);
 		break;
 	    } catch (Exception e) {
