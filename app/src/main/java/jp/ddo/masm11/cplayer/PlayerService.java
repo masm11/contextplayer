@@ -58,17 +58,17 @@ public class PlayerService extends Service {
 	playingPath = path;
 	
 	try {
-	    if (curPlayer != null) {
-		curPlayer.release();
-		curPlayer = null;
+	    if (nextPlayer != null) {
+		nextPlayer.release();
+		nextPlayer = null;
 	    }
 	} catch (Exception e) {
 	    Log.e(e, "exception");
 	}
 	try {
-	    if (nextPlayer != null) {
-		nextPlayer.release();
-		nextPlayer = null;
+	    if (curPlayer != null) {
+		curPlayer.release();
+		curPlayer = null;
 	    }
 	} catch (Exception e) {
 	    Log.e(e, "exception");
@@ -83,6 +83,25 @@ public class PlayerService extends Service {
 	playingPath = (String) ret[1];
 	try {
 	    curPlayer.start();
+	} catch (Exception e) {
+	    Log.e(e, "exception");
+	}
+    }
+    
+    private void stop() {
+	try {
+	    if (nextPlayer != null) {
+		nextPlayer.release();
+		nextPlayer = null;
+	    }
+	} catch (Exception e) {
+	    Log.e(e, "exception");
+	}
+	try {
+	    if (curPlayer != null) {
+		curPlayer.release();
+		curPlayer = null;
+	    }
 	} catch (Exception e) {
 	    Log.e(e, "exception");
 	}
