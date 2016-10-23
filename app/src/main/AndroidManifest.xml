@@ -24,6 +24,8 @@
         </activity>
         <activity android:name=".ExplorerActivity">
         </activity>
+        <activity android:name=".ContextActivity">
+        </activity>
         <service android:name=".PlayerService">
         </service>
     </application>

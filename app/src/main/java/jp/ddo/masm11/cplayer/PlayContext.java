@@ -5,6 +5,8 @@ import com.activeandroid.query.Select;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
 
+import java.util.List;
+
 @Table(name = "PlayContexts")
 public class PlayContext extends Model {
     
@@ -29,5 +31,17 @@ public class PlayContext extends Model {
 		.from(PlayContext.class)
 		.where("id = ?", id)
 		.executeSingle();
+    }
+    
+    public static List<PlayContext> all() {
+	return new Select()
+		.from(PlayContext.class)
+		.orderBy("id")
+		.execute();
+    }
+    
+    @Override
+    public String toString() {
+	return name;
     }
 }

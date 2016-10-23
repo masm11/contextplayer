@@ -29,7 +29,8 @@ public class MainActivity extends AppCompatActivity {
 		    ctxt.save();
 		}
 		
-		Intent i = new Intent(MainActivity.this, ExplorerActivity.class);
+//		Intent i = new Intent(MainActivity.this, ExplorerActivity.class);
+		Intent i = new Intent(MainActivity.this, ContextActivity.class);
 		i.putExtra("CONTEXT_ID", ctxt.getId());
 		startActivity(i);
 	    }

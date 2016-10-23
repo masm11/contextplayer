@@ -43,6 +43,9 @@ public class PlayerService extends Service {
 		    break;
 		setTopDir(path);
 		break;
+		
+	    case "SWITCH":
+		break;
 	    }
 	}
 	return START_STICKY;
