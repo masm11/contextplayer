@@ -16,6 +16,7 @@ import android.content.Intent;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ExplorerActivity extends AppCompatActivity {
     private static MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
@@ -217,6 +218,7 @@ public class ExplorerActivity extends AppCompatActivity {
     
     private void renewAdapter(File newDir) {
 	File[] files = newDir.listFiles();
+	Arrays.sort(files, null);
 	ArrayList<FileItem> items = new ArrayList<FileItem>();
 	for (int i = 0; i < files.length; i++) {
 	    Log.d("%s", files[i].toString());
