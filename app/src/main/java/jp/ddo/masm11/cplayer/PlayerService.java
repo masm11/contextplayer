@@ -1,6 +1,8 @@
 package jp.ddo.masm11.cplayer;
 
+import android.support.v7.app.NotificationCompat;
 import android.app.Service;
+import android.app.NotificationManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.content.Intent;
@@ -89,9 +91,11 @@ public class PlayerService extends Service {
 	} catch (Exception e) {
 	    Log.e(e, "exception");
 	}
+	setForeground(true);
     }
     
     private void stop() {
+	setForeground(false);
 	try {
 	    if (nextPlayer != null) {
 		nextPlayer.release();
@@ -204,5 +208,18 @@ public class PlayerService extends Service {
 	// 「次の曲」が変わる可能性があるので、enqueue しなおす。
 	if (curPlayer != null)
 	    enqueueNext();
+    }
+    
+    private void setForeground(boolean on) {
+	if (on) {
+	    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+	    NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+	    builder.setContentTitle("Context Player");
+	    builder.setContentText("Playing...");
+	    builder.setSmallIcon(R.mipmap.ic_launcher);
+	    startForeground(1, builder.build());
+	} else {
+	    stopForeground(false);
+	}
     }
 }
