@@ -51,5 +51,13 @@ public class MainActivity extends AppCompatActivity {
 		startActivity(i);
 	    }
 	});
+	btn = (Button) findViewById(R.id.op_stop);
+	btn.setOnClickListener(new View.OnClickListener() {
+	    public void onClick(View view) {
+		Intent i = new Intent(MainActivity.this, PlayerService.class);
+		i.setAction("STOP");
+		startService(i);
+	    }
+	});
     }
 }

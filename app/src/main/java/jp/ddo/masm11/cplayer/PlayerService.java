@@ -42,6 +42,10 @@ public class PlayerService extends Service {
 		enqueueNext();
 		break;
 		
+	    case "STOP":
+		stop();
+		break;
+		
 	    case "SET_TOPDIR":
 		path = intent.getStringExtra("path");
 		if (path == null)
