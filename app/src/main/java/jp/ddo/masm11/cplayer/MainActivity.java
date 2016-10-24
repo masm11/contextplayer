@@ -25,13 +25,25 @@ public class MainActivity extends AppCompatActivity {
 	    ctxt.save();
 	}
 	
-	Button btn = (Button) findViewById(R.id.btn);
+	Button btn;
+	btn = (Button) findViewById(R.id.contexts);
 	btn.setOnClickListener(new View.OnClickListener() {
 	    public void onClick(View view) {
 		
 //		Intent i = new Intent(MainActivity.this, ExplorerActivity.class);
 		Intent i = new Intent(MainActivity.this, ContextActivity.class);
 //		i.putExtra("CONTEXT_ID", ctxt.getId());
+		startActivity(i);
+	    }
+	});
+	btn = (Button) findViewById(R.id.explorer);
+	btn.setOnClickListener(new View.OnClickListener() {
+	    public void onClick(View view) {
+		
+		Intent i = new Intent(MainActivity.this, ExplorerActivity.class);
+//		Intent i = new Intent(MainActivity.this, ContextActivity.class);
+		PlayContext ctxt = PlayContext.all().get(0);
+		i.putExtra("CONTEXT_ID", ctxt.getId());
 		startActivity(i);
 	    }
 	});

@@ -47,6 +47,12 @@ public class PlayerService extends Service {
 		break;
 		
 	    case "SWITCH":
+		long id = intent.getLongExtra("CONTEXT_ID", -1);
+		PlayContext ctxt = PlayContext.find(id);
+		if (ctxt != null) {
+		    setTopDir(ctxt.topDir);
+		    play(ctxt.path != null ? ctxt.path : "");
+		}
 		break;
 	    }
 	}
