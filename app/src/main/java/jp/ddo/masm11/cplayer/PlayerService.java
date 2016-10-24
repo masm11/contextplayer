@@ -22,7 +22,10 @@ public class PlayerService extends Service {
     public void onCreate() {
 	Log.init(getExternalCacheDir());
 	
-	topDir = "/sdcard/Music";
+	long ctxtId = Long.parseLong(Config.findByKey("context_id").value);
+	PlayContext ctxt = PlayContext.find(ctxtId);
+	topDir = ctxt.topDir;
+	playingPath = ctxt.path;
     }
     
     @Override
@@ -52,6 +55,7 @@ public class PlayerService extends Service {
 		if (ctxt != null) {
 		    setTopDir(ctxt.topDir);
 		    play(ctxt.path != null ? ctxt.path : "");
+		    enqueueNext();
 		}
 		break;
 	    }
