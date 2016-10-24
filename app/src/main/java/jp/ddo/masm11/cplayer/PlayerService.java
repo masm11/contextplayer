@@ -233,7 +233,7 @@ public class PlayerService extends Service {
 	    builder.setSmallIcon(R.mipmap.ic_launcher);
 	    startForeground(1, builder.build());
 	} else {
-	    stopForeground(false);
+	    stopForeground(true);
 	}
     }
 }
