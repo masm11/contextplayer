@@ -153,12 +153,8 @@ public class ExplorerActivity extends AppCompatActivity {
 	adapter = new FileAdapter(this, new ArrayList<FileItem>());
 	rootDir = new File("/sdcard/Music");
 	
-	Intent intent = getIntent();
-	long ctxtId = -1;
-	if (intent != null)
-	    ctxtId = intent.getLongExtra("CONTEXT_ID", -1);
-	if (ctxtId != -1)
-	    ctxt = PlayContext.find(ctxtId);
+	long ctxtId = Long.parseLong(Config.findByKey("context_id").value);
+	ctxt = PlayContext.find(ctxtId);
 	if (ctxt == null)
 	    ctxt = new PlayContext();
 	
@@ -226,6 +222,8 @@ public class ExplorerActivity extends AppCompatActivity {
 	startService(intent);
 	
 	ctxt.topDir = newDir.getAbsolutePath();
+	ctxt.path = null;
+	ctxt.pos = 0;
 	ctxt.save();
     }
     

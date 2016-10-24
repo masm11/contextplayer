@@ -25,14 +25,19 @@ public class MainActivity extends AppCompatActivity {
 	    ctxt.save();
 	}
 	
+	Config config = Config.findByKey("context_id");
+	if (config == null) {
+	    config = new Config();
+	    config.key = "context_id";
+	    config.value = PlayContext.all().get(0).getId().toString();
+	    config.save();
+	}
+	
 	Button btn;
 	btn = (Button) findViewById(R.id.contexts);
 	btn.setOnClickListener(new View.OnClickListener() {
 	    public void onClick(View view) {
-		
-//		Intent i = new Intent(MainActivity.this, ExplorerActivity.class);
 		Intent i = new Intent(MainActivity.this, ContextActivity.class);
-//		i.putExtra("CONTEXT_ID", ctxt.getId());
 		startActivity(i);
 	    }
 	});
@@ -41,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
 	    public void onClick(View view) {
 		
 		Intent i = new Intent(MainActivity.this, ExplorerActivity.class);
-//		Intent i = new Intent(MainActivity.this, ContextActivity.class);
 		PlayContext ctxt = PlayContext.all().get(0);
 		i.putExtra("CONTEXT_ID", ctxt.getId());
 		startActivity(i);
