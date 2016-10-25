@@ -52,7 +52,10 @@ public class ContextActivity extends AppCompatActivity {
 		ListView listView = (ListView) parent;
 		Datum data = (Datum) listView.getItemAtPosition(position);
 		
-		PlayContext ctxt = PlayContext.find(data.id);
+		Config config = Config.findByKey("context_id");
+		config.value = "" + data.id;
+		config.save();
+		
 		Intent intent = new Intent(ContextActivity.this, PlayerService.class);
 		intent.setAction("SWITCH");
 		startService(intent);
