@@ -55,7 +55,6 @@ public class ContextActivity extends AppCompatActivity {
 		PlayContext ctxt = PlayContext.find(data.id);
 		Intent intent = new Intent(ContextActivity.this, PlayerService.class);
 		intent.setAction("SWITCH");
-		intent.putExtra("CONTEXT_ID", ctxt.getId());
 		startService(intent);
 	    }
 	});

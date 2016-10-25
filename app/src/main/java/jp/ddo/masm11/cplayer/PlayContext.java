@@ -20,7 +20,7 @@ public class PlayContext extends Model {
     public String path;
     
     @Column(name = "pos")
-    public long pos;
+    public long pos;	// msec
     
     public PlayContext() {
 	super();

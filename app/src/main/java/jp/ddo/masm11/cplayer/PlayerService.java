@@ -4,6 +4,7 @@ import android.support.v7.app.NotificationCompat;
 import android.app.Service;
 import android.app.NotificationManager;
 import android.media.MediaPlayer;
+import android.media.MediaTimestamp;
 import android.net.Uri;
 import android.content.Intent;
 import android.os.IBinder;
@@ -54,13 +55,7 @@ public class PlayerService extends Service {
 		break;
 		
 	    case "SWITCH":
-		long id = intent.getLongExtra("CONTEXT_ID", -1);
-		PlayContext ctxt = PlayContext.find(id);
-		if (ctxt != null) {
-		    setTopDir(ctxt.topDir);
-		    play(ctxt.path != null ? ctxt.path : "");
-		    enqueueNext();
-		}
+		loadContext();
 		break;
 	    }
 	}
@@ -110,6 +105,7 @@ public class PlayerService extends Service {
     
     private void stop() {
 	setForeground(false);
+	saveContext();
 	try {
 	    if (nextPlayer != null) {
 		nextPlayer.release();
@@ -234,6 +230,33 @@ public class PlayerService extends Service {
 	    startForeground(1, builder.build());
 	} else {
 	    stopForeground(true);
+	}
+    }
+    
+    private void saveContext() {
+	long ctxtId = Long.parseLong(Config.findByKey("context_id").value);
+	PlayContext ctxt = PlayContext.find(ctxtId);
+	if (ctxt != null && curPlayer != null) {
+	    ctxt.path = playingPath;
+	    MediaTimestamp stamp = curPlayer.getTimestamp();
+	    ctxt.pos = stamp.getAnchorMediaTimeUs() / 1000;
+	    Log.d("pos=%d", ctxt.pos);
+	    ctxt.save();
+	}
+    }
+    
+    private void loadContext() {
+	long id = Long.parseLong(Config.findByKey("context_id").value);
+	PlayContext ctxt = PlayContext.find(id);
+	if (ctxt != null) {
+	    // fixme: path が null だった場合
+	    playingPath = ctxt.path;
+	    topDir = ctxt.topDir;
+	    curPlayer = MediaPlayer.create(this, Uri.parse("file://" + playingPath));
+	    curPlayer.seekTo((int) ctxt.pos);
+	    curPlayer.start();
+	    
+	    enqueueNext();
 	}
     }
 }
