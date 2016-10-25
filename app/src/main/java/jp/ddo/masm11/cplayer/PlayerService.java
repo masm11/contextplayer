@@ -18,15 +18,13 @@ public class PlayerService extends Service {
     private String topDir;
     private String playingPath, nextPath;
     private MediaPlayer curPlayer, nextPlayer;
+    private long contextId;
     
     @Override
     public void onCreate() {
 	Log.init(getExternalCacheDir());
 	
-	long ctxtId = Long.parseLong(Config.findByKey("context_id").value);
-	PlayContext ctxt = PlayContext.find(ctxtId);
-	topDir = ctxt.topDir;
-	playingPath = ctxt.path;
+	loadContext();
     }
     
     @Override
@@ -36,26 +34,49 @@ public class PlayerService extends Service {
 	    String path;
 	    switch (action) {
 	    case "PLAY":
+		/* 再生を開始する。
+		 *  - path が指定されている場合:
+		 *    → その path から開始し、再生できる曲を曲先頭から再生する。
+		 *  - path が指定されていない場合:
+		 *    - curPlayer != null の場合:
+		 *      → curPlayer.play() する。
+		 *    - curPlayer == null の場合:
+		 *      - playingPath != null の場合:
+		 *        → その path から開始し、再生できる曲を曲先頭から再生する。
+		 *      - playingPath == null の場合:
+		 *        → topDir 内で最初に再生できる曲を再生する。
+		 */
 		path = intent.getStringExtra("path");
-		if (path == null)
-		    break;
 		play(path);
-		enqueueNext();
 		break;
 		
-	    case "STOP":
-		stop();
+	    case "PAUSE":
+		/* 再生を一時停止する。
+		 *  - curPlayer != null の場合
+		 *    → pause() し、context を保存する
+		 *  - curPlayer == null の場合
+		 *    → 何もしない
+		 */
+		pause();
 		break;
 		
 	    case "SET_TOPDIR":
+		/* topDir を変更する。
+		 *  - path != null の場合:
+		 *    → topDir を設定し、enqueueNext() し直す。
+		 *  - path == null の場合:
+		 *    → 何もしない。
+		 */
 		path = intent.getStringExtra("path");
-		if (path == null)
-		    break;
 		setTopDir(path);
 		break;
 		
 	    case "SWITCH":
-		loadContext();
+		/* context を switch する。
+		 * 今再生中なら pause() し、context を保存する。
+		 * context を読み出し、再生を再開する。
+		 */
+		switchContext();
 		break;
 	    }
 	}
@@ -69,7 +90,6 @@ public class PlayerService extends Service {
     
     private void play(String path) {
 	Log.i("path=%s", path);
-	playingPath = path;
 	
 	try {
 	    if (nextPlayer != null) {
@@ -79,45 +99,98 @@ public class PlayerService extends Service {
 	} catch (Exception e) {
 	    Log.e(e, "exception");
 	}
-	try {
-	    if (curPlayer != null) {
-		curPlayer.release();
-		curPlayer = null;
+	
+	if (path != null) {
+	    // path が指定された。
+	    // その path から開始し、再生できる曲を曲先頭から再生する。
+	    
+	    try {
+		if (curPlayer != null) {
+		    curPlayer.release();
+		    curPlayer = null;
+		}
+	    } catch (Exception e) {
+		Log.e(e, "exception");
 	    }
-	} catch (Exception e) {
-	    Log.e(e, "exception");
+	    
+	    Object[] ret = createMediaPlayer(path, 0);
+	    if (ret == null) {
+		Log.w("No audio file found.");
+		return;
+	    }
+	    curPlayer = (MediaPlayer) ret[0];
+	    playingPath = (String) ret[1];
+	    try {
+		curPlayer.start();
+	    } catch (Exception e) {
+		Log.e(e, "exception");
+	    }
+	} else if (curPlayer != null) {
+	    // path が指定されてない && 再生途中だった
+	    // 再生再開
+	    curPlayer.start();
+	} else if (playingPath != null) {
+	    // path が指定されてない && 再生途中でない && context に playingPath がある
+	    // その path から開始し、再生できる曲を曲先頭から再生する。
+	    
+	    try {
+		if (curPlayer != null) {
+		    curPlayer.release();
+		    curPlayer = null;
+		}
+	    } catch (Exception e) {
+		Log.e(e, "exception");
+	    }
+	    
+	    Object[] ret = createMediaPlayer(playingPath, 0);
+	    if (ret == null) {
+		Log.w("No audio file found.");
+		return;
+	    }
+	    curPlayer = (MediaPlayer) ret[0];
+	    playingPath = (String) ret[1];
+	    try {
+		curPlayer.start();
+	    } catch (Exception e) {
+		Log.e(e, "exception");
+	    }
+	} else {
+	    // 何もない
+	    // topDir 内から再生できる曲を探し、曲先頭から再生する。
+	    
+	    try {
+		if (curPlayer != null) {
+		    curPlayer.release();
+		    curPlayer = null;
+		}
+	    } catch (Exception e) {
+		Log.e(e, "exception");
+	    }
+	    
+	    Object[] ret = createMediaPlayer("", 0);
+	    if (ret == null) {
+		Log.w("No audio file found.");
+		return;
+	    }
+	    curPlayer = (MediaPlayer) ret[0];
+	    playingPath = (String) ret[1];
+	    try {
+		curPlayer.start();
+	    } catch (Exception e) {
+		Log.e(e, "exception");
+	    }
 	}
 	
-	Object[] ret = createMediaPlayer(playingPath);
-	if (ret == null) {
-	    Log.w("No audio file found.");
-	    return;
-	}
-	curPlayer = (MediaPlayer) ret[0];
-	playingPath = (String) ret[1];
-	try {
-	    curPlayer.start();
-	} catch (Exception e) {
-	    Log.e(e, "exception");
-	}
 	setForeground(true);
+	enqueueNext();
     }
     
-    private void stop() {
-	setForeground(false);
-	saveContext();
-	try {
-	    if (nextPlayer != null) {
-		nextPlayer.release();
-		nextPlayer = null;
-	    }
-	} catch (Exception e) {
-	    Log.e(e, "exception");
-	}
+    private void pause() {
 	try {
 	    if (curPlayer != null) {
-		curPlayer.release();
-		curPlayer = null;
+		setForeground(false);
+		curPlayer.pause();
+		saveContext();
 	    }
 	} catch (Exception e) {
 	    Log.e(e, "exception");
@@ -134,7 +207,7 @@ public class PlayerService extends Service {
 	    Log.e(e, "exception");
 	}
 	
-	Object[] ret = createMediaPlayer(selectNext(playingPath));
+	Object[] ret = createMediaPlayer(selectNext(playingPath), 0);
 	if (ret == null) {
 	    Log.w("No audio file found.");
 	    return;
@@ -148,7 +221,7 @@ public class PlayerService extends Service {
 	}
     }
     
-    private Object[] createMediaPlayer(String path) {
+    private Object[] createMediaPlayer(String path, int pos) {
 	HashSet<String> tested = new HashSet<>();
 	MediaPlayer player = null;
 	while (true) {
@@ -163,8 +236,10 @@ public class PlayerService extends Service {
 		if (player == null) {
 		    Log.w("MediaPlayer.create() failed: %s", path);
 		    path = selectNext(path);
+		    pos = 0;	// お目当てのファイルが見つからなかった。次のファイルの先頭からとする。
 		    continue;
 		}
+		player.seekTo(pos);
 		player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 		    @Override
 		    public void onCompletion(MediaPlayer mp) {
@@ -214,10 +289,22 @@ public class PlayerService extends Service {
     }
     
     private void setTopDir(String path) {
-	topDir = path;
-	// 「次の曲」が変わる可能性があるので、enqueue しなおす。
-	if (curPlayer != null)
-	    enqueueNext();
+	if (path != null) {
+	    topDir = path;
+	    // 「次の曲」が変わる可能性があるので、enqueue しなおす。
+	    if (curPlayer != null)
+		enqueueNext();
+	}
+    }
+    
+    private void switchContext() {
+	if (curPlayer != null) {
+	    curPlayer.pause();
+	    setForeground(false);
+	}
+	
+	saveContext();
+	loadContext();
     }
     
     private void setForeground(boolean on) {
@@ -234,29 +321,64 @@ public class PlayerService extends Service {
     }
     
     private void saveContext() {
-	long ctxtId = Long.parseLong(Config.findByKey("context_id").value);
-	PlayContext ctxt = PlayContext.find(ctxtId);
+	Log.d("contextId=%d", contextId);
+	PlayContext ctxt = PlayContext.find(contextId);
 	if (ctxt != null && curPlayer != null) {
 	    ctxt.path = playingPath;
 	    MediaTimestamp stamp = curPlayer.getTimestamp();
-	    ctxt.pos = stamp.getAnchorMediaTimeUs() / 1000;
-	    Log.d("pos=%d", ctxt.pos);
+	    ctxt.pos = stamp.getAnchorMediaTimeUs() / 1000;	// us -> ms
+	    Log.d("ctxt saving...");
 	    ctxt.save();
 	}
     }
     
     private void loadContext() {
-	long id = Long.parseLong(Config.findByKey("context_id").value);
-	PlayContext ctxt = PlayContext.find(id);
+	try {
+	    if (nextPlayer != null) {
+		nextPlayer.release();
+		nextPlayer = null;
+	    }
+	} catch (Exception e) {
+	    Log.e(e, "exception");
+	}
+	try {
+	    if (curPlayer != null) {
+		curPlayer.pause();
+		setForeground(false);
+		saveContext();
+	    }
+	} catch (Exception e) {
+	    Log.e(e, "exception");
+	}
+	
+	contextId = Long.parseLong(Config.findByKey("context_id").value);
+	PlayContext ctxt = PlayContext.find(contextId);
 	if (ctxt != null) {
-	    // fixme: path が null だった場合
 	    playingPath = ctxt.path;
 	    topDir = ctxt.topDir;
-	    curPlayer = MediaPlayer.create(this, Uri.parse("file://" + playingPath));
-	    curPlayer.seekTo((int) ctxt.pos);
-	    curPlayer.start();
 	    
-	    enqueueNext();
+	    if (playingPath != null) {
+		Object[] ret = createMediaPlayer(playingPath, (int) ctxt.pos);
+		if (ret == null) {
+		    Log.w("No audio file found.");
+		    return;
+		}
+		curPlayer = (MediaPlayer) ret[0];
+		playingPath = (String) ret[1];
+		try {
+		    curPlayer.start();
+		} catch (Exception e) {
+		    Log.e(e, "exception");
+		}
+		
+		setForeground(true);
+		enqueueNext();
+	    }
 	}
+    }
+    
+    @Override
+    public void onDestroy() {
+	saveContext();
     }
 }
