@@ -227,9 +227,11 @@ public class ExplorerActivity extends AppCompatActivity {
 		relPath = ".";
 	    relPath += "/";
 	}
-	TextView textView = (TextView) findViewById(R.id.path);
-	assert textView != null;
-	textView.setText(relPath);
+	PathView pathView = (PathView) findViewById(R.id.path);
+	assert pathView != null;
+	pathView.setRootDir(rootDir.toString());
+	pathView.setTopDir(topPath);
+	pathView.setPath(curPath);
 	
 	Intent intent = new Intent(this, PlayerService.class);
 	intent.setAction("SET_TOPDIR");
@@ -277,9 +279,11 @@ public class ExplorerActivity extends AppCompatActivity {
 		relPath = ".";
 	    relPath += "/";
 	}
-	TextView textView = (TextView) findViewById(R.id.path);
-	assert textView != null;
-	textView.setText(relPath);
+	PathView pathView = (PathView) findViewById(R.id.path);
+	assert pathView != null;
+	pathView.setRootDir(rootDir.toString());
+	pathView.setPath(newPath);
+	pathView.setTopDir(topPath);
 	
 	curDir = newDir;
     }
