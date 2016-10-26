@@ -10,6 +10,7 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
+import android.view.KeyEvent;
 import android.media.MediaMetadataRetriever;
 import android.webkit.MimeTypeMap;
 import android.content.Intent;
@@ -198,6 +199,17 @@ public class ExplorerActivity extends AppCompatActivity {
 		    return false;
 	    }
 	});
+    }
+    
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+	if (keyCode == KeyEvent.KEYCODE_BACK) {
+	    if (!curDir.equals(topDir) && !curDir.equals(rootDir)) {
+		renewAdapter(curDir.getParentFile());
+		return true;
+	    }
+	}
+	return super.onKeyDown(keyCode, event);
     }
     
     private void setTopDir(File newDir) {
