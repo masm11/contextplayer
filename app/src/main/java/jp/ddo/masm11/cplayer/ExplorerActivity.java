@@ -173,7 +173,8 @@ public class ExplorerActivity extends AppCompatActivity {
 		    File dir = item.getFile();
 		    if (item.getFilename().equals(".."))
 			dir = curDir.getParentFile();
-		    renewAdapter(dir);
+		    if (!item.getFilename().equals("."))
+			renewAdapter(dir);
 		} else {
 		    play(item.getFile());
 		}
@@ -189,6 +190,8 @@ public class ExplorerActivity extends AppCompatActivity {
 		    File dir = item.getFile();
 		    if (item.getFilename().equals(".."))
 			dir = curDir.getParentFile();
+		    else if (item.getFilename().equals("."))
+			dir = curDir;
 		    setTopDir(dir);
 		    return true;
 		} else
@@ -240,6 +243,8 @@ public class ExplorerActivity extends AppCompatActivity {
 	Log.d("rootDir=%s", rootDir.toString());
 	if (!newDir.equals(rootDir))
 	    items.add(0, new FileItem(new File(newDir, "..")));
+	else
+	    items.add(0, new FileItem(new File(newDir, ".")));
 	
 	adapter.clear();
 	adapter.addAll(items);
