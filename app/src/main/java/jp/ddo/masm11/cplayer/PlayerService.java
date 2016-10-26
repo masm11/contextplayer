@@ -305,6 +305,17 @@ public class PlayerService extends Service {
 	
 	saveContext();
 	loadContext();
+	
+	if (curPlayer != null) {
+	    try {
+		curPlayer.start();
+	    } catch (Exception e) {
+		Log.e(e, "exception");
+	    }
+	    
+	    setForeground(true);
+	    enqueueNext();
+	}
     }
     
     private void setForeground(boolean on) {
@@ -365,14 +376,6 @@ public class PlayerService extends Service {
 		}
 		curPlayer = (MediaPlayer) ret[0];
 		playingPath = (String) ret[1];
-		try {
-		    curPlayer.start();
-		} catch (Exception e) {
-		    Log.e(e, "exception");
-		}
-		
-		setForeground(true);
-		enqueueNext();
 	    }
 	}
     }
