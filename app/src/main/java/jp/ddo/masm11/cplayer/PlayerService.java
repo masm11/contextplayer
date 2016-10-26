@@ -239,7 +239,8 @@ public class PlayerService extends Service {
 		    pos = 0;	// お目当てのファイルが見つからなかった。次のファイルの先頭からとする。
 		    continue;
 		}
-		player.seekTo(pos);
+		if (pos > 0)	// 0 の場合に seekTo() すると、曲の頭が切れるみたい?
+		    player.seekTo(pos);
 		player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 		    @Override
 		    public void onCompletion(MediaPlayer mp) {
