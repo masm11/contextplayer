@@ -249,7 +249,8 @@ public class PlayerService extends Service {
 			mp.release();
 			nextPath = null;
 			nextPlayer = null;
-			enqueueNext();
+			if (curPlayer != null)
+			    enqueueNext();
 		    }
 		});
 		
