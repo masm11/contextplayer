@@ -30,6 +30,7 @@ public class PlayerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 	String action = intent != null ? intent.getAction() : null;
+	Log.d("action=%s", action);
 	if (action != null) {
 	    String path;
 	    switch (action) {
@@ -77,6 +78,10 @@ public class PlayerService extends Service {
 		 * context を読み出し、再生を再開する。
 		 */
 		switchContext();
+		break;
+		
+	    case "A2DP_DISCONNECTED":
+		pause();
 		break;
 	    }
 	}

@@ -3,6 +3,7 @@
           package="jp.ddo.masm11.cplayer">
 
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.BLUETOOTH"/>
 
     <application
 	android:name="com.activeandroid.app.Application"
@@ -28,6 +29,11 @@
         </activity>
         <service android:name=".PlayerService">
         </service>
+	<receiver android:name="BluetoothReceiver">
+            <intent-filter>
+                <action android:name="android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED"/>
+            </intent-filter>
+	</receiver>
     </application>
 
 </manifest>
