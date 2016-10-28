@@ -17,8 +17,8 @@ public class BluetoothReceiver extends BroadcastReceiver {
 	    if (action.equals(BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED)) {
 		int state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1);
 		int prevstate = intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1);
-		Log.d("state=%s", state);
-		Log.d("prevstate=%s", prevstate);
+		Log.d("state=%d", state);
+		Log.d("prevstate=%d", prevstate);
 		Log.d("device=%s", intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE).toString());
 		if (state == BluetoothProfile.STATE_DISCONNECTED && prevstate != BluetoothProfile.STATE_DISCONNECTED) {
 		    Log.d("a2dp disconnected.");
