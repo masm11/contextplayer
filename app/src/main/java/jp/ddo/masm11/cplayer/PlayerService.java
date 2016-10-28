@@ -193,7 +193,7 @@ public class PlayerService extends Service {
 	    if (curPlayer != null) {
 		Log.d("set to non-foreground");
 		setForeground(false);
-		Log.d("pause it");
+		Log.d("pause %s", curPlayer.toString());
 		curPlayer.pause();
 		Log.d("save context");
 		saveContext();
