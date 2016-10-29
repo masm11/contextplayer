@@ -99,6 +99,11 @@ public class ExplorerActivity extends AppCompatActivity {
 		str = item.getFilename();
 		textView.setText(str);
 		
+		textView = (TextView) convertView.findViewById(R.id.mime_type);
+		assert textView != null;
+		str = item.getMimeType();
+		textView.setText(str);
+		
 		textView = (TextView) convertView.findViewById(R.id.title);
 		assert textView != null;
 		str = item.getTitle();
