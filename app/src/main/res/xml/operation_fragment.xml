@@ -10,32 +10,32 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin">
   
-  <Button
+  <ImageButton
       android:id="@+id/op_prev"
       android:layout_width="0dp"
       android:layout_weight="1"
       android:layout_height="wrap_content"
-      android:text="&lt;&lt;"/>
+      android:src="@android:drawable/ic_media_previous"/>
   
-  <Button
+  <ImageButton
       android:id="@+id/op_play"
       android:layout_width="0dp"
       android:layout_weight="1"
       android:layout_height="wrap_content"
-      android:text="&gt;"/>
+      android:src="@android:drawable/ic_media_play"/>
   
-  <Button
+  <ImageButton
       android:id="@+id/op_pause"
       android:layout_width="0dp"
       android:layout_weight="1"
       android:layout_height="wrap_content"
-      android:text="||"/>
+      android:src="@android:drawable/ic_media_pause"/>
   
-  <Button
+  <ImageButton
       android:id="@+id/op_next"
       android:layout_width="0dp"
       android:layout_weight="1"
       android:layout_height="wrap_content"
-      android:text="&gt;&gt;"/>
+      android:src="@android:drawable/ic_media_next"/>
 
 </LinearLayout>

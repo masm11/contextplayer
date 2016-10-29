@@ -1,7 +1,7 @@
 package jp.ddo.masm11.cplayer;
 
 import android.app.Fragment;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
@@ -19,7 +19,7 @@ public class OperationFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 	View view = inflater.inflate(R.xml.operation_fragment, container, false);
 	
-	Button btnPlay = (Button) view.findViewById(R.id.op_play);
+	ImageButton btnPlay = (ImageButton) view.findViewById(R.id.op_play);
 	assert btnPlay != null;
 	btnPlay.setOnClickListener(new View.OnClickListener() {
 	    public void onClick(View view) {
@@ -29,7 +29,7 @@ public class OperationFragment extends Fragment {
 	    }
 	});
 	
-	Button btnPause = (Button) view.findViewById(R.id.op_pause);
+	ImageButton btnPause = (ImageButton) view.findViewById(R.id.op_pause);
 	assert btnPause != null;
 	btnPause.setOnClickListener(new View.OnClickListener() {
 	    public void onClick(View view) {
@@ -39,7 +39,7 @@ public class OperationFragment extends Fragment {
 	    }
 	});
 	
-	Button btnPrev = (Button) view.findViewById(R.id.op_prev);
+	ImageButton btnPrev = (ImageButton) view.findViewById(R.id.op_prev);
 	assert btnPrev != null;
 	btnPrev.setOnClickListener(new View.OnClickListener() {
 	    public void onClick(View view) {
@@ -49,7 +49,7 @@ public class OperationFragment extends Fragment {
 	    }
 	});
 	
-	Button btnNext = (Button) view.findViewById(R.id.op_next);
+	ImageButton btnNext = (ImageButton) view.findViewById(R.id.op_next);
 	assert btnNext != null;
 	btnNext.setOnClickListener(new View.OnClickListener() {
 	    public void onClick(View view) {
