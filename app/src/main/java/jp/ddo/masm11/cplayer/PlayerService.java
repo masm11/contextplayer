@@ -3,8 +3,11 @@ package jp.ddo.masm11.cplayer;
 import android.support.v7.app.NotificationCompat;
 import android.app.Service;
 import android.app.NotificationManager;
+import android.app.Notification;
 import android.media.MediaPlayer;
 import android.media.MediaTimestamp;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.content.Intent;
 import android.os.IBinder;
@@ -19,10 +22,28 @@ public class PlayerService extends Service {
     private String playingPath, nextPath;
     private MediaPlayer curPlayer, nextPlayer;
     private long contextId;
+    private AudioManager audioManager;
+    private AudioAttributes audioAttributes;
+    private int audioSessionId;
+    private AudioManager.OnAudioFocusChangeListener audioFocusChangeListener;
     
     @Override
     public void onCreate() {
 	Log.init(getExternalCacheDir());
+	
+	audioAttributes = new AudioAttributes.Builder()
+		.setUsage(AudioAttributes.USAGE_MEDIA)
+		.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+		.build();
+	audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+	audioSessionId = audioManager.generateAudioSessionId();
+	
+	audioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
+	    @Override
+	    public void onAudioFocusChange(int focusChange) {
+		handleAudioFocusChangeEvent(focusChange);
+	    }
+	};
 	
 	loadContext();
     }
@@ -83,6 +104,10 @@ public class PlayerService extends Service {
 	    case "A2DP_DISCONNECTED":
 		pause();
 		break;
+
+	    case "TEST":
+		note();
+		break;
 	    }
 	}
 	return START_NOT_STICKY;
@@ -118,17 +143,10 @@ public class PlayerService extends Service {
 	    playingPath = (String) ret[1];
 	    Log.d("curPlayer=%s", curPlayer.toString());
 	    Log.d("playingPath=%s", playingPath);
-	    try {
-		Log.d("starting.");
-		curPlayer.start();
-	    } catch (Exception e) {
-		Log.e(e, "exception");
-	    }
 	} else if (curPlayer != null) {
 	    // path が指定されてない && 再生途中だった
 	    // 再生再開
 	    Log.d("curPlayer exists. starting it.");
-	    curPlayer.start();
 	} else if (playingPath != null) {
 	    // path が指定されてない && 再生途中でない && context に playingPath がある
 	    // その path から開始し、再生できる曲を曲先頭から再生する。
@@ -148,12 +166,6 @@ public class PlayerService extends Service {
 	    playingPath = (String) ret[1];
 	    Log.d("curPlayer=%s", curPlayer.toString());
 	    Log.d("playingPath=%s", playingPath);
-	    try {
-		Log.d("starting.");
-		curPlayer.start();
-	    } catch (Exception e) {
-		Log.e(e, "exception");
-	    }
 	} else {
 	    // 何もない
 	    // topDir 内から再生できる曲を探し、曲先頭から再生する。
@@ -173,28 +185,50 @@ public class PlayerService extends Service {
 	    playingPath = (String) ret[1];
 	    Log.d("curPlayer=%s", curPlayer.toString());
 	    Log.d("playingPath=%s", playingPath);
-	    try {
-		Log.d("starting.");
-		curPlayer.start();
-	    } catch (Exception e) {
-		Log.e(e, "exception");
-	    }
 	}
 	
-	Log.d("set to foreground");
-	setForeground(true);
+	Log.d("starting.");
+	startPlay();
 	Log.d("enqueue next player.");
 	enqueueNext();
     }
     
     private void pause() {
 	Log.d("");
+	stopPlay();
+    }
+    
+    // curPlayer がセットされた状態で呼ばれ、
+    // 再生を start する。
+    private void startPlay() {
+	if (curPlayer != null) {
+	    Log.d("request audio focus.");
+	    audioManager.requestAudioFocus(audioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+	    
+	    try {
+		Log.d("starting.");
+		curPlayer.start();
+	    } catch (Exception e) {
+		Log.e(e, "exception");
+	    }
+	    
+	    Log.d("set to foreground");
+	    setForeground(true);
+	}
+    }
+    
+    private void stopPlay() {
 	try {
 	    if (curPlayer != null) {
 		Log.d("set to non-foreground");
 		setForeground(false);
+		
 		Log.d("pause %s", curPlayer.toString());
 		curPlayer.pause();
+		
+		Log.d("abandon audio focus.");
+		audioManager.abandonAudioFocus(audioFocusChangeListener);
+		
 		Log.d("save context");
 		saveContext();
 	    }
@@ -203,6 +237,28 @@ public class PlayerService extends Service {
 	}
     }
     
+    private void handleAudioFocusChangeEvent(int focusChange) {
+	Log.d("focusChange=%d.", focusChange);
+	switch (focusChange) {
+	case AudioManager.AUDIOFOCUS_GAIN:
+	    if (curPlayer != null)
+		curPlayer.setVolume(1.0f, 1.0f);
+	    if (nextPlayer != null)
+		nextPlayer.setVolume(1.0f, 1.0f);
+	    break;
+	case AudioManager.AUDIOFOCUS_LOSS:
+	case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+	    pause();
+	    break;
+	case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+	    if (curPlayer != null)
+		curPlayer.setVolume(0.25f, 0.25f);
+	    if (nextPlayer != null)
+		nextPlayer.setVolume(0.25f, 0.25f);
+	    break;
+	}
+    }
+
     private void enqueueNext() {
 	Log.d("release nextPlayer");
 	releaseNextPlayer();
@@ -243,7 +299,7 @@ public class PlayerService extends Service {
 		tested.add(path);
 		
 		Log.d("try create mediaplayer.");
-		player = MediaPlayer.create(this, Uri.parse("file://" + path));
+		player = MediaPlayer.create(this, Uri.parse("file://" + path), null, audioAttributes, audioSessionId);
 		if (player == null) {
 		    Log.w("MediaPlayer.create() failed: %s", path);
 		    path = selectNext(path);
@@ -360,26 +416,15 @@ public class PlayerService extends Service {
     
     private void switchContext() {
 	Log.d("curPlayer=%s", curPlayer == null ? "null" : curPlayer.toString());
-	if (curPlayer != null) {
-	    Log.d("pause.");
-	    curPlayer.pause();
-	    Log.d("set to non-foreground.");
-	    setForeground(false);
-	}
+	stopPlay();	// saveContext() を含む。
 	
-	Log.d("save context.");
-	saveContext();
 	Log.d("load context.");
 	loadContext();
 	
 	Log.d("curPlayer=%s", curPlayer == null ? "null" : curPlayer.toString());
 	if (curPlayer != null) {
-	    try {
-		Log.d("starting");
-		curPlayer.start();
-	    } catch (Exception e) {
-		Log.e(e, "exception");
-	    }
+	    Log.d("starting");
+	    startPlay();
 	    
 	    Log.d("set to foreground");
 	    setForeground(true);
@@ -420,17 +465,9 @@ public class PlayerService extends Service {
     private void loadContext() {
 	Log.d("release nextPlayer.");
 	releaseNextPlayer();
-	try {
-	    Log.d("curPlayer=%s", curPlayer == null ? "null" : curPlayer.toString());
-	    if (curPlayer != null) {
-		Log.d("pause");
-		curPlayer.pause();
-		Log.d("save context");
-		saveContext();
-	    }
-	} catch (Exception e) {
-	    Log.e(e, "exception");
-	}
+	
+	stopPlay();
+	
 	Log.d("release curPlayer.");
 	releaseCurPlayer();
 	Log.d("set to non-foreground.");
@@ -466,5 +503,21 @@ public class PlayerService extends Service {
     public void onDestroy() {
 	Log.d("save context");
 	saveContext();
+    }
+
+    private boolean last_notify = false;
+    private void note() {
+	if (last_notify) {
+	    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+	    NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+	    builder.setContentTitle("Test");
+	    builder.setSmallIcon(R.mipmap.ic_launcher);
+	    builder.setDefaults(Notification.DEFAULT_SOUND);
+	    notificationManager.notify(1, builder.build());
+	} else {
+	    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+	    notificationManager.cancel(1);
+	}
+	last_notify = !last_notify;
     }
 }
