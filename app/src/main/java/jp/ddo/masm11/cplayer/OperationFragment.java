@@ -29,6 +29,16 @@ public class OperationFragment extends Fragment {
 	    }
 	});
 	
+	Button btnPause = (Button) view.findViewById(R.id.op_pause);
+	assert btnPause != null;
+	btnPause.setOnClickListener(new View.OnClickListener() {
+	    public void onClick(View view) {
+		Intent intent = new Intent(getContext(), PlayerService.class);
+		intent.setAction("PAUSE");
+		getContext().startService(intent);
+	    }
+	});
+	
 	Button btnPrev = (Button) view.findViewById(R.id.op_prev);
 	assert btnPrev != null;
 	btnPrev.setOnClickListener(new View.OnClickListener() {

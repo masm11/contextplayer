@@ -153,7 +153,7 @@ public class PlayerService extends Service {
 	    releaseCurPlayer();
 	    
 	    Log.d("createMediaPlayer");
-	    Object[] ret = createMediaPlayer(path, 0);
+	    Object[] ret = createMediaPlayer(path, 0, false);
 	    if (ret == null) {
 		Log.w("No audio file found.");
 		return;
@@ -176,7 +176,7 @@ public class PlayerService extends Service {
 	    releaseCurPlayer();
 	    
 	    Log.d("creating mediaplayer.");
-	    Object[] ret = createMediaPlayer(playingPath, 0);
+	    Object[] ret = createMediaPlayer(playingPath, 0, false);
 	    if (ret == null) {
 		Log.w("No audio file found.");
 		return;
@@ -195,7 +195,7 @@ public class PlayerService extends Service {
 	    releaseCurPlayer();
 	    
 	    Log.d("creating mediaplayer.");
-	    Object[] ret = createMediaPlayer("", 0);
+	    Object[] ret = createMediaPlayer("", 0, false);
 	    if (ret == null) {
 		Log.w("No audio file found.");
 		return;
@@ -227,9 +227,10 @@ public class PlayerService extends Service {
 		releaseNextPlayer();
 		releaseCurPlayer();
 		
-		Object[] ret = createMediaPlayer(selectPrev(playingPath), 0);
+		Object[] ret = createMediaPlayer(selectPrev(playingPath), 0, true);
 		if (ret == null) {
-		    Log.w("err...");
+		    Log.w("No audio file.");
+		    stopPlay();
 		} else {
 		    curPlayer = (MediaPlayer) ret[0];
 		    playingPath = (String) ret[1];
@@ -285,21 +286,21 @@ public class PlayerService extends Service {
     
     private void stopPlay() {
 	try {
+	    stopBroadcast();
+	    
+	    Log.d("set to non-foreground");
+	    setForeground(false);
+	    
 	    if (curPlayer != null) {
-		stopBroadcast();
-		
-		Log.d("set to non-foreground");
-		setForeground(false);
-		
 		Log.d("pause %s", curPlayer.toString());
 		curPlayer.pause();
-		
-		Log.d("abandon audio focus.");
-		audioManager.abandonAudioFocus(audioFocusChangeListener);
-		
-		Log.d("save context");
-		saveContext();
 	    }
+	    
+	    Log.d("abandon audio focus.");
+	    audioManager.abandonAudioFocus(audioFocusChangeListener);
+	    
+	    Log.d("save context");
+	    saveContext();
 	} catch (Exception e) {
 	    Log.e(e, "exception");
 	}
@@ -332,7 +333,7 @@ public class PlayerService extends Service {
 	releaseNextPlayer();
 	
 	Log.d("creating mediaplayer");
-	Object[] ret = createMediaPlayer(selectNext(playingPath), 0);
+	Object[] ret = createMediaPlayer(selectNext(playingPath), 0, false);
 	if (ret == null) {
 	    Log.w("No audio file found.");
 	    return;
@@ -350,7 +351,7 @@ public class PlayerService extends Service {
 	}
     }
     
-    private Object[] createMediaPlayer(String path, int pos) {
+    private Object[] createMediaPlayer(String path, int pos, boolean back) {
 	Log.d("path=%s", path);
 	Log.d("pos=%d", pos);
 	HashSet<String> tested = new HashSet<>();
@@ -370,7 +371,7 @@ public class PlayerService extends Service {
 		player = MediaPlayer.create(this, Uri.parse("file://" + path), null, audioAttributes, audioSessionId);
 		if (player == null) {
 		    Log.w("MediaPlayer.create() failed: %s", path);
-		    path = selectNext(path);
+		    path = back ? selectPrev(path) : selectNext(path);
 		    pos = 0;	// お目当てのファイルが見つからなかった。次のファイルの先頭からとする。
 		    continue;
 		}
@@ -577,7 +578,7 @@ public class PlayerService extends Service {
 	    
 	    if (playingPath != null) {
 		Log.d("creating mediaplayer.");
-		Object[] ret = createMediaPlayer(playingPath, (int) ctxt.pos);
+		Object[] ret = createMediaPlayer(playingPath, (int) ctxt.pos, false);
 		if (ret == null) {
 		    Log.w("No audio file found.");
 		    return;

@@ -133,31 +133,12 @@ public class MainActivity extends AppCompatActivity {
 	btn = (Button) findViewById(R.id.explorer);
 	btn.setOnClickListener(new View.OnClickListener() {
 	    public void onClick(View view) {
-		
 		Intent i = new Intent(MainActivity.this, ExplorerActivity.class);
 		PlayContext ctxt = PlayContext.all().get(0);
 		i.putExtra("CONTEXT_ID", ctxt.getId());
 		startActivity(i);
 	    }
 	});
-/*
-	btn = (Button) findViewById(R.id.op_pause);
-	btn.setOnClickListener(new View.OnClickListener() {
-	    public void onClick(View view) {
-		Intent i = new Intent(MainActivity.this, PlayerService.class);
-		i.setAction("PAUSE");
-		startService(i);
-	    }
-	});
-	btn = (Button) findViewById(R.id.test);
-	btn.setOnClickListener(new View.OnClickListener() {
-	    public void onClick(View view) {
-		Intent i = new Intent(MainActivity.this, PlayerService.class);
-		i.setAction("TEST");
-		startService(i);
-	    }
-	});
-*/
 	
 	SeekBar seekBar = (SeekBar) findViewById(R.id.playing_pos);
 	assert seekBar != null;
