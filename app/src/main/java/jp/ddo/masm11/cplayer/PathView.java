@@ -40,8 +40,6 @@ public class PathView extends TextView {
 	String cur = this.path;
 	if (cur == null)
 	    cur = "/";
-	else
-	    cur = cur + "/";
 	if (!root.endsWith("/"))
 	    root = root + "/";
 	if (!top.endsWith("/"))

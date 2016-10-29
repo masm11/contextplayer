@@ -541,6 +541,7 @@ public class PlayerService extends Service {
 	    Intent intent = new Intent("jp.ddo.masm11.cplayer.STATUS");
 	    intent.putExtra("jp.ddo.masm11.cplayer.FILE", playingPath);
 	    intent.putExtra("jp.ddo.masm11.cplayer.POSITION", curPlayer.getCurrentPosition());
+	    intent.putExtra("jp.ddo.masm11.cplayer.TOPDIR", topDir);
 	    sendBroadcast(intent);
 	}
     }

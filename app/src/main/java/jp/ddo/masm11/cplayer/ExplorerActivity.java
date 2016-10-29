@@ -238,7 +238,7 @@ public class ExplorerActivity extends AppCompatActivity {
 	assert pathView != null;
 	pathView.setRootDir(rootDir.toString());
 	pathView.setTopDir(topPath);
-	pathView.setPath(curPath);
+	pathView.setPath(curPath + "/");
 	
 	Intent intent = new Intent(this, PlayerService.class);
 	intent.setAction("SET_TOPDIR");
@@ -315,7 +315,7 @@ public class ExplorerActivity extends AppCompatActivity {
 	PathView pathView = (PathView) findViewById(R.id.path);
 	assert pathView != null;
 	pathView.setRootDir(rootDir.toString());
-	pathView.setPath(newPath);
+	pathView.setPath(newPath + "/");
 	pathView.setTopDir(topPath);
 	
 	curDir = newDir;

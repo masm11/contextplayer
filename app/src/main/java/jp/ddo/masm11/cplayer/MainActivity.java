@@ -27,11 +27,14 @@ public class MainActivity extends AppCompatActivity {
 		if (action.equals("jp.ddo.masm11.cplayer.STATUS")) {
 		    String path = intent.getStringExtra("jp.ddo.masm11.cplayer.FILE");
 		    int pos = intent.getIntExtra("jp.ddo.masm11.cplayer.POSITION", -1);
-		    if (path != null && pos != -1) {
+		    String topDir = intent.getStringExtra("jp.ddo.masm11.cplayer.TOPDIR");
+		    if (path != null && topDir != null && pos != -1) {
 			if (!path.equals(curPath)) {
-			    TextView textView = (TextView) findViewById(R.id.playing_filename);
-			    assert textView != null;
-			    textView.setText(path);
+			    PathView pathView = (PathView) findViewById(R.id.playing_filename);
+			    assert pathView != null;
+			    pathView.setRootDir("/sdcard/Music");
+			    pathView.setTopDir(topDir);
+			    pathView.setPath(path);
 			    curPath = path;
 			    
 			    MediaMetadataRetriever retr = new MediaMetadataRetriever();
@@ -52,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
 			    if (artist == null)
 				artist = "unknown artist";
 			    
+			    TextView textView;
 			    textView = (TextView) findViewById(R.id.playing_title);
 			    assert textView != null;
 			    textView.setText(title);
