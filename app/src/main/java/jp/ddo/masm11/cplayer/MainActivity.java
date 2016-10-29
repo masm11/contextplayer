@@ -140,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
 		startActivity(i);
 	    }
 	});
+/*
 	btn = (Button) findViewById(R.id.op_pause);
 	btn.setOnClickListener(new View.OnClickListener() {
 	    public void onClick(View view) {
@@ -156,6 +157,7 @@ public class MainActivity extends AppCompatActivity {
 		startService(i);
 	    }
 	});
+*/
 	
 	SeekBar seekBar = (SeekBar) findViewById(R.id.playing_pos);
 	assert seekBar != null;

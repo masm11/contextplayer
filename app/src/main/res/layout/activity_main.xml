@@ -22,11 +22,6 @@
         android:layout_height="wrap_content"
         android:text="Context"/>
     <Button
-	android:id="@+id/op_pause"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Pause"/>
-    <Button
 	android:id="@+id/test"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -90,4 +85,10 @@
 
     </LinearLayout>
 
+    <fragment
+	class="jp.ddo.masm11.cplayer.OperationFragment"
+	android:id="@+id/op_frag"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"/>
+    
 </LinearLayout>

@@ -11,9 +11,11 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.Handler;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.ListIterator;
 import java.util.Collections;
 import java.util.HashSet;
 
@@ -27,6 +29,7 @@ public class PlayerService extends Service {
     private int audioSessionId;
     private AudioManager.OnAudioFocusChangeListener audioFocusChangeListener;
     private Thread broadcaster;
+    private Handler handler;
     
     @Override
     public void onCreate() {
@@ -45,6 +48,8 @@ public class PlayerService extends Service {
 		handleAudioFocusChangeEvent(focusChange);
 	    }
 	};
+	
+	handler = new Handler();
 	
 	loadContext();
     }
@@ -82,6 +87,14 @@ public class PlayerService extends Service {
 		 *    → 何もしない
 		 */
 		pause();
+		break;
+		
+	    case "PREV":
+		prevTrack();
+		break;
+		
+	    case "NEXT":
+		nextTrack();
 		break;
 		
 	    case "SEEK":
@@ -203,6 +216,44 @@ public class PlayerService extends Service {
     private void pause() {
 	Log.d("");
 	stopPlay();
+    }
+    
+    private void prevTrack() {
+	if (curPlayer != null) {
+	    int pos = curPlayer.getCurrentPosition();
+	    if (pos >= 3 * 1000)
+		curPlayer.seekTo(0);
+	    else {
+		releaseNextPlayer();
+		releaseCurPlayer();
+		
+		Object[] ret = createMediaPlayer(selectPrev(playingPath), 0);
+		if (ret == null) {
+		    Log.w("err...");
+		} else {
+		    curPlayer = (MediaPlayer) ret[0];
+		    playingPath = (String) ret[1];
+		    curPlayer.start();
+		    enqueueNext();
+		}
+	    }
+	}
+    }
+    
+    private void nextTrack() {
+	if (curPlayer != null) {
+	    releaseCurPlayer();
+	    
+	    playingPath = nextPath;
+	    curPlayer = nextPlayer;
+	    nextPath = null;
+	    nextPlayer = null;
+	    
+	    if (curPlayer != null) {
+		curPlayer.start();
+		enqueueNext();
+	    }
+	}
     }
     
     private void seek(int pos) {
@@ -391,7 +442,6 @@ public class PlayerService extends Service {
 	// fixme: もちっと効率良く。
 	ArrayList<String> list = new ArrayList<>();
 	scan(new File(topDir), list);
-	Collections.sort(list);
 	for (String path: list) {
 	    if (path.compareTo(nextOf) > 0) {
 		Log.d("path=%s", path);
@@ -403,6 +453,31 @@ public class PlayerService extends Service {
 	    // loop.
 	    Log.d("returning 1st.");
 	    return list.get(0);
+	} catch (IndexOutOfBoundsException e) {
+	    // ファイルが一つも見つからなかった。
+	    Log.d("no file...");
+	    return null;
+	}
+    }
+    
+    private String selectPrev(String prevOf) {
+	Log.d("prevOf=%s", prevOf);
+	// fixme: もちっと効率良く。
+	ArrayList<String> list = new ArrayList<>();
+	scan(new File(topDir), list);
+	ListIterator<String> it = list.listIterator(list.size());
+	while (it.hasPrevious()) {
+	    String path = it.previous();
+	    if (path.compareTo(prevOf) < 0) {
+		Log.d("path=%s", path);
+		return path;
+	    }
+	}
+	Log.d("no prior.");
+	try {
+	    // loop.
+	    Log.d("returning last.");
+	    return list.get(list.size() - 1);
 	} catch (IndexOutOfBoundsException e) {
 	    // ファイルが一つも見つからなかった。
 	    Log.d("no file...");
@@ -522,7 +597,11 @@ public class PlayerService extends Service {
 	    public void run() {
 		try {
 		    while (true) {
-			broadcastStatus();
+			handler.post(new Runnable() {
+			    public void run() {
+				broadcastStatus();
+			    }
+			});
 			Thread.sleep(500);
 		    }
 		} catch (InterruptedException e) {
