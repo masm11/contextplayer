@@ -122,17 +122,21 @@ public class MainActivity extends AppCompatActivity {
 	    config.save();
 	}
 	
-	Button btn;
-	btn = (Button) findViewById(R.id.contexts);
-	btn.setOnClickListener(new View.OnClickListener() {
+	TextView textView;
+	textView = (TextView) findViewById(R.id.context_name);
+	assert textView != null;
+	textView.setOnClickListener(new View.OnClickListener() {
 	    public void onClick(View view) {
 		Intent i = new Intent(MainActivity.this, ContextActivity.class);
 		startActivity(i);
 	    }
 	});
-	btn = (Button) findViewById(R.id.explorer);
-	btn.setOnClickListener(new View.OnClickListener() {
-	    public void onClick(View view) {
+	
+	View layout = findViewById(R.id.playing_info);
+	assert layout != null;
+	layout.setOnClickListener(new View.OnClickListener() {
+	    @Override
+	    public void onClick(View v) {
 		Intent i = new Intent(MainActivity.this, ExplorerActivity.class);
 		PlayContext ctxt = PlayContext.all().get(0);
 		i.putExtra("CONTEXT_ID", ctxt.getId());
@@ -164,5 +168,15 @@ public class MainActivity extends AppCompatActivity {
 	
 	IntentFilter filter = new IntentFilter("jp.ddo.masm11.cplayer.STATUS");
 	registerReceiver(new StatusReceiver(), filter);
+    }
+    
+    @Override
+    protected void onResume() {
+	PlayContext ctxt = PlayContext.find(Long.parseLong(Config.findByKey("context_id").value));
+	TextView textView = (TextView) findViewById(R.id.context_name);
+	assert textView != null;
+	textView.setText(ctxt.name);
+	
+	super.onResume();
     }
 }
