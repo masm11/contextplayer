@@ -16,8 +16,10 @@ import android.webkit.MimeTypeMap;
 import android.content.Intent;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 
 public class ExplorerActivity extends AppCompatActivity {
     private static MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
@@ -249,9 +251,35 @@ public class ExplorerActivity extends AppCompatActivity {
 	ctxt.save();
     }
     
+    /* dir に含まれるファイル名をリストアップする。
+     * '.' で始まるものは含まない。
+     * ソートされている。
+     */
+    public static File[] listFiles(File dir) {
+	File[] files = dir.listFiles(new FileFilter() {
+	    @Override
+	    public boolean accept(File pathname) {
+		return !pathname.getName().startsWith(".");
+	    }
+	});
+	Arrays.sort(files, new Comparator<File>() {
+	    @Override
+	    public int compare(File o1, File o2) {
+		String name1 = o1.getName().toLowerCase();
+		String name2 = o2.getName().toLowerCase();
+		// まず、大文字小文字を無視して比較
+		int r = name1.compareTo(name2);
+		// もしそれで同じだったら、区別して比較
+		if (r == 0)
+		    r = o1.compareTo(o2);
+		return r;
+	    }
+	});
+	return files;
+    }
+    
     private void renewAdapter(File newDir) {
-	File[] files = newDir.listFiles();
-	Arrays.sort(files, null);
+	File[] files = listFiles(newDir);
 	ArrayList<FileItem> items = new ArrayList<FileItem>();
 	for (int i = 0; i < files.length; i++) {
 	    Log.d("%s", files[i].toString());

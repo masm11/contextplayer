@@ -338,7 +338,7 @@ public class PlayerService extends Service {
     }
     
     private void scan(File dir, ArrayList<String> scanResult) {
-	for (File file: dir.listFiles()) {
+	for (File file: ExplorerActivity.listFiles(dir)) {
 	    if (file.isDirectory())
 		scan(file, scanResult);
 	    else
