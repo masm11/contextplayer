@@ -82,7 +82,8 @@ public class MainActivity extends AppCompatActivity {
 			curPos = pos;
 			SeekBar seekBar = (SeekBar) findViewById(R.id.playing_pos);
 			assert seekBar != null;
-			seekBar.setProgress(pos);
+			if (!seeking)
+			    seekBar.setProgress(pos);
 			
 			int sec = curPos / 1000;
 			String curTime = String.format("%d:%02d", sec / 60, sec % 60);
@@ -98,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
     private String curPath;
     private int curPos;	// msec
     private int maxPos;	// msec
+    private boolean seeking;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,6 +154,28 @@ public class MainActivity extends AppCompatActivity {
 		Intent i = new Intent(MainActivity.this, PlayerService.class);
 		i.setAction("TEST");
 		startService(i);
+	    }
+	});
+	
+	SeekBar seekBar = (SeekBar) findViewById(R.id.playing_pos);
+	assert seekBar != null;
+	seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+	    @Override
+	    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+		if (fromUser) {
+		    Intent intent = new Intent(MainActivity.this, PlayerService.class);
+		    intent.setAction("SEEK");
+		    intent.putExtra("POS", progress);
+		    startService(intent);
+		}
+	    }
+	    @Override
+	    public void onStartTrackingTouch(SeekBar seekBar) {
+		seeking = true;
+	    }
+	    @Override
+	    public void onStopTrackingTouch(SeekBar seekBar) {
+		seeking = false;
 	    }
 	});
 	

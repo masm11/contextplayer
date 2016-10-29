@@ -55,6 +55,7 @@ public class PlayerService extends Service {
 	Log.d("action=%s", action);
 	if (action != null) {
 	    String path;
+	    int pos;
 	    switch (action) {
 	    case "PLAY":
 		/* 再生を開始する。
@@ -81,6 +82,11 @@ public class PlayerService extends Service {
 		 *    → 何もしない
 		 */
 		pause();
+		break;
+		
+	    case "SEEK":
+		pos = intent.getIntExtra("POS", -1);
+		seek(pos);
 		break;
 		
 	    case "SET_TOPDIR":
@@ -197,6 +203,12 @@ public class PlayerService extends Service {
     private void pause() {
 	Log.d("");
 	stopPlay();
+    }
+    
+    private void seek(int pos) {
+	Log.d("pos=%d.", pos);
+	if (pos != -1 && curPlayer != null)
+	    curPlayer.seekTo(pos);
     }
     
     // curPlayer がセットされた状態で呼ばれ、
