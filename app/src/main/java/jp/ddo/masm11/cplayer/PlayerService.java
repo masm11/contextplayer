@@ -281,6 +281,8 @@ public class PlayerService extends Service {
 	    setForeground(true);
 	    
 	    startBroadcast();
+	    
+	    saveContext();
 	}
     }
     
@@ -393,6 +395,9 @@ public class PlayerService extends Service {
 			Log.d("clearing nextPath/nextPlayer");
 			nextPath = null;
 			nextPlayer = null;
+			
+			saveContext();
+			
 			if (curPlayer != null) {
 			    Log.d("enqueue next mediaplayer.");
 			    enqueueNext();
