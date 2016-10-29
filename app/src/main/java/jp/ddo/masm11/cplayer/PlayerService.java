@@ -26,6 +26,7 @@ public class PlayerService extends Service {
     private AudioAttributes audioAttributes;
     private int audioSessionId;
     private AudioManager.OnAudioFocusChangeListener audioFocusChangeListener;
+    private Thread broadcaster;
     
     @Override
     public void onCreate() {
@@ -214,12 +215,16 @@ public class PlayerService extends Service {
 	    
 	    Log.d("set to foreground");
 	    setForeground(true);
+	    
+	    startBroadcast();
 	}
     }
     
     private void stopPlay() {
 	try {
 	    if (curPlayer != null) {
+		stopBroadcast();
+		
 		Log.d("set to non-foreground");
 		setForeground(false);
 		
@@ -496,6 +501,47 @@ public class PlayerService extends Service {
 		Log.d("curPlayer=%s", curPlayer.toString());
 		Log.d("playingPath=%s", playingPath);
 	    }
+	}
+    }
+    
+    private void startBroadcast() {
+	Runnable code = new Runnable () {
+	    @Override
+	    public void run() {
+		try {
+		    while (true) {
+			broadcastStatus();
+			Thread.sleep(500);
+		    }
+		} catch (InterruptedException e) {
+		    Log.d(e, "interrupted.");
+		}
+	    }
+	};
+	
+	stopBroadcast();	// 念の為
+	broadcaster = new Thread(code);
+	broadcaster.start();
+    }
+    
+    private void stopBroadcast() {
+	if (broadcaster != null) {
+	    broadcaster.interrupt();
+	    try {
+		broadcaster.join();
+	    } catch (InterruptedException e) {
+		Log.e(e, "interrupted.");
+	    }
+	    broadcaster = null;
+	}
+    }
+    
+    private void broadcastStatus() {
+	if (playingPath != null && curPlayer != null) {
+	    Intent intent = new Intent("jp.ddo.masm11.cplayer.STATUS");
+	    intent.putExtra("jp.ddo.masm11.cplayer.FILE", playingPath);
+	    intent.putExtra("jp.ddo.masm11.cplayer.POSITION", curPlayer.getCurrentPosition());
+	    sendBroadcast(intent);
 	}
     }
     
