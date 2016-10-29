@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  http://www.viralandroid.com/2016/01/adding-border-to-top-and-bottom-of-an-android-views.html
+  を参考。
+-->
+
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+  <item>
+    <shape android:shape="rectangle">
+      <solid android:color="#888888"/>
+    </shape>
+  </item>
+  
+  <item
+      android:bottom="1dp"
+      android:top="1dp">
+    <shape android:shape="rectangle">
+      <solid android:color="#fafafa"/>
+    </shape>
+  </item>
+</layer-list>

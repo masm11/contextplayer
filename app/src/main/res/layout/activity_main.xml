@@ -11,18 +11,31 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="jp.ddo.masm11.cplayer.MainActivity">
 
-    <TextView
-	android:id="@+id/context_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+  <!-- カテゴリ名 -->
+  <TextView
+      android:id="@+id/context_name"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:paddingTop="15dp"
+      android:paddingBottom="15dp"
+      android:background="@drawable/border_top_bottom"/>
+  
+  <!-- 曲名等 -->
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="1"
+      android:gravity="center"
+      android:orientation="vertical">
     
     <LinearLayout
 	android:id="@+id/playing_info"
-	android:gravity="center"
 	android:layout_width="match_parent"
-	android:layout_height="0dp"
-	android:layout_weight="1"
-	android:orientation="vertical">
+	android:layout_height="wrap_content"
+	android:paddingTop="15dp"
+	android:paddingBottom="15dp"
+	android:orientation="vertical"
+	android:background="@drawable/border_top_bottom">
       
       <jp.ddo.masm11.cplayer.PathView
 	  android:id="@+id/playing_filename"
@@ -40,48 +53,52 @@
 	  android:layout_height="wrap_content"/>
       
     </LinearLayout>
-
+    
+  </LinearLayout>
+  
+  <!-- seekbar -->
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:paddingBottom="@dimen/activity_vertical_margin">
+    
     <LinearLayout
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	android:orientation="vertical"
-	android:paddingBottom="@dimen/activity_vertical_margin">
+	android:orientation="horizontal">
       
-      <LinearLayout
-	  android:layout_width="match_parent"
+      <TextView
+	  android:id="@+id/playing_curtime"
+	  android:layout_width="wrap_content"
 	  android:layout_height="wrap_content"
-	  android:orientation="horizontal">
-	
-	<TextView
-	    android:id="@+id/playing_curtime"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-	    android:text="0:00"/>
-	
-	<View
-	    android:layout_width="0dp"
-	    android:layout_weight="1"
-	    android:layout_height="1px"/>
-	
-	<TextView
-	    android:id="@+id/playing_maxtime"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-	    android:text="0:00"/>
-	
-      </LinearLayout>
+	  android:text="0:00"/>
       
-      <SeekBar
-	  android:id="@+id/playing_pos"
-	  android:layout_width="match_parent"
-	  android:layout_height="wrap_content"/>
-
+      <View
+	  android:layout_width="0dp"
+	  android:layout_weight="1"
+	  android:layout_height="1px"/>
+      
+      <TextView
+	  android:id="@+id/playing_maxtime"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="0:00"/>
+      
     </LinearLayout>
-
-    <fragment
-	class="jp.ddo.masm11.cplayer.OperationFragment"
-	android:id="@+id/op_frag"
+    
+    <SeekBar
+	android:id="@+id/playing_pos"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"/>
     
+  </LinearLayout>
+  
+  <!-- panel -->
+  <fragment
+      class="jp.ddo.masm11.cplayer.OperationFragment"
+      android:id="@+id/op_frag"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"/>
+  
 </LinearLayout>
