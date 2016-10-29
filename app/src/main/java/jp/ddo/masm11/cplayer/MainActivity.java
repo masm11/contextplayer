@@ -175,7 +175,8 @@ public class MainActivity extends AppCompatActivity {
 	PlayContext ctxt = PlayContext.find(Long.parseLong(Config.findByKey("context_id").value));
 	TextView textView = (TextView) findViewById(R.id.context_name);
 	assert textView != null;
-	textView.setText(ctxt.name);
+	if (ctxt != null)
+	    textView.setText(ctxt.name);
 	
 	super.onResume();
     }

@@ -37,7 +37,7 @@ public class PathView extends TextView {
     private void updateText() {
 	String root = rootDir;
 	String top = topDir;
-	String cur = this.path;
+	String cur = this.path == null ? top : this.path;
 	if (cur == null)
 	    cur = "/";
 	if (!root.endsWith("/"))

@@ -3,13 +3,17 @@ package jp.ddo.masm11.cplayer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.content.Intent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.widget.ArrayAdapter;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.EditText;
 import android.widget.Button;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.app.AlertDialog;
 
 import java.util.List;
@@ -19,9 +23,35 @@ public class ContextActivity extends AppCompatActivity {
     private class Datum {
 	public long id;
 	public String name;
-	@Override
-	public String toString() {
-	    return name;
+	public String topDir;
+	public String path;
+    }
+    
+    private static class DatumAdapter extends ArrayAdapter<Datum> {
+	private LayoutInflater inflater;
+	
+	public DatumAdapter(Context context, List<Datum> items) {
+	    super(context, R.layout.list_context, items);
+	    inflater = LayoutInflater.from(context);
+	}
+	
+	public View getView(int position, View convertView, ViewGroup parent) {
+	    if (convertView == null)
+		convertView = inflater.inflate(R.layout.list_context, parent, false);
+	    
+	    Datum item = getItem(position);
+	    
+	    TextView textView = (TextView) convertView.findViewById(R.id.context_name);
+	    assert textView != null;
+	    textView.setText(item.name);
+	    
+	    PathView pathView = (PathView) convertView.findViewById(R.id.context_topdir);
+	    assert pathView != null;
+	    pathView.setRootDir("/sdcard/Music");
+	    pathView.setTopDir(item.topDir);
+	    pathView.setPath(item.path);
+	    
+	    return convertView;
 	}
     }
     
@@ -39,10 +69,12 @@ public class ContextActivity extends AppCompatActivity {
 	    Datum datum = new Datum();
 	    datum.id = ctxt.getId();
 	    datum.name = ctxt.name;
+	    datum.topDir = ctxt.topDir;
+	    datum.path = ctxt.path;
 	    data.add(datum);
 	}
 	
-	ArrayAdapter<Datum> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, data);
+	DatumAdapter adapter = new DatumAdapter(this, data);
 	
 	listView.setAdapter(adapter);
 	
@@ -92,9 +124,12 @@ public class ContextActivity extends AppCompatActivity {
 				    String newName = editText.getText().toString();
 				    PlayContext ctxt = PlayContext.find(datum.id);
 				    ctxt.name = newName;
+				    ctxt.topDir = "/sdcard/Music";
 				    ctxt.save();
 				    
 				    datum.name = newName;
+				    datum.topDir = "/sdcard/Music";
+				    datum.path = null;
 				    adapter.notifyDataSetChanged();
 				}
 			    });
