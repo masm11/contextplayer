@@ -18,7 +18,7 @@
       android:layout_height="wrap_content"
       android:paddingTop="15dp"
       android:paddingBottom="15dp"
-      android:background="@drawable/border_top_bottom"/>
+      android:background="@drawable/border_ripple"/>
   
   <!-- 曲名等 -->
   <LinearLayout
@@ -35,7 +35,7 @@
 	android:paddingTop="15dp"
 	android:paddingBottom="15dp"
 	android:orientation="vertical"
-	android:background="@drawable/border_top_bottom">
+	android:background="@drawable/border_ripple">
       
       <jp.ddo.masm11.cplayer.PathView
 	  android:id="@+id/playing_filename"
