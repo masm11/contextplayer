@@ -101,9 +101,8 @@ public class ContextActivity extends AppCompatActivity {
 		final ArrayAdapter<Datum> adapter = (ArrayAdapter<Datum>) parent.getAdapter();
 		final Datum datum = (Datum) listView.getItemAtPosition(position);
 		
-		String[] menuitems = new String[] { "Edit", "Delete" };
 		AlertDialog.Builder builder = new AlertDialog.Builder(ContextActivity.this);
-		builder.setItems(menuitems, new DialogInterface.OnClickListener() {
+		builder.setItems(R.array.context_list_menu, new DialogInterface.OnClickListener() {
 		    @Override
 		    public void onClick(DialogInterface dialog, int which) {
 			AlertDialog.Builder builder;
@@ -112,7 +111,7 @@ public class ContextActivity extends AppCompatActivity {
 			    final EditText editText = new EditText(ContextActivity.this);
 			    editText.setText(datum.name);
 			    builder = new AlertDialog.Builder(ContextActivity.this);
-			    builder.setTitle("Edit the context name");
+			    builder.setTitle(R.string.edit_the_context_name);
 			    builder.setView(editText);
 			    builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
@@ -139,7 +138,7 @@ public class ContextActivity extends AppCompatActivity {
 			case 1:	// delete
 			    if (adapter.getCount() >= 2) {
 				builder = new AlertDialog.Builder(ContextActivity.this);
-				builder.setMessage("Are you sure to delete it?");
+				builder.setMessage(R.string.are_you_sure_to_delete_it);
 				builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
 				    public void onClick(DialogInterface dialog, int which) {
 					// NOP.
@@ -155,7 +154,7 @@ public class ContextActivity extends AppCompatActivity {
 				builder.show();
 			    } else {
 				builder = new AlertDialog.Builder(ContextActivity.this);
-				builder.setMessage("Can't delete the last context.");
+				builder.setMessage(R.string.cant_delete_the_last_context);
 				builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 				    public void onClick(DialogInterface dialog, int which) {
 					// NOP.
@@ -179,7 +178,7 @@ public class ContextActivity extends AppCompatActivity {
 	    public void onClick(View v) {
 		final EditText editText = new EditText(ContextActivity.this);
 		AlertDialog.Builder builder = new AlertDialog.Builder(ContextActivity.this);
-		builder.setTitle("Name the new context");
+		builder.setTitle(R.string.name_the_new_context);
 		builder.setView(editText);
 		builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
 		    public void onClick(DialogInterface dialog, int which) {

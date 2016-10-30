@@ -124,10 +124,6 @@ public class PlayerService extends Service {
 	    case "A2DP_DISCONNECTED":
 		pause();
 		break;
-
-	    case "TEST":
-		note();
-		break;
 	    }
 	}
 	return START_NOT_STICKY;
@@ -536,8 +532,8 @@ public class PlayerService extends Service {
 	if (on) {
 	    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 	    NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-	    builder.setContentTitle("Context Player");
-	    builder.setContentText("Playing...");
+	    builder.setContentTitle(getResources().getText(R.string.app_name));
+	    builder.setContentText(getResources().getText(R.string.playing));
 	    builder.setSmallIcon(R.mipmap.ic_launcher);
 	    startForeground(1, builder.build());
 	} else {
@@ -647,21 +643,5 @@ public class PlayerService extends Service {
     public void onDestroy() {
 	Log.d("save context");
 	saveContext();
-    }
-
-    private boolean last_notify = false;
-    private void note() {
-	if (last_notify) {
-	    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-	    NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-	    builder.setContentTitle("Test");
-	    builder.setSmallIcon(R.mipmap.ic_launcher);
-	    builder.setDefaults(Notification.DEFAULT_SOUND);
-	    notificationManager.notify(1, builder.build());
-	} else {
-	    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-	    notificationManager.cancel(1);
-	}
-	last_notify = !last_notify;
     }
 }

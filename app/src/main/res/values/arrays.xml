@@ -1,0 +1,6 @@
+<resources>
+  <string-array name="context_list_menu">
+    <item>Edit</item>
+    <item>Delete</item>
+  </string-array>
+</resources>

@@ -1,0 +1,7 @@
+<resources>
+  <!-- ContextActivity.java -->
+  <string-array name="context_list_menu">
+    <item>編集</item>
+    <item>削除</item>
+  </string-array>
+</resources>

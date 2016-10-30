@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 			    curPath = path;
 			    
 			    MediaMetadataRetriever retr = new MediaMetadataRetriever();
-			    String title = null, artist = null;
+			    CharSequence title = null, artist = null;
 			    String duration = null;
 			    try {
 				retr.setDataSource(path);
@@ -51,9 +51,9 @@ public class MainActivity extends AppCompatActivity {
 			    retr.release();
 			    
 			    if (title == null)
-				title = "unknown title";
+				title = getResources().getText(R.string.unknown_title);
 			    if (artist == null)
-				artist = "unknown artist";
+				artist = getResources().getText(R.string.unknown_artist);
 			    
 			    TextView textView;
 			    textView = (TextView) findViewById(R.id.playing_title);
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
 	
 	if (PlayContext.all().size() == 0) {
 	    PlayContext ctxt = new PlayContext();
-	    ctxt.name = "Default Context";
+	    ctxt.name = (String) getResources().getText(R.string.default_context);
 	    ctxt.topDir = "/sdcard/Music";
 	    ctxt.save();
 	}

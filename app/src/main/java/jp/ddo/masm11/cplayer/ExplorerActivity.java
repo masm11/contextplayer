@@ -120,6 +120,7 @@ public class ExplorerActivity extends AppCompatActivity {
 	    TextView textView;
 	    View view;
 	    String str;
+	    CharSequence cs;
 	    
 	    if (!item.isDir()) {
 		textView = (TextView) convertView.findViewById(R.id.filename);
@@ -134,17 +135,17 @@ public class ExplorerActivity extends AppCompatActivity {
 		
 		textView = (TextView) convertView.findViewById(R.id.title);
 		assert textView != null;
-		str = item.getTitle();
-		if (str == null)
-		    str = "unknown title";
-		textView.setText(str);
+		cs = item.getTitle();
+		if (cs == null)
+		    cs = convertView.getContext().getResources().getText(R.string.unknown_title);
+		textView.setText(cs);
 		
 		textView = (TextView) convertView.findViewById(R.id.artist);
 		assert textView != null;
-		str = item.getArtist();
-		if (str == null)
-		    str = "unknown artist";
-		textView.setText(str);
+		cs = item.getArtist();
+		if (cs == null)
+		    cs = convertView.getContext().getResources().getText(R.string.unknown_artist);
+		textView.setText(cs);
 		
 		view = convertView.findViewById(R.id.for_file);
 		assert view != null;

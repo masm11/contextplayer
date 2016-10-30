@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">コンテキストプレイヤー</string>
+    
+    <!-- activity_context.xml -->
+    <string name="create_new_context">新しいコンテキストを作成</string>
+    
+    <!-- ContextActivity.java -->
+    <string name="edit_the_context_name">コンテキスト名を編集</string>
+    <string name="are_you_sure_to_delete_it">削除してよろしいですか?</string>
+    <string name="cant_delete_the_last_context">最後のコンテキストは削除できません。</string>
+    <string name="name_the_new_context">新しいコンテキストの名前</string>
+    
+    <!-- ExplorerActivity.java -->
+    <string name="unknown_title">不明なタイトル</string>
+    <string name="unknown_artist">不明なアーティスト</string>
+    
+    <!-- MainActivity.java -->
+    <string name="default_context">既定のコンテキスト</string>
+    
+    <!-- PlayerService.java -->
+    <string name="playing">再生中...</string>
+</resources>

@@ -21,7 +21,7 @@
       android:id="@+id/context_add"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:text="Create new context"/>
+      android:text="@string/create_new_context"/>
 
   <fragment
       class="jp.ddo.masm11.cplayer.OperationFragment"
