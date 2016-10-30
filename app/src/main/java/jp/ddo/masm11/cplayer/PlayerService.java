@@ -441,59 +441,112 @@ public class PlayerService extends Service {
     
     private String selectNext(String nextOf) {
 	Log.d("nextOf=%s", nextOf);
-	// fixme: もちっと効率良く。
-	ArrayList<String> list = new ArrayList<>();
-	scan(new File(topDir), list);
-	for (String path: list) {
-	    if (path.compareTo(nextOf) > 0) {
-		Log.d("path=%s", path);
-		return path;
-	    }
+	String found = null;
+	if (nextOf.startsWith(topDir)) {
+	    nextOf = nextOf.substring(topDir.length() + 1);	// +1: for '/'
+	    String[] parts = nextOf.split("/");
+	    found = lookForFile(new File(topDir), parts, 0, false);
 	}
-	Log.d("no successor.");
-	try {
-	    // loop.
-	    Log.d("returning 1st.");
-	    return list.get(0);
-	} catch (IndexOutOfBoundsException e) {
-	    // ファイルが一つも見つからなかった。
-	    Log.d("no file...");
-	    return null;
-	}
+	if (found == null)
+	    found = lookForFile(new File(topDir), null, 0, false);
+	Log.d("found=%s", found);
+	return found;
     }
     
     private String selectPrev(String prevOf) {
 	Log.d("prevOf=%s", prevOf);
-	// fixme: もちっと効率良く。
-	ArrayList<String> list = new ArrayList<>();
-	scan(new File(topDir), list);
-	ListIterator<String> it = list.listIterator(list.size());
-	while (it.hasPrevious()) {
-	    String path = it.previous();
-	    if (path.compareTo(prevOf) < 0) {
-		Log.d("path=%s", path);
-		return path;
-	    }
+	String found = null;
+	if (prevOf.startsWith(topDir)) {
+	    prevOf = prevOf.substring(topDir.length() + 1);	// +1: for '/'
+	    String[] parts = prevOf.split("/");
+	    found = lookForFile(new File(topDir), parts, 0, true);
 	}
-	Log.d("no prior.");
-	try {
-	    // loop.
-	    Log.d("returning last.");
-	    return list.get(list.size() - 1);
-	} catch (IndexOutOfBoundsException e) {
-	    // ファイルが一つも見つからなかった。
-	    Log.d("no file...");
-	    return null;
-	}
+	if (found == null)
+	    found = lookForFile(new File(topDir), null, 0, true);
+	Log.d("found=%s", found);
+	return found;
     }
     
-    private void scan(File dir, ArrayList<String> scanResult) {
-	for (File file: ExplorerActivity.listFiles(dir)) {
-	    if (file.isDirectory())
-		scan(file, scanResult);
-	    else
-		scanResult.add(file.getAbsolutePath());
+    /* 次のファイルを探す。
+     *   dir: 今見ているディレクトリ
+     *   parts[]: topdir からの相対 path。'/' で区切られている。
+     *   parts_idx: ディレクトリの nest。
+     *   backward: 逆向き検索。
+     * 最初にこのメソッドに来る時、nextOf は、
+     *   /dir/parts[0]/parts[1]/…/parts[N]
+     * だったことになる。
+     * lookForFile() の役割は、dir 内 subdir も含めて、nextOf の次のファイルを探すこと。
+     * parts == null の場合、nextOf の path tree から外れた場所を探している。
+     */
+    private String lookForFile(File dir, String[] parts, int parts_idx, boolean backward) {
+	String cur = null;
+	if (parts != null) {
+	    if (parts_idx < parts.length)
+		cur = parts[parts_idx];
 	}
+	
+	File[] files = ExplorerActivity.listFiles(dir);
+	if (backward) {
+	    File[] rev = new File[files.length];
+	    for (int i = 0; i < files.length; i++)
+		rev[i] = files[files.length - 1 - i];
+	    files = rev;
+	}
+	
+	for (File file: files) {
+	    if (cur == null) {
+		if (file.isDirectory()) {
+		    String r = lookForFile(file, null, parts_idx + 1, backward);
+		    if (r != null)
+			return r;
+		} else {
+		    return file.getAbsolutePath();
+		}
+	    } else {
+		int compare = comparePath(file.getName(), cur);
+		if (compare == 0) {
+		    // 今そこ。
+		    if (file.isDirectory()) {
+			String r = lookForFile(file, parts, parts_idx + 1, backward);
+			if (r != null)
+			    return r;
+		    } else {
+			// これは今再生中。
+		    }
+		} else if (!backward && compare > 0) {
+		    if (file.isDirectory()) {
+			// 次を探していたら dir だった
+			String r = lookForFile(file, null, parts_idx + 1, backward);
+			if (r != null)
+			    return r;
+		    } else {
+			// 次のファイルを見つけた
+			return file.getAbsolutePath();
+		    }
+		} else if (backward && compare < 0) {
+		    if (file.isDirectory()) {
+			// 次を探していたら dir だった
+			String r = lookForFile(file, null, parts_idx + 1, backward);
+			if (r != null)
+			    return r;
+		    } else {
+			// 次のファイルを見つけた
+			return file.getAbsolutePath();
+		    }
+		}
+	    }
+	}
+	
+	return null;
+    }
+    
+    private int comparePath(String p1, String p2) {
+	String l1 = p1.toLowerCase();
+	String l2 = p2.toLowerCase();
+	int r = l1.compareTo(l2);
+	if (r == 0)
+	    r = p1.compareTo(p2);
+	return r;
     }
     
     private void setTopDir(String path) {
