@@ -2,6 +2,7 @@ package jp.ddo.masm11.cplayer;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -18,6 +19,7 @@ import android.content.Intent;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -46,16 +48,16 @@ public class ExplorerActivity extends AppCompatActivity {
 		Log.d("ext=%s", ext);
 		mimeType = mimeTypeMap.getMimeTypeFromExtension(ext);
 		Log.d("mimeType=%s", mimeType);
-		if (isAudioType(mimeType)) {
-		    MediaMetadataRetriever retr = new MediaMetadataRetriever();
-		    try {
-			retr.setDataSource(file.getAbsolutePath());
-			title = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-			artist = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-		    } catch (Exception e) {
-			Log.i(e, "exception");
-		    }
-		    retr.release();
+	    }
+	}
+	public void retrieveMetadata(MediaMetadataRetriever retr) {
+	    if (isAudioType(mimeType)) {
+		try {
+		    retr.setDataSource(file.getAbsolutePath());
+		    title = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+		    artist = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+		} catch (Exception e) {
+		    Log.i(e, "exception");
 		}
 	    }
 	}
@@ -77,6 +79,18 @@ public class ExplorerActivity extends AppCompatActivity {
 	public File getFile() {
 	    return file;
 	}
+	@Override
+	public int hashCode() {
+	    return new StringBuilder()
+		    .append(file.toString())
+		    .append("\t")
+		    .append(title != null ? title : "null")
+		    .append("\t")
+		    .append(artist != null ? artist : "null")
+		    .append("\t")
+		    .append(mimeType != null ? mimeType : "null")
+		    .hashCode();
+	}
     }
     
     private static class FileAdapter extends ArrayAdapter<FileItem> {
@@ -86,6 +100,18 @@ public class ExplorerActivity extends AppCompatActivity {
 	    inflater = LayoutInflater.from(context);
 	}
 	
+	@Override
+	public boolean hasStableIds() {
+	    return true;
+	}
+	
+	@Override
+	public long getItemId(int position) {
+	    FileItem item = getItem(position);
+	    return item.hashCode();
+	}
+	
+	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 	    if (convertView == null)
 		convertView = inflater.inflate(R.layout.list_explorer, parent, false);
@@ -146,17 +172,66 @@ public class ExplorerActivity extends AppCompatActivity {
 	}
     }
     
+    private class BackgroundRetriever implements Runnable {
+	private LinkedList<FileItem> list;
+	private FileAdapter adapter;
+	
+	public BackgroundRetriever(FileAdapter adapter) {
+	    list = new LinkedList<>();
+	    this.adapter = adapter;
+	}
+	
+	@Override
+	public void run() {
+	    MediaMetadataRetriever retr = new MediaMetadataRetriever();
+	    try {
+		while (true) {
+		    FileItem item;
+		    
+		    synchronized (list) {
+			while (list.isEmpty())
+			    list.wait();
+			item = list.removeFirst();
+		    }
+		    
+		    item.retrieveMetadata(retr);
+		    handler.post(new Runnable() {
+			@Override
+			public void run() {
+			    adapter.notifyDataSetChanged();
+			}
+		    });
+		}
+	    } catch (InterruptedException e) {
+	    }
+	    retr.release();
+	}
+	
+	public void setNewItems(ArrayList<FileItem> newList) {
+	    synchronized (list) {
+		list.clear();
+		list.addAll(newList);
+		list.notify();
+	    }
+	}
+    }
+    
     private File rootDir;	// /sdcard/Music これより上には戻れない
     private File topDir;
     private File curDir;
     private FileAdapter adapter;
     private PlayContext ctxt;
+    private BackgroundRetriever bretr;
+    private Thread thread;
+    private Handler handler;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 	Log.init(getExternalCacheDir());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explorer);
+	
+	handler = new Handler();
 	
 	adapter = new FileAdapter(this, new ArrayList<FileItem>());
 	rootDir = new File("/sdcard/Music");
@@ -165,6 +240,11 @@ public class ExplorerActivity extends AppCompatActivity {
 	ctxt = PlayContext.find(ctxtId);
 	if (ctxt == null)
 	    ctxt = new PlayContext();
+	
+	bretr = new BackgroundRetriever(adapter);
+	thread = new Thread(bretr);
+	thread.setPriority(Thread.MIN_PRIORITY);
+	thread.start();
 	
 	topDir = new File(ctxt.topDir);
 	renewAdapter(topDir);
@@ -296,6 +376,8 @@ public class ExplorerActivity extends AppCompatActivity {
 	adapter.clear();
 	adapter.addAll(items);
 	
+	bretr.setNewItems(items);
+	
 	ListView listView = (ListView) findViewById(R.id.list);
 	assert listView != null;
 	listView.setAdapter(adapter);
@@ -326,5 +408,19 @@ public class ExplorerActivity extends AppCompatActivity {
 	intent.setAction("PLAY");
 	intent.putExtra("path", file.getAbsolutePath());
 	startService(intent);
+    }
+    
+    @Override
+    public void onDestroy() {
+	if (thread != null) {
+	    thread.interrupt();
+	    try {
+		thread.join();
+	    } catch (InterruptedException e) {
+	    }
+	    thread = null;
+	}
+	
+	super.onDestroy();
     }
 }
