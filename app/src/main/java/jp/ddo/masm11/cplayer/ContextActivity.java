@@ -130,12 +130,9 @@ public class ContextActivity extends AppCompatActivity {
 				    String newName = editText.getText().toString();
 				    PlayContext ctxt = PlayContext.find(datum.id);
 				    ctxt.name = newName;
-				    ctxt.topDir = rootDir.getAbsolutePath();
 				    ctxt.save();
 				    
 				    datum.name = newName;
-				    datum.topDir = ctxt.topDir;
-				    datum.path = null;
 				    adapter.notifyDataSetChanged();
 				}
 			    });
