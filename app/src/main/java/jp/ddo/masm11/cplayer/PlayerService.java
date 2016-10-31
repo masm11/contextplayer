@@ -642,6 +642,19 @@ public class PlayerService extends Service {
 		playingPath = (String) ret[1];
 		Log.d("curPlayer=%s", curPlayer.toString());
 		Log.d("playingPath=%s", playingPath);
+	    } else {
+		// 作られたばかりの context の場合。
+		Log.d("creating mediaplayer.");
+		Object[] ret = createMediaPlayer("", 0, false);
+		if (ret == null) {
+		    Log.w("No audio file found.");
+		    return;
+		}
+		Log.d("creating mediaplayer. ok.");
+		curPlayer = (MediaPlayer) ret[0];
+		playingPath = (String) ret[1];
+		Log.d("curPlayer=%s", curPlayer.toString());
+		Log.d("playingPath=%s", playingPath);
 	    }
 	}
     }
