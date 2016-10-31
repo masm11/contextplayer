@@ -2,6 +2,7 @@ package jp.ddo.masm11.cplayer;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.Environment;
 import android.content.Intent;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,10 +17,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.app.AlertDialog;
 
+import java.io.File;
 import java.util.List;
 import java.util.LinkedList;
 
 public class ContextActivity extends AppCompatActivity {
+    private File rootDir;
+    
     private class Datum {
 	public long id;
 	public String name;
@@ -27,7 +31,7 @@ public class ContextActivity extends AppCompatActivity {
 	public String path;
     }
     
-    private static class DatumAdapter extends ArrayAdapter<Datum> {
+    private class DatumAdapter extends ArrayAdapter<Datum> {
 	private LayoutInflater inflater;
 	
 	public DatumAdapter(Context context, List<Datum> items) {
@@ -47,7 +51,7 @@ public class ContextActivity extends AppCompatActivity {
 	    
 	    PathView pathView = (PathView) convertView.findViewById(R.id.context_topdir);
 	    assert pathView != null;
-	    pathView.setRootDir("/sdcard/Music");
+	    pathView.setRootDir(rootDir.getAbsolutePath());
 	    pathView.setTopDir(item.topDir);
 	    pathView.setPath(item.path);
 	    
@@ -60,6 +64,9 @@ public class ContextActivity extends AppCompatActivity {
 	Log.init(getExternalCacheDir());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_context);
+	
+	rootDir = Environment.getExternalStoragePublicDirectory(
+		Environment.DIRECTORY_MUSIC);
 	
 	ListView listView = (ListView) findViewById(R.id.context_list);
 	assert listView != null;
@@ -123,11 +130,11 @@ public class ContextActivity extends AppCompatActivity {
 				    String newName = editText.getText().toString();
 				    PlayContext ctxt = PlayContext.find(datum.id);
 				    ctxt.name = newName;
-				    ctxt.topDir = "/sdcard/Music";
+				    ctxt.topDir = rootDir.getAbsolutePath();
 				    ctxt.save();
 				    
 				    datum.name = newName;
-				    datum.topDir = "/sdcard/Music";
+				    datum.topDir = ctxt.topDir;
 				    datum.path = null;
 				    adapter.notifyDataSetChanged();
 				}
@@ -190,13 +197,13 @@ public class ContextActivity extends AppCompatActivity {
 			String newName = editText.getText().toString();
 			PlayContext ctxt = new PlayContext();
 			ctxt.name = newName;
-			ctxt.topDir = "/sdcard/Music";
+			ctxt.topDir = rootDir.getAbsolutePath();
 			ctxt.save();
 			
 			Datum datum = new Datum();
 			datum.id = ctxt.getId();
 			datum.name = newName;
-			datum.topDir = "/sdcard/Music";
+			datum.topDir = ctxt.topDir;
 			
 			ListView listView = (ListView) findViewById(R.id.context_list);
 			assert listView != null;

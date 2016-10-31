@@ -3,6 +3,7 @@ package jp.ddo.masm11.cplayer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Environment;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -217,7 +218,7 @@ public class ExplorerActivity extends AppCompatActivity {
 	}
     }
     
-    private File rootDir;	// /sdcard/Music これより上には戻れない
+    private File rootDir;	// これより上には戻れない
     private File topDir;
     private File curDir;
     private FileAdapter adapter;
@@ -235,7 +236,8 @@ public class ExplorerActivity extends AppCompatActivity {
 	handler = new Handler();
 	
 	adapter = new FileAdapter(this, new ArrayList<FileItem>());
-	rootDir = new File("/sdcard/Music");
+	rootDir = Environment.getExternalStoragePublicDirectory(
+		Environment.DIRECTORY_MUSIC);
 	
 	long ctxtId = Long.parseLong(Config.findByKey("context_id").value);
 	ctxt = PlayContext.find(ctxtId);

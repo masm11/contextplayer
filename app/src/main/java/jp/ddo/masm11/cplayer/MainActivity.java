@@ -2,6 +2,7 @@ package jp.ddo.masm11.cplayer;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.media.MediaPlayer;
 import android.media.MediaMetadataRetriever;
@@ -14,6 +15,7 @@ import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 
+import java.io.File;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
@@ -32,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
 			if (!path.equals(curPath)) {
 			    PathView pathView = (PathView) findViewById(R.id.playing_filename);
 			    assert pathView != null;
-			    pathView.setRootDir("/sdcard/Music");
+			    pathView.setRootDir(rootDir.getAbsolutePath());
 			    pathView.setTopDir(topDir);
 			    pathView.setPath(path);
 			    curPath = path;
@@ -96,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
 	}
     }
     
+    private File rootDir;
     private String curPath;
     private int curPos;	// msec
     private int maxPos;	// msec
@@ -107,10 +110,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 	
+	rootDir = Environment.getExternalStoragePublicDirectory(
+		Environment.DIRECTORY_MUSIC);
+	Log.d("rootDir=%s", rootDir.getAbsolutePath());
+	rootDir.mkdirs();
+	
 	if (PlayContext.all().size() == 0) {
 	    PlayContext ctxt = new PlayContext();
 	    ctxt.name = (String) getResources().getText(R.string.default_context);
-	    ctxt.topDir = "/sdcard/Music";
+	    ctxt.topDir = rootDir.getAbsolutePath();
 	    ctxt.save();
 	}
 	
