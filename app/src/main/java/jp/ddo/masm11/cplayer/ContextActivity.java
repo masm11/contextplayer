@@ -196,6 +196,7 @@ public class ContextActivity extends AppCompatActivity {
 			Datum datum = new Datum();
 			datum.id = ctxt.getId();
 			datum.name = newName;
+			datum.topDir = "/sdcard/Music";
 			
 			ListView listView = (ListView) findViewById(R.id.context_list);
 			assert listView != null;
