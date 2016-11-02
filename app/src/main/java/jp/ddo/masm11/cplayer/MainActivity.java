@@ -1,6 +1,8 @@
 package jp.ddo.masm11.cplayer;
 
 import android.support.v7.app.AppCompatActivity;
+import android.app.Service;
+import android.os.IBinder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
@@ -11,95 +13,41 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.SeekBar;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.ServiceConnection;
+import android.content.ComponentName;
 
 import java.io.File;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
-    private class StatusReceiver extends BroadcastReceiver {
+    private class MainServiceConnection implements ServiceConnection {
 	@Override
-	public void onReceive(Context context, Intent intent) {
-	    Log.d("");
-	    if (intent != null) {
-		String action = intent.getAction();
-		Log.d("action=%s", action);
-		if (action.equals("jp.ddo.masm11.cplayer.STATUS")) {
-		    String path = intent.getStringExtra("jp.ddo.masm11.cplayer.FILE");
-		    int pos = intent.getIntExtra("jp.ddo.masm11.cplayer.POSITION", -1);
-		    String topDir = intent.getStringExtra("jp.ddo.masm11.cplayer.TOPDIR");
-		    if (path != null && topDir != null && pos != -1) {
-			if (!path.equals(curPath)) {
-			    PathView pathView = (PathView) findViewById(R.id.playing_filename);
-			    assert pathView != null;
-			    pathView.setRootDir(rootDir.getAbsolutePath());
-			    pathView.setTopDir(topDir);
-			    pathView.setPath(path);
-			    curPath = path;
-			    
-			    MediaMetadataRetriever retr = new MediaMetadataRetriever();
-			    CharSequence title = null, artist = null;
-			    String duration = null;
-			    try {
-				retr.setDataSource(path);
-				title = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-				artist = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-				duration = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-			    } catch (Exception e) {
-				Log.i(e, "exception");
-			    }
-			    retr.release();
-			    
-			    if (title == null)
-				title = getResources().getText(R.string.unknown_title);
-			    if (artist == null)
-				artist = getResources().getText(R.string.unknown_artist);
-			    
-			    TextView textView;
-			    textView = (TextView) findViewById(R.id.playing_title);
-			    assert textView != null;
-			    textView.setText(title);
-			    
-			    textView = (TextView) findViewById(R.id.playing_artist);
-			    assert textView != null;
-			    textView.setText(artist);
-			    
-			    if (duration != null)
-				maxPos = Integer.parseInt(duration);
-			    else
-				maxPos = 0;
-			    SeekBar seekBar = (SeekBar) findViewById(R.id.playing_pos);
-			    assert seekBar != null;
-			    seekBar.setMax(maxPos);
-			    
-			    int sec = maxPos / 1000;
-			    String maxTime = String.format("%d:%02d", sec / 60, sec % 60);
-			    textView = (TextView) findViewById(R.id.playing_maxtime);
-			    assert textView != null;
-			    textView.setText(maxTime);
-			}
-			
-			curPos = pos;
-			SeekBar seekBar = (SeekBar) findViewById(R.id.playing_pos);
-			assert seekBar != null;
-			if (!seeking)
-			    seekBar.setProgress(pos);
-			
-			int sec = curPos / 1000;
-			String curTime = String.format("%d:%02d", sec / 60, sec % 60);
-			TextView textView = (TextView) findViewById(R.id.playing_curtime);
-			assert textView != null;
-			textView.setText(curTime);
-		    }
+	public void onServiceConnected(ComponentName name, IBinder service) {
+	    svc = ((PlayerService.PlayerServiceBinder) service).getService();
+	    
+	    svc.setOnStatusChangedListener(new PlayerService.OnStatusChangedListener() {
+		public void onStatusChanged(PlayerService.CurrentStatus status) {
+		    Log.d("path=%s, topDir=%s, position=%d.",
+			    status.path, status.topDir, status.position);
+		    updateTrackInfo(status);
 		}
-	    }
+	    });
+	    
+	    updateTrackInfo(svc.getCurrentStatus());
+	}
+	
+	@Override
+	public void onServiceDisconnected(ComponentName name) {
+	    svc = null;
 	}
     }
     
+    private PlayerService svc;
+    private ServiceConnection conn;
     private File rootDir;
     private String curPath;
+    private String curTopDir;
     private int curPos;	// msec
     private int maxPos;	// msec
     private boolean seeking;
@@ -114,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
 		Environment.DIRECTORY_MUSIC);
 	Log.d("rootDir=%s", rootDir.getAbsolutePath());
 	rootDir.mkdirs();
+	curTopDir = rootDir.getAbsolutePath();
 	
 	if (PlayContext.all().size() == 0) {
 	    PlayContext ctxt = new PlayContext();
@@ -173,9 +122,15 @@ public class MainActivity extends AppCompatActivity {
 		seeking = false;
 	    }
 	});
+    }
+    
+    @Override
+    protected void onStart() {
+	super.onStart();
 	
-	IntentFilter filter = new IntentFilter("jp.ddo.masm11.cplayer.STATUS");
-	registerReceiver(new StatusReceiver(), filter);
+	Intent intent = new Intent(this, PlayerService.class);
+	conn = new MainServiceConnection();
+	bindService(intent, conn, Service.BIND_AUTO_CREATE);
     }
     
     @Override
@@ -187,5 +142,96 @@ public class MainActivity extends AppCompatActivity {
 	    textView.setText(ctxt.name);
 	
 	super.onResume();
+    }
+    
+    @Override
+    protected void onStop() {
+	unbindService(conn);
+	
+	super.onStop();
+    }
+    
+    private void updateTrackInfo(PlayerService.CurrentStatus status) {
+	if (!strEq(curPath, status.path)) {
+	    curPath = status.path;
+	    
+	    PathView pathView = (PathView) findViewById(R.id.playing_filename);
+	    assert pathView != null;
+	    pathView.setRootDir(rootDir.getAbsolutePath());
+	    pathView.setPath(curPath);
+	    
+	    MediaMetadataRetriever retr = new MediaMetadataRetriever();
+	    CharSequence title = null, artist = null;
+	    String duration = null;
+	    try {
+		retr.setDataSource(curPath);
+		title = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+		artist = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+		duration = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+	    } catch (Exception e) {
+		Log.i(e, "exception");
+	    }
+	    retr.release();
+	    
+	    if (title == null)
+		title = getResources().getText(R.string.unknown_title);
+	    if (artist == null)
+		artist = getResources().getText(R.string.unknown_artist);
+	    
+	    TextView textView;
+	    textView = (TextView) findViewById(R.id.playing_title);
+	    assert textView != null;
+	    textView.setText(title);
+	    
+	    textView = (TextView) findViewById(R.id.playing_artist);
+	    assert textView != null;
+	    textView.setText(artist);
+	    
+	    if (duration != null)
+		maxPos = Integer.parseInt(duration);
+	    else
+		maxPos = 0;
+	    SeekBar seekBar = (SeekBar) findViewById(R.id.playing_pos);
+	    assert seekBar != null;
+	    seekBar.setMax(maxPos);
+	    
+	    int sec = maxPos / 1000;
+	    String maxTime = String.format("%d:%02d", sec / 60, sec % 60);
+	    textView = (TextView) findViewById(R.id.playing_maxtime);
+	    assert textView != null;
+	    textView.setText(maxTime);
+	}
+	
+	if (!strEq(curTopDir, status.topDir)) {
+	    curTopDir = status.topDir;
+	    
+	    PathView pathView = (PathView) findViewById(R.id.playing_filename);
+	    assert pathView != null;
+	    pathView.setTopDir(curTopDir);
+	}
+	
+	if (curPos != status.position) {
+	    curPos = status.position;
+	    
+	    SeekBar seekBar = (SeekBar) findViewById(R.id.playing_pos);
+	    assert seekBar != null;
+	    seekBar.setProgress(curPos);
+	    
+	    int sec = curPos / 1000;
+	    String curTime = String.format("%d:%02d", sec / 60, sec % 60);
+	    TextView textView = (TextView) findViewById(R.id.playing_curtime);
+	    assert textView != null;
+	    textView.setText(curTime);
+	}
+    }
+    
+    private boolean strEq(String s1, String s2) {
+	if (s1 == s2)
+	    return true;
+	if (s1 == null && s2 != null)
+	    return false;
+	if (s1 != null && s2 == null)
+	    return false;
+	return s1.equals(s2);
     }
 }

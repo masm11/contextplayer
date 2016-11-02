@@ -11,6 +11,7 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.Binder;
 import android.os.Handler;
 
 import java.io.File;
@@ -20,6 +21,20 @@ import java.util.Collections;
 import java.util.HashSet;
 
 public class PlayerService extends Service {
+    public class CurrentStatus {
+	public final String path;
+	public final String topDir;
+	public final int position;
+	public CurrentStatus() {
+	    this.path = playingPath;
+	    this.topDir = PlayerService.this.topDir;
+	    this.position = curPlayer == null ? 0 : curPlayer.getCurrentPosition();
+	}
+    }
+    public interface OnStatusChangedListener {
+	void onStatusChanged(CurrentStatus status);
+    }
+    
     private String topDir;
     private String playingPath, nextPath;
     private MediaPlayer curPlayer, nextPlayer;
@@ -30,10 +45,19 @@ public class PlayerService extends Service {
     private AudioManager.OnAudioFocusChangeListener audioFocusChangeListener;
     private Thread broadcaster;
     private Handler handler;
+    // fixme: should be weak reference.
+    private HashSet<OnStatusChangedListener> statusChangedListeners;
+    
+    public void setOnStatusChangedListener(OnStatusChangedListener listener) {
+	Log.d("listener=%s", listener.toString());
+	statusChangedListeners.add(listener);
+    }
     
     @Override
     public void onCreate() {
 	Log.init(getExternalCacheDir());
+	
+	statusChangedListeners = new HashSet<>();
 	
 	audioAttributes = new AudioAttributes.Builder()
 		.setUsage(AudioAttributes.USAGE_MEDIA)
@@ -129,9 +153,15 @@ public class PlayerService extends Service {
 	return START_NOT_STICKY;
     }
     
+    public class PlayerServiceBinder extends Binder {
+	public PlayerService getService() {
+	    return PlayerService.this;
+	}
+    }
+    
     @Override
     public IBinder onBind(Intent intent) {
-	return null;
+	return new PlayerServiceBinder();
     }
     
     private void play(String path) {
@@ -696,13 +726,15 @@ public class PlayerService extends Service {
     }
     
     private void broadcastStatus() {
-	if (playingPath != null && curPlayer != null) {
-	    Intent intent = new Intent("jp.ddo.masm11.cplayer.STATUS");
-	    intent.putExtra("jp.ddo.masm11.cplayer.FILE", playingPath);
-	    intent.putExtra("jp.ddo.masm11.cplayer.POSITION", curPlayer.getCurrentPosition());
-	    intent.putExtra("jp.ddo.masm11.cplayer.TOPDIR", topDir);
-	    sendBroadcast(intent);
+	CurrentStatus status = new CurrentStatus();
+	for (OnStatusChangedListener listener: statusChangedListeners) {
+	    Log.d("listener=%s", listener);
+	    listener.onStatusChanged(status);
 	}
+    }
+    
+    public CurrentStatus getCurrentStatus() {
+	return new CurrentStatus();
     }
     
     @Override
