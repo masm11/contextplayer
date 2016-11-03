@@ -30,6 +30,23 @@ public class ContextActivity extends AppCompatActivity {
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
 	    svc = (PlayerService.PlayerServiceBinder) service;
+	    
+	    svc.setOnStatusChangedListener(new PlayerService.OnStatusChangedListener() {
+		@Override
+		public void onStatusChanged(PlayerService.CurrentStatus status) {
+		    boolean changed = false;
+		    for (Datum datum: data) {
+			if (datum.id == status.contextId) {
+			    if (!strEq(datum.path, status.path)) {
+				datum.path = status.path;
+				changed = true;
+			    }
+			}
+		    }
+		    if (changed)
+			adapter.notifyDataSetChanged();
+		}
+	    });
 	}
 	
 	@Override
@@ -41,6 +58,8 @@ public class ContextActivity extends AppCompatActivity {
     private PlayerServiceConnection conn;
     private PlayerService.PlayerServiceBinder svc;
     private File rootDir;
+    private List<Datum> data;
+    private DatumAdapter adapter;
     
     private class Datum {
 	public long id;
@@ -89,7 +108,7 @@ public class ContextActivity extends AppCompatActivity {
 	ListView listView = (ListView) findViewById(R.id.context_list);
 	assert listView != null;
 	
-	List<Datum> data = new LinkedList<Datum>();
+	data = new LinkedList<Datum>();
 	for (PlayContext ctxt: PlayContext.all()) {
 	    Datum datum = new Datum();
 	    datum.id = ctxt.getId();
@@ -99,7 +118,7 @@ public class ContextActivity extends AppCompatActivity {
 	    data.add(datum);
 	}
 	
-	DatumAdapter adapter = new DatumAdapter(this, data);
+	adapter = new DatumAdapter(this, data);
 	
 	listView.setAdapter(adapter);
 	
@@ -247,5 +266,15 @@ public class ContextActivity extends AppCompatActivity {
 	unbindService(conn);
 	
 	super.onStop();
+    }
+    
+    private boolean strEq(String s1, String s2) {
+	if (s1 == s2)
+	    return true;
+	if (s1 == null && s2 != null)
+	    return false;
+	if (s1 != null && s2 == null)
+	    return false;
+	return s1.equals(s2);
     }
 }

@@ -22,10 +22,12 @@ import java.util.HashSet;
 
 public class PlayerService extends Service {
     public class CurrentStatus {
+	public final long contextId;
 	public final String path;
 	public final String topDir;
 	public final int position;
 	public CurrentStatus() {
+	    this.contextId = PlayerService.this.contextId;
 	    this.path = playingPath;
 	    this.topDir = PlayerService.this.topDir;
 	    this.position = curPlayer == null ? 0 : curPlayer.getCurrentPosition();
