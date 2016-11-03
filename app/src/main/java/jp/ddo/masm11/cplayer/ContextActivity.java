@@ -234,6 +234,9 @@ public class ContextActivity extends AppCompatActivity {
     public void onStart() {
 	super.onStart();
 	
+	// started service にする。
+	startService(new Intent(this, PlayerService.class));
+	
 	Intent intent = new Intent(this, PlayerService.class);
 	conn = new PlayerServiceConnection();
 	bindService(intent, conn, Service.BIND_AUTO_CREATE);

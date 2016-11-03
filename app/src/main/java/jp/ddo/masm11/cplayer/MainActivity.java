@@ -119,16 +119,14 @@ public class MainActivity extends AppCompatActivity {
 		seeking = false;
 	    }
 	});
-	
-	// started service にする。
-	// fixme: しかし、再生してなかったら service 落とされるんだよなぁ...
-	Intent intent = new Intent(this, PlayerService.class);
-	startService(intent);
     }
     
     @Override
     protected void onStart() {
 	super.onStart();
+	
+	// started service にする。
+	startService(new Intent(this, PlayerService.class));
 	
 	Intent intent = new Intent(this, PlayerService.class);
 	conn = new PlayerServiceConnection();

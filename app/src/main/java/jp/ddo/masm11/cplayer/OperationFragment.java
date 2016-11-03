@@ -81,6 +81,9 @@ public class OperationFragment extends Fragment {
     public void onStart() {
 	super.onStart();
 	
+	// started service にする。
+	getContext().startService(new Intent(getContext(), PlayerService.class));
+	
 	Intent intent = new Intent(getContext(), PlayerService.class);
 	conn = new PlayerServiceConnection();
 	getContext().bindService(intent, conn, Service.BIND_AUTO_CREATE);
