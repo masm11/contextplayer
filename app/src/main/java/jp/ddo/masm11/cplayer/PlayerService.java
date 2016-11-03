@@ -83,68 +83,7 @@ public class PlayerService extends Service {
 	String action = intent != null ? intent.getAction() : null;
 	Log.d("action=%s", action);
 	if (action != null) {
-	    String path;
-	    int pos;
 	    switch (action) {
-	    case "PLAY":
-		/* 再生を開始する。
-		 *  - path が指定されている場合:
-		 *    → その path から開始し、再生できる曲を曲先頭から再生する。
-		 *  - path が指定されていない場合:
-		 *    - curPlayer != null の場合:
-		 *      → curPlayer.play() する。
-		 *    - curPlayer == null の場合:
-		 *      - playingPath != null の場合:
-		 *        → その path から開始し、再生できる曲を曲先頭から再生する。
-		 *      - playingPath == null の場合:
-		 *        → topDir 内で最初に再生できる曲を再生する。
-		 */
-		path = intent.getStringExtra("path");
-		play(path);
-		break;
-		
-	    case "PAUSE":
-		/* 再生を一時停止する。
-		 *  - curPlayer != null の場合
-		 *    → pause() し、context を保存する
-		 *  - curPlayer == null の場合
-		 *    → 何もしない
-		 */
-		pause();
-		break;
-		
-	    case "PREV":
-		prevTrack();
-		break;
-		
-	    case "NEXT":
-		nextTrack();
-		break;
-		
-	    case "SEEK":
-		pos = intent.getIntExtra("POS", -1);
-		seek(pos);
-		break;
-		
-	    case "SET_TOPDIR":
-		/* topDir を変更する。
-		 *  - path != null の場合:
-		 *    → topDir を設定し、enqueueNext() し直す。
-		 *  - path == null の場合:
-		 *    → 何もしない。
-		 */
-		path = intent.getStringExtra("path");
-		setTopDir(path);
-		break;
-		
-	    case "SWITCH":
-		/* context を switch する。
-		 * 今再生中なら pause() し、context を保存する。
-		 * context を読み出し、再生を再開する。
-		 */
-		switchContext();
-		break;
-		
 	    case "A2DP_DISCONNECTED":
 		pause();
 		break;
@@ -164,7 +103,19 @@ public class PlayerService extends Service {
 	return new PlayerServiceBinder();
     }
     
-    private void play(String path) {
+    /* 再生を開始する。
+     *  - path が指定されている場合:
+     *    → その path から開始し、再生できる曲を曲先頭から再生する。
+     *  - path が指定されていない場合:
+     *    - curPlayer != null の場合:
+     *      → curPlayer.play() する。
+     *    - curPlayer == null の場合:
+     *      - playingPath != null の場合:
+     *        → その path から開始し、再生できる曲を曲先頭から再生する。
+     *      - playingPath == null の場合:
+     *        → topDir 内で最初に再生できる曲を再生する。
+     */
+    public void play(String path) {
 	Log.i("path=%s", path);
 	
 	Log.d("release nextPlayer");
@@ -239,12 +190,18 @@ public class PlayerService extends Service {
 	enqueueNext();
     }
     
-    private void pause() {
+    /* 再生を一時停止する。
+     *  - curPlayer != null の場合
+     *    → pause() し、context を保存する
+     *  - curPlayer == null の場合
+     *    → 何もしない
+     */
+    public void pause() {
 	Log.d("");
 	stopPlay();
     }
     
-    private void prevTrack() {
+    public void prevTrack() {
 	if (curPlayer != null) {
 	    int pos = curPlayer.getCurrentPosition();
 	    if (pos >= 3 * 1000)
@@ -267,7 +224,7 @@ public class PlayerService extends Service {
 	}
     }
     
-    private void nextTrack() {
+    public void nextTrack() {
 	if (curPlayer != null) {
 	    releaseCurPlayer();
 	    
@@ -283,7 +240,7 @@ public class PlayerService extends Service {
 	}
     }
     
-    private void seek(int pos) {
+    public void seek(int pos) {
 	Log.d("pos=%d.", pos);
 	if (pos != -1 && curPlayer != null)
 	    curPlayer.seekTo(pos);
@@ -579,7 +536,13 @@ public class PlayerService extends Service {
 	return r;
     }
     
-    private void setTopDir(String path) {
+    /* topDir を変更する。
+     *  - path != null の場合:
+     *    → topDir を設定し、enqueueNext() し直す。
+     *  - path == null の場合:
+     *    → 何もしない。
+     */
+    public void setTopDir(String path) {
 	Log.d("path=%s", path);
 	if (path != null) {
 	    topDir = path;
@@ -591,7 +554,11 @@ public class PlayerService extends Service {
 	}
     }
     
-    private void switchContext() {
+    /* context を switch する。
+     * 今再生中なら pause() し、context を保存する。
+     * context を読み出し、再生を再開する。
+     */
+    public void switchContext() {
 	Log.d("curPlayer=%s", curPlayer == null ? "null" : curPlayer.toString());
 	stopPlay();	// saveContext() を含む。
 	

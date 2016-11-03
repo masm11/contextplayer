@@ -107,10 +107,8 @@ public class MainActivity extends AppCompatActivity {
 	    @Override
 	    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 		if (fromUser) {
-		    Intent intent = new Intent(MainActivity.this, PlayerService.class);
-		    intent.setAction("SEEK");
-		    intent.putExtra("POS", progress);
-		    startService(intent);
+		    if (svc != null)
+			svc.seek(progress);
 		}
 	    }
 	    @Override

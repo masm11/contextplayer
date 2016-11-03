@@ -3,9 +3,12 @@ package jp.ddo.masm11.cplayer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.IBinder;
 import android.content.Intent;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.ServiceConnection;
+import android.content.ComponentName;
 import android.widget.ArrayAdapter;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -16,12 +19,27 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.app.AlertDialog;
+import android.app.Service;
 
 import java.io.File;
 import java.util.List;
 import java.util.LinkedList;
 
 public class ContextActivity extends AppCompatActivity {
+    private class PlayerServiceConnection implements ServiceConnection {
+	@Override
+	public void onServiceConnected(ComponentName name, IBinder service) {
+	    svc = ((PlayerService.PlayerServiceBinder) service).getService();
+	}
+	
+	@Override
+	public void onServiceDisconnected(ComponentName name) {
+	    svc = null;
+	}
+    }
+    
+    private PlayerServiceConnection conn;
+    private PlayerService svc;
     private File rootDir;
     
     private class Datum {
@@ -95,9 +113,8 @@ public class ContextActivity extends AppCompatActivity {
 		config.value = "" + data.id;
 		config.save();
 		
-		Intent intent = new Intent(ContextActivity.this, PlayerService.class);
-		intent.setAction("SWITCH");
-		startService(intent);
+		if (svc != null)
+		    svc.switchContext();
 	    }
 	});
 	
@@ -211,5 +228,21 @@ public class ContextActivity extends AppCompatActivity {
 		builder.show();
 	    }
 	});
+    }
+    
+    @Override
+    public void onStart() {
+	super.onStart();
+	
+	Intent intent = new Intent(this, PlayerService.class);
+	conn = new PlayerServiceConnection();
+	bindService(intent, conn, Service.BIND_AUTO_CREATE);
+    }
+    
+    @Override
+    public void onStop() {
+	unbindService(conn);
+	
+	super.onStop();
     }
 }

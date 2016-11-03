@@ -1,14 +1,33 @@
 package jp.ddo.masm11.cplayer;
 
 import android.app.Fragment;
+import android.app.Service;
 import android.widget.ImageButton;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.ComponentName;
 
 public class OperationFragment extends Fragment {
+    private class OpFragmentServiceConnection implements ServiceConnection {
+	@Override
+	public void onServiceConnected(ComponentName name, IBinder service) {
+	    svc = ((PlayerService.PlayerServiceBinder) service).getService();
+	}
+	
+	@Override
+	public void onServiceDisconnected(ComponentName name) {
+	    svc = null;
+	}
+    }
+    
+    private PlayerService svc;
+    private OpFragmentServiceConnection conn;
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
 	Log.d("");
@@ -23,9 +42,8 @@ public class OperationFragment extends Fragment {
 	assert btnPlay != null;
 	btnPlay.setOnClickListener(new View.OnClickListener() {
 	    public void onClick(View view) {
-		Intent intent = new Intent(getContext(), PlayerService.class);
-		intent.setAction("PLAY");
-		getContext().startService(intent);
+		if (svc != null)
+		    svc.play(null);
 	    }
 	});
 	
@@ -33,9 +51,8 @@ public class OperationFragment extends Fragment {
 	assert btnPause != null;
 	btnPause.setOnClickListener(new View.OnClickListener() {
 	    public void onClick(View view) {
-		Intent intent = new Intent(getContext(), PlayerService.class);
-		intent.setAction("PAUSE");
-		getContext().startService(intent);
+		if (svc != null)
+		    svc.pause();
 	    }
 	});
 	
@@ -43,9 +60,8 @@ public class OperationFragment extends Fragment {
 	assert btnPrev != null;
 	btnPrev.setOnClickListener(new View.OnClickListener() {
 	    public void onClick(View view) {
-		Intent intent = new Intent(getContext(), PlayerService.class);
-		intent.setAction("PREV");
-		getContext().startService(intent);
+		if (svc != null)
+		    svc.prevTrack();
 	    }
 	});
 	
@@ -53,12 +69,27 @@ public class OperationFragment extends Fragment {
 	assert btnNext != null;
 	btnNext.setOnClickListener(new View.OnClickListener() {
 	    public void onClick(View view) {
-		Intent intent = new Intent(getContext(), PlayerService.class);
-		intent.setAction("NEXT");
-		getContext().startService(intent);
+		if (svc != null)
+		    svc.nextTrack();
 	    }
 	});
 	
 	return view;
+    }
+    
+    @Override
+    public void onStart() {
+	super.onStart();
+	
+	Intent intent = new Intent(getContext(), PlayerService.class);
+	conn = new OpFragmentServiceConnection();
+	getContext().bindService(intent, conn, Service.BIND_AUTO_CREATE);
+    }
+    
+    @Override
+    public void onStop() {
+	getContext().unbindService(conn);
+	
+	super.onStop();
     }
 }

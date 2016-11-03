@@ -1,9 +1,11 @@
 package jp.ddo.masm11.cplayer;
 
 import android.support.v7.app.AppCompatActivity;
+import android.app.Service;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Environment;
+import android.os.IBinder;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -16,6 +18,8 @@ import android.view.KeyEvent;
 import android.media.MediaMetadataRetriever;
 import android.webkit.MimeTypeMap;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.ComponentName;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -26,6 +30,20 @@ import java.util.Comparator;
 
 public class ExplorerActivity extends AppCompatActivity {
     private static MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+    private PlayerServiceConnection conn;
+    private PlayerService svc;
+    
+    private class PlayerServiceConnection implements ServiceConnection {
+	@Override
+	public void onServiceConnected(ComponentName name, IBinder service) {
+	    svc = ((PlayerService.PlayerServiceBinder) service).getService();
+	}
+	
+	@Override
+	public void onServiceDisconnected(ComponentName name) {
+	    svc = null;
+	}
+    }
     
     public static boolean isAudioType(String mimeType) {
 	if (mimeType == null)
@@ -323,10 +341,8 @@ public class ExplorerActivity extends AppCompatActivity {
 	pathView.setTopDir(topPath);
 	pathView.setPath(curPath + "/");
 	
-	Intent intent = new Intent(this, PlayerService.class);
-	intent.setAction("SET_TOPDIR");
-	intent.putExtra("path", newDir.getAbsolutePath());
-	startService(intent);
+	if (svc != null)
+	    svc.setTopDir(newDir.getAbsolutePath());
 	
 	ctxt.topDir = newDir.getAbsolutePath();
 	ctxt.path = null;
@@ -407,10 +423,24 @@ public class ExplorerActivity extends AppCompatActivity {
     }
     
     private void play(File file) {
+	if (svc != null)
+	    svc.play(file.getAbsolutePath());
+    }
+    
+    @Override
+    public void onStart() {
+	super.onStart();
+	
 	Intent intent = new Intent(this, PlayerService.class);
-	intent.setAction("PLAY");
-	intent.putExtra("path", file.getAbsolutePath());
-	startService(intent);
+	conn = new PlayerServiceConnection();
+	bindService(intent, conn, Service.BIND_AUTO_CREATE);
+    }
+    
+    @Override
+    public void onStop() {
+	unbindService(conn);
+	
+	super.onStop();
     }
     
     @Override
