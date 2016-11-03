@@ -36,7 +36,7 @@ public class OperationFragment extends Fragment {
     
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-	View view = inflater.inflate(R.xml.operation_fragment, container, false);
+	View view = inflater.inflate(R.layout.operation_fragment, container, false);
 	
 	ImageButton btnPlay = (ImageButton) view.findViewById(R.id.op_play);
 	assert btnPlay != null;
