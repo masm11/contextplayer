@@ -612,7 +612,7 @@ public class PlayerService extends Service {
 	    NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 	    builder.setContentTitle(getResources().getString(R.string.app_name));
 	    builder.setContentText(getResources().getString(R.string.playing, contextName));
-	    builder.setSmallIcon(R.mipmap.ic_launcher);
+	    builder.setSmallIcon(R.drawable.notification);
 	    startForeground(1, builder.build());
 	} else {
 	    stopForeground(true);
