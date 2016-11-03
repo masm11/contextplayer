@@ -732,5 +732,11 @@ public class PlayerService extends Service {
     public void onDestroy() {
 	Log.d("save context");
 	saveContext();
+	
+	Log.d("release nextPlayer.");
+	releaseNextPlayer();
+	stopPlay();
+	Log.d("release curPlayer.");
+	releaseCurPlayer();
     }
 }
