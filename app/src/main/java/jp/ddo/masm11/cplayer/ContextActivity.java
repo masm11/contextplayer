@@ -27,26 +27,27 @@ import java.util.LinkedList;
 
 public class ContextActivity extends AppCompatActivity {
     private class PlayerServiceConnection implements ServiceConnection {
+	private PlayerService.OnStatusChangedListener listener = new PlayerService.OnStatusChangedListener() {
+	    @Override
+	    public void onStatusChanged(PlayerService.CurrentStatus status) {
+		boolean changed = false;
+		for (Datum datum: data) {
+		    if (datum.id == status.contextId) {
+			if (!strEq(datum.path, status.path)) {
+			    datum.path = status.path;
+			    changed = true;
+			}
+		    }
+		}
+		if (changed)
+		    adapter.notifyDataSetChanged();
+	    }
+	};
+	
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
 	    svc = (PlayerService.PlayerServiceBinder) service;
-	    
-	    svc.setOnStatusChangedListener(new PlayerService.OnStatusChangedListener() {
-		@Override
-		public void onStatusChanged(PlayerService.CurrentStatus status) {
-		    boolean changed = false;
-		    for (Datum datum: data) {
-			if (datum.id == status.contextId) {
-			    if (!strEq(datum.path, status.path)) {
-				datum.path = status.path;
-				changed = true;
-			    }
-			}
-		    }
-		    if (changed)
-			adapter.notifyDataSetChanged();
-		}
-	    });
+	    svc.setOnStatusChangedListener(listener);
 	}
 	
 	@Override

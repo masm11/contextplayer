@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.WeakHashMap;
+import java.util.Set;
 
 public class PlayerService extends Service {
     public class CurrentStatus {
@@ -33,6 +35,7 @@ public class PlayerService extends Service {
 	    this.position = curPlayer == null ? 0 : curPlayer.getCurrentPosition();
 	}
     }
+    
     public interface OnStatusChangedListener {
 	void onStatusChanged(CurrentStatus status);
     }
@@ -47,8 +50,7 @@ public class PlayerService extends Service {
     private AudioManager.OnAudioFocusChangeListener audioFocusChangeListener;
     private Thread broadcaster;
     private Handler handler;
-    // fixme: should be weak reference.
-    private HashSet<OnStatusChangedListener> statusChangedListeners;
+    private Set<OnStatusChangedListener> statusChangedListeners;
     
     public void setOnStatusChangedListener(OnStatusChangedListener listener) {
 	Log.d("listener=%s", listener.toString());
@@ -59,7 +61,8 @@ public class PlayerService extends Service {
     public void onCreate() {
 	Log.init(getExternalCacheDir());
 	
-	statusChangedListeners = new HashSet<>();
+	statusChangedListeners = Collections.newSetFromMap(
+		new WeakHashMap<OnStatusChangedListener, Boolean>());
 	
 	audioAttributes = new AudioAttributes.Builder()
 		.setUsage(AudioAttributes.USAGE_MEDIA)

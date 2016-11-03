@@ -22,17 +22,20 @@ import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
     private class PlayerServiceConnection implements ServiceConnection {
+	private PlayerService.OnStatusChangedListener listener = new PlayerService.OnStatusChangedListener() {
+	    @Override
+	    public void onStatusChanged(PlayerService.CurrentStatus status) {
+		Log.d("path=%s, topDir=%s, position=%d.",
+			status.path, status.topDir, status.position);
+		updateTrackInfo(status);
+	    }
+	};
+	
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
 	    svc = (PlayerService.PlayerServiceBinder) service;
 	    
-	    svc.setOnStatusChangedListener(new PlayerService.OnStatusChangedListener() {
-		public void onStatusChanged(PlayerService.CurrentStatus status) {
-		    Log.d("path=%s, topDir=%s, position=%d.",
-			    status.path, status.topDir, status.position);
-		    updateTrackInfo(status);
-		}
-	    });
+	    svc.setOnStatusChangedListener(listener);
 	    
 	    updateTrackInfo(svc.getCurrentStatus());
 	}
