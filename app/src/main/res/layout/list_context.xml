@@ -13,11 +13,13 @@
   <TextView
       android:id="@+id/context_name"
       android:layout_width="wrap_content"
-      android:layout_height="wrap_content"/>
+      android:layout_height="wrap_content"
+      android:textIsSelectable="false"/>
   
   <jp.ddo.masm11.cplayer.PathView
       android:id="@+id/context_topdir"
       android:layout_width="wrap_content"
-      android:layout_height="wrap_content"/>
+      android:layout_height="wrap_content"
+      android:textIsSelectable="false"/>
   
 </LinearLayout>

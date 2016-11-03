@@ -18,7 +18,8 @@
       android:layout_height="wrap_content"
       android:paddingTop="15dp"
       android:paddingBottom="15dp"
-      android:background="@drawable/border_ripple"/>
+      android:background="@drawable/border_ripple"
+      android:textIsSelectable="false"/>
   
   <!-- 曲名等 -->
   <LinearLayout
@@ -40,17 +41,20 @@
       <jp.ddo.masm11.cplayer.PathView
 	  android:id="@+id/playing_filename"
 	  android:layout_width="match_parent"
-	  android:layout_height="wrap_content"/>
+	  android:layout_height="wrap_content"
+	  android:textIsSelectable="false"/>
       <TextView
 	  android:id="@+id/playing_title"
 	  android:layout_width="match_parent"
 	  android:layout_height="wrap_content"
 	  android:textAppearance="?android:attr/textAppearanceLarge"
-	  android:textColor="#000000"/>
+	  android:textColor="#000000"
+	  android:textIsSelectable="false"/>
       <TextView
 	  android:id="@+id/playing_artist"
 	  android:layout_width="match_parent"
-	  android:layout_height="wrap_content"/>
+	  android:layout_height="wrap_content"
+	  android:textIsSelectable="false"/>
       
     </LinearLayout>
     
@@ -72,7 +76,8 @@
 	  android:id="@+id/playing_curtime"
 	  android:layout_width="wrap_content"
 	  android:layout_height="wrap_content"
-	  android:text="@string/initial_time"/>
+	  android:text="@string/initial_time"
+	  android:textIsSelectable="false"/>
       
       <View
 	  android:layout_width="0dp"
@@ -83,7 +88,8 @@
 	  android:id="@+id/playing_maxtime"
 	  android:layout_width="wrap_content"
 	  android:layout_height="wrap_content"
-	  android:text="@string/initial_time"/>
+	  android:text="@string/initial_time"
+	  android:textIsSelectable="false"/>
       
     </LinearLayout>
     
