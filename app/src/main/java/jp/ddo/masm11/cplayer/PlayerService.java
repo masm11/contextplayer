@@ -724,7 +724,7 @@ public class PlayerService extends Service {
 	}
     }
     
-    public CurrentStatus getCurrentStatus() {
+    private CurrentStatus getCurrentStatus() {
 	return new CurrentStatus();
     }
     
