@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
 		Environment.DIRECTORY_MUSIC);
 	Log.d("rootDir=%s", rootDir.getAbsolutePath());
 	rootDir.mkdirs();
-	curTopDir = rootDir.getAbsolutePath();
 	
 	if (PlayContext.all().size() == 0) {
 	    PlayContext ctxt = new PlayContext();
