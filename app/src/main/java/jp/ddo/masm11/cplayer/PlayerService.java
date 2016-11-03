@@ -603,10 +603,14 @@ public class PlayerService extends Service {
     private void setForeground(boolean on) {
 	Log.d("on=%b", on);
 	if (on) {
+	    PlayContext ctxt = PlayContext.find(contextId);
+	    String contextName = "noname";
+	    if (ctxt != null)
+		contextName = ctxt.name;
 	    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 	    NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-	    builder.setContentTitle(getResources().getText(R.string.app_name));
-	    builder.setContentText(getResources().getText(R.string.playing));
+	    builder.setContentTitle(getResources().getString(R.string.app_name));
+	    builder.setContentText(getResources().getString(R.string.playing, contextName));
 	    builder.setSmallIcon(R.mipmap.ic_launcher);
 	    startForeground(1, builder.build());
 	} else {

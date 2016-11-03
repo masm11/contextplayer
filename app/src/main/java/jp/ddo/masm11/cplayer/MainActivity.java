@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
 	
 	if (PlayContext.all().size() == 0) {
 	    PlayContext ctxt = new PlayContext();
-	    ctxt.name = (String) getResources().getText(R.string.default_context);
+	    ctxt.name = getResources().getString(R.string.default_context);
 	    ctxt.topDir = rootDir.getAbsolutePath();
 	    ctxt.save();
 	}
@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
 	    pathView.setPath(curPath);
 	    
 	    MediaMetadataRetriever retr = new MediaMetadataRetriever();
-	    CharSequence title = null, artist = null;
+	    String title = null, artist = null;
 	    String duration = null;
 	    try {
 		retr.setDataSource(curPath);
@@ -177,9 +177,9 @@ public class MainActivity extends AppCompatActivity {
 	    retr.release();
 	    
 	    if (title == null)
-		title = getResources().getText(R.string.unknown_title);
+		title = getResources().getString(R.string.unknown_title);
 	    if (artist == null)
-		artist = getResources().getText(R.string.unknown_artist);
+		artist = getResources().getString(R.string.unknown_artist);
 	    
 	    TextView textView;
 	    textView = (TextView) findViewById(R.id.playing_title);
