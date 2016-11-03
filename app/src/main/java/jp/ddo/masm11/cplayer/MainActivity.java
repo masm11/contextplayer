@@ -19,6 +19,7 @@ import android.content.ComponentName;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     private class PlayerServiceConnection implements ServiceConnection {
@@ -199,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
 	    seekBar.setMax(maxPos);
 	    
 	    int sec = maxPos / 1000;
-	    String maxTime = String.format("%d:%02d", sec / 60, sec % 60);
+	    String maxTime = String.format(Locale.US, "%d:%02d", sec / 60, sec % 60);
 	    textView = (TextView) findViewById(R.id.playing_maxtime);
 	    assert textView != null;
 	    textView.setText(maxTime);
@@ -221,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
 	    seekBar.setProgress(curPos);
 	    
 	    int sec = curPos / 1000;
-	    String curTime = String.format("%d:%02d", sec / 60, sec % 60);
+	    String curTime = String.format(Locale.US, "%d:%02d", sec / 60, sec % 60);
 	    TextView textView = (TextView) findViewById(R.id.playing_curtime);
 	    assert textView != null;
 	    textView.setText(curTime);

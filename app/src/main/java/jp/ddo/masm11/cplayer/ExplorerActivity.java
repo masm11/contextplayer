@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Locale;
 
 public class ExplorerActivity extends AppCompatActivity {
     private static MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
@@ -365,8 +366,8 @@ public class ExplorerActivity extends AppCompatActivity {
 	Comparator<File> comparator = new Comparator<File>() {
 	    @Override
 	    public int compare(File o1, File o2) {
-		String name1 = o1.getName().toLowerCase();
-		String name2 = o2.getName().toLowerCase();
+		String name1 = o1.getName().toLowerCase(Locale.getDefault());
+		String name2 = o2.getName().toLowerCase(Locale.getDefault());
 		// まず、大文字小文字を無視して比較
 		int r = name1.compareTo(name2);
 		// もしそれで同じだったら、区別して比較

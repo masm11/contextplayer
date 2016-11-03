@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.WeakHashMap;
 import java.util.Set;
+import java.util.Locale;
 
 public class PlayerService extends Service {
     public class CurrentStatus {
@@ -551,8 +552,8 @@ public class PlayerService extends Service {
     }
     
     private int comparePath(String p1, String p2) {
-	String l1 = p1.toLowerCase();
-	String l2 = p2.toLowerCase();
+	String l1 = p1.toLowerCase(Locale.getDefault());
+	String l2 = p2.toLowerCase(Locale.getDefault());
 	int r = l1.compareTo(l2);
 	if (r == 0)
 	    r = p1.compareTo(p2);
