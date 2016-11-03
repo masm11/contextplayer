@@ -31,12 +31,12 @@ import java.util.Comparator;
 public class ExplorerActivity extends AppCompatActivity {
     private static MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
     private PlayerServiceConnection conn;
-    private PlayerService svc;
+    private PlayerService.PlayerServiceBinder svc;
     
     private class PlayerServiceConnection implements ServiceConnection {
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
-	    svc = ((PlayerService.PlayerServiceBinder) service).getService();
+	    svc = (PlayerService.PlayerServiceBinder) service;
 	}
 	
 	@Override

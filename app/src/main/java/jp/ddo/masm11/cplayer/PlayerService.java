@@ -93,8 +93,32 @@ public class PlayerService extends Service {
     }
     
     public class PlayerServiceBinder extends Binder {
-	public PlayerService getService() {
-	    return PlayerService.this;
+	public void setOnStatusChangedListener(OnStatusChangedListener listener) {
+	    PlayerService.this.setOnStatusChangedListener(listener);
+	}
+	public CurrentStatus getCurrentStatus() {
+	    return PlayerService.this.getCurrentStatus();
+	}
+	public void seek(int pos) {
+	    PlayerService.this.seek(pos);
+	}
+	public void play(String path) {
+	    PlayerService.this.play(path);
+	}
+	public void pause() {
+	    PlayerService.this.pause();
+	}
+	public void prevTrack() {
+	    PlayerService.this.prevTrack();
+	}
+	public void nextTrack() {
+	    PlayerService.this.nextTrack();
+	}
+	public void switchContext() {
+	    PlayerService.this.switchContext();
+	}
+	public void setTopDir(String topDir) {
+	    PlayerService.this.setTopDir(topDir);
 	}
     }
     
@@ -115,7 +139,7 @@ public class PlayerService extends Service {
      *      - playingPath == null の場合:
      *        → topDir 内で最初に再生できる曲を再生する。
      */
-    public void play(String path) {
+    private void play(String path) {
 	Log.i("path=%s", path);
 	
 	Log.d("release nextPlayer");
@@ -196,12 +220,12 @@ public class PlayerService extends Service {
      *  - curPlayer == null の場合
      *    → 何もしない
      */
-    public void pause() {
+    private void pause() {
 	Log.d("");
 	stopPlay();
     }
     
-    public void prevTrack() {
+    private void prevTrack() {
 	if (curPlayer != null) {
 	    int pos = curPlayer.getCurrentPosition();
 	    if (pos >= 3 * 1000)
@@ -224,7 +248,7 @@ public class PlayerService extends Service {
 	}
     }
     
-    public void nextTrack() {
+    private void nextTrack() {
 	if (curPlayer != null) {
 	    releaseCurPlayer();
 	    
@@ -240,7 +264,7 @@ public class PlayerService extends Service {
 	}
     }
     
-    public void seek(int pos) {
+    private void seek(int pos) {
 	Log.d("pos=%d.", pos);
 	if (pos != -1 && curPlayer != null)
 	    curPlayer.seekTo(pos);
@@ -542,7 +566,7 @@ public class PlayerService extends Service {
      *  - path == null の場合:
      *    → 何もしない。
      */
-    public void setTopDir(String path) {
+    private void setTopDir(String path) {
 	Log.d("path=%s", path);
 	if (path != null) {
 	    topDir = path;
@@ -558,7 +582,7 @@ public class PlayerService extends Service {
      * 今再生中なら pause() し、context を保存する。
      * context を読み出し、再生を再開する。
      */
-    public void switchContext() {
+    private void switchContext() {
 	Log.d("curPlayer=%s", curPlayer == null ? "null" : curPlayer.toString());
 	stopPlay();	// saveContext() を含む。
 	

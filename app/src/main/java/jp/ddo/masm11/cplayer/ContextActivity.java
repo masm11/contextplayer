@@ -29,7 +29,7 @@ public class ContextActivity extends AppCompatActivity {
     private class PlayerServiceConnection implements ServiceConnection {
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
-	    svc = ((PlayerService.PlayerServiceBinder) service).getService();
+	    svc = (PlayerService.PlayerServiceBinder) service;
 	}
 	
 	@Override
@@ -39,7 +39,7 @@ public class ContextActivity extends AppCompatActivity {
     }
     
     private PlayerServiceConnection conn;
-    private PlayerService svc;
+    private PlayerService.PlayerServiceBinder svc;
     private File rootDir;
     
     private class Datum {

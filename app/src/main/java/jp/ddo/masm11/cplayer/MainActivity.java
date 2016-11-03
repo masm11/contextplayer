@@ -21,10 +21,10 @@ import java.io.File;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
-    private class MainServiceConnection implements ServiceConnection {
+    private class PlayerServiceConnection implements ServiceConnection {
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
-	    svc = ((PlayerService.PlayerServiceBinder) service).getService();
+	    svc = (PlayerService.PlayerServiceBinder) service;
 	    
 	    svc.setOnStatusChangedListener(new PlayerService.OnStatusChangedListener() {
 		public void onStatusChanged(PlayerService.CurrentStatus status) {
@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 	}
     }
     
-    private PlayerService svc;
+    private PlayerService.PlayerServiceBinder svc;
     private ServiceConnection conn;
     private File rootDir;
     private String curPath;
@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
 	super.onStart();
 	
 	Intent intent = new Intent(this, PlayerService.class);
-	conn = new MainServiceConnection();
+	conn = new PlayerServiceConnection();
 	bindService(intent, conn, Service.BIND_AUTO_CREATE);
     }
     

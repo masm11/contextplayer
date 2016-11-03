@@ -13,10 +13,10 @@ import android.content.ServiceConnection;
 import android.content.ComponentName;
 
 public class OperationFragment extends Fragment {
-    private class OpFragmentServiceConnection implements ServiceConnection {
+    private class PlayerServiceConnection implements ServiceConnection {
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
-	    svc = ((PlayerService.PlayerServiceBinder) service).getService();
+	    svc = (PlayerService.PlayerServiceBinder) service;
 	}
 	
 	@Override
@@ -25,8 +25,8 @@ public class OperationFragment extends Fragment {
 	}
     }
     
-    private PlayerService svc;
-    private OpFragmentServiceConnection conn;
+    private PlayerService.PlayerServiceBinder svc;
+    private PlayerServiceConnection conn;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -82,7 +82,7 @@ public class OperationFragment extends Fragment {
 	super.onStart();
 	
 	Intent intent = new Intent(getContext(), PlayerService.class);
-	conn = new OpFragmentServiceConnection();
+	conn = new PlayerServiceConnection();
 	getContext().bindService(intent, conn, Service.BIND_AUTO_CREATE);
     }
     
