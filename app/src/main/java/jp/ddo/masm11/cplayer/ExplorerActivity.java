@@ -26,6 +26,7 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 
 public class ExplorerActivity extends AppCompatActivity {
@@ -354,14 +355,15 @@ public class ExplorerActivity extends AppCompatActivity {
      * '.' で始まるものは含まない。
      * ソートされている。
      */
-    public static File[] listFiles(File dir) {
+    public static File[] listFiles(File dir, boolean reverse) {
 	File[] files = dir.listFiles(new FileFilter() {
 	    @Override
 	    public boolean accept(File pathname) {
 		return !pathname.getName().startsWith(".");
 	    }
 	});
-	Arrays.sort(files, new Comparator<File>() {
+	
+	Comparator<File> comparator = new Comparator<File>() {
 	    @Override
 	    public int compare(File o1, File o2) {
 		String name1 = o1.getName().toLowerCase();
@@ -373,12 +375,16 @@ public class ExplorerActivity extends AppCompatActivity {
 		    r = o1.compareTo(o2);
 		return r;
 	    }
-	});
+	};
+	if (reverse)
+	    comparator = Collections.reverseOrder(comparator);
+	Arrays.sort(files, comparator);
+	
 	return files;
     }
     
     private void renewAdapter(File newDir) {
-	File[] files = listFiles(newDir);
+	File[] files = listFiles(newDir, false);
 	ArrayList<FileItem> items = new ArrayList<FileItem>();
 	for (int i = 0; i < files.length; i++) {
 	    Log.d("%s", files[i].toString());

@@ -501,13 +501,7 @@ public class PlayerService extends Service {
 		cur = parts[parts_idx];
 	}
 	
-	File[] files = ExplorerActivity.listFiles(dir);
-	if (backward) {
-	    File[] rev = new File[files.length];
-	    for (int i = 0; i < files.length; i++)
-		rev[i] = files[files.length - 1 - i];
-	    files = rev;
-	}
+	File[] files = ExplorerActivity.listFiles(dir, backward);
 	
 	for (File file: files) {
 	    if (cur == null) {
