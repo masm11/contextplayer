@@ -11,27 +11,31 @@
       android:layout_width="0dp"
       android:layout_weight="1"
       android:layout_height="wrap_content"
-      android:src="@android:drawable/ic_media_previous"/>
+      android:src="@android:drawable/ic_media_previous"
+      android:contentDescription="@string/op_prev"/>
   
   <ImageButton
       android:id="@+id/op_play"
       android:layout_width="0dp"
       android:layout_weight="1"
       android:layout_height="wrap_content"
-      android:src="@android:drawable/ic_media_play"/>
+      android:src="@android:drawable/ic_media_play"
+      android:contentDescription="@string/op_play"/>
   
   <ImageButton
       android:id="@+id/op_pause"
       android:layout_width="0dp"
       android:layout_weight="1"
       android:layout_height="wrap_content"
-      android:src="@android:drawable/ic_media_pause"/>
+      android:src="@android:drawable/ic_media_pause"
+      android:contentDescription="@string/op_pause"/>
   
   <ImageButton
       android:id="@+id/op_next"
       android:layout_width="0dp"
       android:layout_weight="1"
       android:layout_height="wrap_content"
-      android:src="@android:drawable/ic_media_next"/>
+      android:src="@android:drawable/ic_media_next"
+      android:contentDescription="@string/op_next"/>
 
 </LinearLayout>

@@ -1,8 +1,17 @@
 <resources>
     <string name="app_name">コンテキストプレイヤー</string>
     
+    <!-- activity_main.xml -->
+    <string name="initial_time">0:00</string>
+    
     <!-- activity_context.xml -->
     <string name="create_new_context">新しいコンテキストを作成</string>
+    
+    <!-- operation_fragmennt.xml -->
+    <string name="op_prev">前</string>
+    <string name="op_play">再生</string>
+    <string name="op_pause">一時停止</string>
+    <string name="op_next">次</string>
     
     <!-- ContextActivity.java -->
     <string name="edit_the_context_name">コンテキスト名を編集</string>
