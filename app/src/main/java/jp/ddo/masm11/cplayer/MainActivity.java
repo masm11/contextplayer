@@ -1,7 +1,11 @@
 package jp.ddo.masm11.cplayer;
 
 import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.annotation.NonNull;
 import android.app.Service;
+import android.app.AlertDialog;
 import android.os.IBinder;
 import android.os.Bundle;
 import android.os.Environment;
@@ -16,12 +20,19 @@ import android.content.Intent;
 import android.content.Context;
 import android.content.ServiceConnection;
 import android.content.ComponentName;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.Manifest;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+    implements ActivityCompat.OnRequestPermissionsResultCallback {
+    
+    private static final int REQ_PERMISSION_ON_CREATE = 1;
+    
     private class PlayerServiceConnection implements ServiceConnection {
 	private PlayerService.OnStatusChangedListener listener = new PlayerService.OnStatusChangedListener() {
 	    @Override
@@ -65,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
 	rootDir = Environment.getExternalStoragePublicDirectory(
 		Environment.DIRECTORY_MUSIC);
 	Log.d("rootDir=%s", rootDir.getAbsolutePath());
-	rootDir.mkdirs();
 	
 	if (PlayContext.all().size() == 0) {
 	    PlayContext ctxt = new PlayContext();
@@ -123,6 +133,46 @@ public class MainActivity extends AppCompatActivity {
 		seeking = false;
 	    }
 	});
+	
+	if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+	    if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+		// permission がない && 説明必要 => 説明
+		AlertDialog dialog = new AlertDialog.Builder(this)
+			.setMessage(R.string.please_grant_permission)
+			.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+			    @Override
+			    public void onClick(DialogInterface dialog, int id) {
+				String[] permissions = new String[] {
+				    Manifest.permission.READ_EXTERNAL_STORAGE,
+				};
+				ActivityCompat.requestPermissions(MainActivity.this, permissions, REQ_PERMISSION_ON_CREATE);
+			    }
+			})
+			.create();
+		dialog.show();
+	    } else {
+		// permission がない && 説明不要 => request。
+		String[] permissions = new String[] {
+		    Manifest.permission.READ_EXTERNAL_STORAGE,
+		};
+		ActivityCompat.requestPermissions(this, permissions, REQ_PERMISSION_ON_CREATE);
+	    }
+	} else {
+	    // permission がある
+	    rootDir.mkdirs();
+	}
+    }
+    
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+	    @NonNull String[] permissions,
+	    @NonNull int[] grantResults) {
+	if (requestCode == REQ_PERMISSION_ON_CREATE) {
+	    if (grantResults[0] != PackageManager.PERMISSION_GRANTED)
+		finish();
+	    else
+		rootDir.mkdirs();
+	}
     }
     
     @Override
