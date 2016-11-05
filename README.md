@@ -133,7 +133,7 @@ path でソートして、その順に再生します。
 ```
     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
 ```
-  私の環境では `/storage/emulated/0/Music` のようです。
+  例えば私の環境では `/storage/emulated/0/Music` のようです。
   このアプリはそこしか参照しませんので、その中に置いて下さい。
 
 ## 機能追加及びバグについて
@@ -147,7 +147,7 @@ path でソートして、その順に再生します。
 - CDDB
 - shuffle
 
-まぁもしどうしても欲しい機能があれば、説得次第ですね。
+まぁもしどうしても欲しい機能があれば、私を説得してみてください。
 基本的に私が欲しい機能しか作るつもりはありませんが、
 気が向けば実装するかもしれません。
 
