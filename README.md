@@ -1,5 +1,7 @@
 # コンテキストプレイヤー
 
+For english, see [README_en.md](README_en.md).
+
 ## 特徴
 
 Android スマホ用の音楽再生プレイヤーです。
