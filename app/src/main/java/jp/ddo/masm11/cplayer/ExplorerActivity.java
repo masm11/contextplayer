@@ -31,7 +31,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
 import android.view.KeyEvent;
-import android.media.MediaMetadataRetriever;
 import android.webkit.MimeTypeMap;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -87,14 +86,12 @@ public class ExplorerActivity extends AppCompatActivity {
 		Log.d("mimeType=%s", mimeType);
 	    }
 	}
-	public void retrieveMetadata(MediaMetadataRetriever retr) {
+	public void retrieveMetadata() {
 	    if (isAudioType(mimeType)) {
-		try {
-		    retr.setDataSource(file.getAbsolutePath());
-		    title = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-		    artist = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-		} catch (Exception e) {
-		    Log.i(e, "exception");
+		Metadata meta = new Metadata(file.getAbsolutePath());
+		if (meta.extract()) {
+		    title = meta.getTitle();
+		    artist = meta.getArtist();
 		}
 	    }
 	}
@@ -220,7 +217,6 @@ public class ExplorerActivity extends AppCompatActivity {
 	
 	@Override
 	public void run() {
-	    MediaMetadataRetriever retr = new MediaMetadataRetriever();
 	    try {
 		while (true) {
 		    FileItem item;
@@ -231,7 +227,7 @@ public class ExplorerActivity extends AppCompatActivity {
 			item = list.removeFirst();
 		    }
 		    
-		    item.retrieveMetadata(retr);
+		    item.retrieveMetadata();
 		    handler.post(new Runnable() {
 			@Override
 			public void run() {
@@ -241,7 +237,6 @@ public class ExplorerActivity extends AppCompatActivity {
 		}
 	    } catch (InterruptedException e) {
 	    }
-	    retr.release();
 	}
 	
 	public void setNewItems(ArrayList<FileItem> newList) {

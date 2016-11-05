@@ -26,8 +26,6 @@ import android.os.IBinder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
-import android.media.MediaPlayer;
-import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.widget.Button;
 import android.widget.TextView;
@@ -230,18 +228,12 @@ public class MainActivity extends AppCompatActivity
 	    pathView.setRootDir(rootDir.getAbsolutePath());
 	    pathView.setPath(curPath);
 	    
-	    MediaMetadataRetriever retr = new MediaMetadataRetriever();
+	    Metadata meta = new Metadata(curPath);
 	    String title = null, artist = null;
-	    String duration = null;
-	    try {
-		retr.setDataSource(curPath);
-		title = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-		artist = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-		duration = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-	    } catch (Exception e) {
-		Log.i(e, "exception");
+	    if (meta.extract()) {
+		title = meta.getTitle();
+		artist = meta.getArtist();
 	    }
-	    retr.release();
 	    
 	    if (title == null)
 		title = getResources().getString(R.string.unknown_title);
@@ -256,20 +248,6 @@ public class MainActivity extends AppCompatActivity
 	    textView = (TextView) findViewById(R.id.playing_artist);
 	    assert textView != null;
 	    textView.setText(artist);
-	    
-	    if (duration != null)
-		maxPos = Integer.parseInt(duration);
-	    else
-		maxPos = 0;
-	    SeekBar seekBar = (SeekBar) findViewById(R.id.playing_pos);
-	    assert seekBar != null;
-	    seekBar.setMax(maxPos);
-	    
-	    int sec = maxPos / 1000;
-	    String maxTime = String.format(Locale.US, "%d:%02d", sec / 60, sec % 60);
-	    textView = (TextView) findViewById(R.id.playing_maxtime);
-	    assert textView != null;
-	    textView.setText(maxTime);
 	}
 	
 	if (!strEq(curTopDir, status.topDir)) {
@@ -278,6 +256,20 @@ public class MainActivity extends AppCompatActivity
 	    PathView pathView = (PathView) findViewById(R.id.playing_filename);
 	    assert pathView != null;
 	    pathView.setTopDir(curTopDir);
+	}
+	
+	if (maxPos != status.duration) {
+	    maxPos = status.duration;
+	    
+	    SeekBar seekBar = (SeekBar) findViewById(R.id.playing_pos);
+	    assert seekBar != null;
+	    seekBar.setMax(maxPos);
+	    
+	    int sec = maxPos / 1000;
+	    String maxTime = String.format(Locale.US, "%d:%02d", sec / 60, sec % 60);
+	    TextView textView = (TextView) findViewById(R.id.playing_maxtime);
+	    assert textView != null;
+	    textView.setText(maxTime);
 	}
 	
 	if (curPos != status.position) {

@@ -45,11 +45,13 @@ public class PlayerService extends Service {
 	public final String path;
 	public final String topDir;
 	public final int position;
+	public final int duration;
 	public CurrentStatus() {
 	    this.contextId = PlayerService.this.contextId;
 	    this.path = playingPath;
 	    this.topDir = PlayerService.this.topDir;
 	    this.position = curPlayer == null ? 0 : curPlayer.getCurrentPosition();
+	    this.duration = curPlayer == null ? 0 : curPlayer.getDuration();
 	}
     }
     
