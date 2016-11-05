@@ -52,6 +52,8 @@ public class Metadata {
     
     /* MediaMetadataRetriever に任せると曲名が化ける場合があるので、
      * 自前で取り出す。
+     * 参考:
+     *  http://www.xiph.org/vorbis/doc/Vorbis_I_spec.html
      */
     private boolean tryExtractOgg() {
 	BufferedInputStream bis = null;
