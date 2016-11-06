@@ -435,6 +435,36 @@ public class PlayerService extends Service {
 			}
 		    }
 		});
+		player.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+		    @Override
+		    public boolean onError(MediaPlayer mp, int what, int extra) {
+			Log.d("error reported. %d, %d.", what, extra);
+			
+			// 両方 release して新たに作り直す。
+			releaseNextPlayer();
+			releaseCurPlayer();
+			
+			Log.d("creating mediaplayer.");
+			Object[] ret = createMediaPlayer(nextPath, 0, false);
+			if (ret == null) {
+			    Log.w("No audio file found.");
+			    return true;
+			}
+			
+			curPlayer = (MediaPlayer) ret[0];
+			playingPath = (String) ret[1];
+			
+			Log.d("starting it.");
+			curPlayer.start();
+			
+			Log.d("enqueuing next.");
+			enqueueNext();
+			
+			saveContext();
+			
+			return true;
+		    }
+		});
 		
 		Log.d("done. player=%s, path=%s", player.toString(), path);
 		return new Object[] { player, path };
