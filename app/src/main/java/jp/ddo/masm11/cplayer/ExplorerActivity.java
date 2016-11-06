@@ -280,7 +280,13 @@ public class ExplorerActivity extends AppCompatActivity {
 	thread.start();
 	
 	topDir = new File(ctxt.topDir);
-	renewAdapter(topDir);
+	File dir = topDir;
+	if (ctxt.path != null && ctxt.path.startsWith(ctxt.topDir)) {
+	    int slash = ctxt.path.lastIndexOf('/');
+	    if (slash != -1)
+		dir = new File(ctxt.path.substring(0, slash));
+	}
+	renewAdapter(dir);
 	
 	ListView listView = (ListView) findViewById(R.id.list);
 	assert listView != null;
