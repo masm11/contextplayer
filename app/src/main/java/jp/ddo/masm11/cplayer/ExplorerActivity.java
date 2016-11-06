@@ -324,6 +324,9 @@ public class ExplorerActivity extends AppCompatActivity {
 	});
     }
     
+    /* 参考:
+     *   http://stackoverflow.com/questions/12950215/onkeydown-and-onkeylongpress
+     */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
 	if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
@@ -342,14 +345,14 @@ public class ExplorerActivity extends AppCompatActivity {
 	    finish();
 	    return true;
 	}
-	return false;
+	return super.onKeyLongPress(keyCode, event);
     }
     
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
 	if (keyCode == KeyEvent.KEYCODE_BACK) {
 	    if (backKeyShortPress) {
-		if (curDir.equals(rootDir))
+		if (curDir.equals(rootDir) || curDir.getAbsolutePath().equals("/"))
 		    finish();
 		else
 		    renewAdapter(curDir.getParentFile());
@@ -357,7 +360,7 @@ public class ExplorerActivity extends AppCompatActivity {
 	    backKeyShortPress = false;
 	    return true;
 	}
-	return super.onKeyDown(keyCode, event);
+	return super.onKeyUp(keyCode, event);
     }
     
     private void setTopDir(File newDir) {
