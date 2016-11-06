@@ -49,6 +49,7 @@ public class ExplorerActivity extends AppCompatActivity {
     private static MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
     private PlayerServiceConnection conn;
     private PlayerService.PlayerServiceBinder svc;
+    private boolean backKeyShortPress;
     
     private class PlayerServiceConnection implements ServiceConnection {
 	@Override
@@ -298,8 +299,6 @@ public class ExplorerActivity extends AppCompatActivity {
 		
 		if (item.isDir()) {
 		    File dir = item.getFile();
-		    if (item.getFilename().equals(".."))
-			dir = curDir.getParentFile();
 		    if (!item.getFilename().equals("."))
 			renewAdapter(dir);
 		} else {
@@ -315,9 +314,7 @@ public class ExplorerActivity extends AppCompatActivity {
 		
 		if (item.isDir()) {
 		    File dir = item.getFile();
-		    if (item.getFilename().equals(".."))
-			dir = curDir.getParentFile();
-		    else if (item.getFilename().equals("."))
+		    if (item.getFilename().equals("."))
 			dir = curDir;
 		    setTopDir(dir);
 		    return true;
@@ -329,11 +326,36 @@ public class ExplorerActivity extends AppCompatActivity {
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+	if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
+	    event.startTracking();
+	    if (event.getRepeatCount() == 0)
+		backKeyShortPress = true;
+	    return true;
+	}
+	return super.onKeyDown(keyCode, event);
+    }
+    
+    @Override
+    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
 	if (keyCode == KeyEvent.KEYCODE_BACK) {
-	    if (!curDir.equals(topDir) && !curDir.equals(rootDir)) {
-		renewAdapter(curDir.getParentFile());
-		return true;
+	    backKeyShortPress = false;
+	    finish();
+	    return true;
+	}
+	return false;
+    }
+    
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+	if (keyCode == KeyEvent.KEYCODE_BACK) {
+	    if (backKeyShortPress) {
+		if (curDir.equals(rootDir))
+		    finish();
+		else
+		    renewAdapter(curDir.getParentFile());
 	    }
+	    backKeyShortPress = false;
+	    return true;
 	}
 	return super.onKeyDown(keyCode, event);
     }
@@ -410,9 +432,7 @@ public class ExplorerActivity extends AppCompatActivity {
 	
 	Log.d("newDir=%s", newDir.toString());
 	Log.d("rootDir=%s", rootDir.toString());
-	if (!newDir.equals(rootDir))
-	    items.add(0, new FileItem(new File(newDir, "..")));
-	else
+	if (newDir.equals(rootDir))
 	    items.add(0, new FileItem(new File(newDir, ".")));
 	
 	adapter.clear();
