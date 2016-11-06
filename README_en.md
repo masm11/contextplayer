@@ -138,7 +138,7 @@ I am not going to add new features, e.g.
 
 - albumarts
 - equalizer
-- timed words
+- timed text
 - CDDB
 - shuffle
 
@@ -147,8 +147,6 @@ I may implements them if I feel like that,
 although I will implements ones I want.
 
 If you find bugs, I'll fix them. Probably.
-I have found a bug:
-- the titles may be corrupted
 
 ## License
 
