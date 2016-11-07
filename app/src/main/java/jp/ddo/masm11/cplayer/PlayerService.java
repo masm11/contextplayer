@@ -771,7 +771,7 @@ public class PlayerService extends Service {
     private void broadcastStatus() {
 	CurrentStatus status = new CurrentStatus();
 	for (OnStatusChangedListener listener: statusChangedListeners) {
-	    Log.d("listener=%s", listener);
+	    // Log.d("listener=%s", listener);
 	    listener.onStatusChanged(status);
 	}
     }
