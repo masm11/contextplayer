@@ -432,7 +432,8 @@ public class PlayerService extends Service {
 			if (curPlayer != null) {
 			    Log.d("enqueue next mediaplayer.");
 			    enqueueNext();
-			}
+			} else
+			    stopPlay();
 		    }
 		});
 		player.setOnErrorListener(new MediaPlayer.OnErrorListener() {
@@ -448,6 +449,7 @@ public class PlayerService extends Service {
 			Object[] ret = createMediaPlayer(nextPath, 0, false);
 			if (ret == null) {
 			    Log.w("No audio file found.");
+			    stopPlay();
 			    return true;
 			}
 			
