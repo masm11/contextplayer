@@ -51,8 +51,10 @@ public class MainActivity extends AppCompatActivity
 	private PlayerService.OnStatusChangedListener listener = new PlayerService.OnStatusChangedListener() {
 	    @Override
 	    public void onStatusChanged(PlayerService.CurrentStatus status) {
+/*
 		Log.d("path=%s, topDir=%s, position=%d.",
 			status.path, status.topDir, status.position);
+*/
 		updateTrackInfo(status);
 	    }
 	};
