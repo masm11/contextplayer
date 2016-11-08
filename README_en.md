@@ -24,87 +24,41 @@ It uses these permissions:
 
 - android.permission.READ_EXTERNAL_STORAGE
 
-  To access external storage.
+  to access external storage.
 
 - android.permission.BLUETOOTH
 
-  To stop playing when you turn off the bluetooth headset.
+  to stop playing when you turn off the bluetooth headset.
 
 Environments I use:
 
 - Xperia X Performance (au SOV33)
 - Android 6.0.1
 
+## Contexts
+
+The following information is saved as a context.
+
+  - context name
+  - top folder to play
+  - playing filename
+  - position in the playing filename
+
 ## Usage
 
-First, the app requests permission to access external storage.
-You need to grant it.
-
-You see the main screen.
+Some points which you may not understand by seeing are here:
 
 - Main screen
 
-  - Selected context name
-
-    A "context" has:
-
-      - the name
-      - the top folder name to play
-      - the name of the playing file
-      - the position in the playing file
-
-    When you tap the context name, you see the Context List screen.
-
-  - Playing file information
-
-    The path, title, and artist of the playing file are displayed.
-    In a file path, the top folder is gray-backed.
-
-    When you tap this area, you see the Explorer screen.
-
-  - Seek bar
-
-    You see the position of the playing file. You can slide to seek.
-
-  - Buttons
-
-    There are Previous, Play, Pause, and Next buttons.
-    When you tap the Previous button, the play position will back to the head
-    of the playing file if the current position >= 3sec, otherwise to the head
-    of the previous file.
-
-- Context List screen
-
-  - List
-
-    You see the list of the contexts in the order of created time.
-    You can tap one of them to switch to it and to resume playing.
-    You can long tap to edit the context name or to delete one.
-
-  - Buttons
-
-    You can create a new context.
+  You can tap the context name and the music information.
 
 - Explorer screen
 
-  - path
+  You can long tap a directory to set it as the top directory to play.
 
-    You see the folder path. The top folder of the path is gray-backed.
+  You can long tap the back key to back to the main screen.
 
-  - List
-
-    - Directories
-
-      You see the directory name. You can tap one to go to it, and you can
-      long tap to change the top folder to it.
-
-    - Regular files
-
-      You see the filename, the file type, the title, and the artist.
-      You can tap one to play it. If it can't be played, the app will
-      skip it and play the next one.
-
-- Play order
+## Play order
 
 The app lists up all the files under the top folder recursively, and
 play them in the order of the path.
