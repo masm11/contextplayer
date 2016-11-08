@@ -404,6 +404,8 @@ public class ExplorerActivity extends AppCompatActivity {
 		return !pathname.getName().startsWith(".");
 	    }
 	});
+	if (files == null)
+	    return new File[0];
 	
 	Comparator<File> comparator = new Comparator<File>() {
 	    @Override
