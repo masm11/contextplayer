@@ -158,6 +158,7 @@ public class ContextActivity extends AppCompatActivity {
 	    @Override
 	    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 		ListView listView = (ListView) parent;
+		@SuppressWarnings("unchecked")
 		final ArrayAdapter<Datum> adapter = (ArrayAdapter<Datum>) parent.getAdapter();
 		final Datum datum = (Datum) listView.getItemAtPosition(position);
 		
@@ -257,6 +258,7 @@ public class ContextActivity extends AppCompatActivity {
 			
 			ListView listView = (ListView) findViewById(R.id.context_list);
 			assert listView != null;
+			@SuppressWarnings("unchecked")
 			ArrayAdapter<Datum> adapter = (ArrayAdapter<Datum>) listView.getAdapter();
 			adapter.add(datum);
 		    }
