@@ -38,6 +38,8 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.Manifest;
 
+import com.crashlytics.android.Crashlytics;
+import io.fabric.sdk.android.Fabric;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
@@ -87,6 +89,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
 	Log.init(getExternalCacheDir());
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
 	
 	rootDir = Environment.getExternalStoragePublicDirectory(
