@@ -30,6 +30,10 @@ It uses these permissions:
 
   to stop playing when you turn off the bluetooth headset.
 
+- android.permission.INTERNET
+
+  for Crashlytics.
+
 Environments I use:
 
 - Xperia X Performance (au SOV33)

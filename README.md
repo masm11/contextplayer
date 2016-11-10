@@ -34,6 +34,10 @@ Android スマホ用の音楽再生プレイヤーです。
 
   Bluetooth ヘッドセットが OFF されたら再生を停止するため。
 
+- android.permission.INTERNET
+
+  Crashlytics が使うため。
+
 動作確認環境:
 - Xperia X Performance (au SOV33)
 - Android 6.0.1
