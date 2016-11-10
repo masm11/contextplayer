@@ -36,6 +36,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.app.AlertDialog;
 import android.app.Service;
+import android.text.InputType;
 
 import java.io.File;
 import java.util.List;
@@ -170,6 +171,7 @@ public class ContextActivity extends AppCompatActivity {
 			switch (which) {
 			case 0:	// edit
 			    final EditText editText = new EditText(ContextActivity.this);
+			    editText.setInputType(InputType.TYPE_CLASS_TEXT);
 			    editText.setText(datum.name);
 			    builder = new AlertDialog.Builder(ContextActivity.this);
 			    builder.setTitle(R.string.edit_the_context_name);
@@ -235,6 +237,7 @@ public class ContextActivity extends AppCompatActivity {
 	button.setOnClickListener(new View.OnClickListener() {
 	    public void onClick(View v) {
 		final EditText editText = new EditText(ContextActivity.this);
+		editText.setInputType(InputType.TYPE_CLASS_TEXT);
 		AlertDialog.Builder builder = new AlertDialog.Builder(ContextActivity.this);
 		builder.setTitle(R.string.name_the_new_context);
 		builder.setView(editText);
