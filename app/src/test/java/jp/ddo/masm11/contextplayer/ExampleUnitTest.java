@@ -1,4 +1,4 @@
-package jp.ddo.masm11.cplayer;
+package jp.ddo.masm11.contextplayer;
 
 import org.junit.Test;
 

@@ -15,7 +15,7 @@ android {
     buildToolsVersion "24.0.0"
 
     defaultConfig {
-        applicationId "jp.ddo.masm11.cplayer"
+        applicationId "jp.ddo.masm11.contextplayer"
         minSdkVersion 23
         targetSdkVersion 23
         versionCode 1

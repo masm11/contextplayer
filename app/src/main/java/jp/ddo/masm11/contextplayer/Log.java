@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.cplayer;
+package jp.ddo.masm11.contextplayer;
 
 import java.io.File;
 import java.io.BufferedWriter;
@@ -153,7 +153,7 @@ class Log {
     private static String[] getStackInfo() {
 	StackTraceElement[] elems = Thread.currentThread().getStackTrace();
 	
-	return new String[] { elems[5].getClassName().replace("jp.ddo.masm11.cplayer.", ""),
+	return new String[] { elems[5].getClassName().replace("jp.ddo.masm11.contextplayer.", ""),
 			      elems[5].getMethodName() };
     }
 }

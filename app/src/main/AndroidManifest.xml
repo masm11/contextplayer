@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="jp.ddo.masm11.cplayer">
+          package="jp.ddo.masm11.contextplayer">
 
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.BLUETOOTH"/>
@@ -15,7 +15,7 @@
       
       <meta-data android:name="AA_DB_NAME" android:value="ContextPlayer.db"/>
       <meta-data android:name="AA_DB_VERSION" android:value="2"/>
-      <meta-data android:name="AA_MODELS" android:value="jp.ddo.masm11.cplayer.PlayContext, jp.ddo.masm11.cplayer.Config"/>
+      <meta-data android:name="AA_MODELS" android:value="jp.ddo.masm11.contextplayer.PlayContext, jp.ddo.masm11.contextplayer.Config"/>
       
         <activity android:name=".MainActivity">
             <intent-filter>

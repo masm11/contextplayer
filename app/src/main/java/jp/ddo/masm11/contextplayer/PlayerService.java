@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.cplayer;
+package jp.ddo.masm11.contextplayer;
 
 import android.support.v7.app.NotificationCompat;
 import android.app.Service;
