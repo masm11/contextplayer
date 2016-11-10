@@ -437,8 +437,7 @@ public class ExplorerActivity extends AppCompatActivity {
 	
 	Log.d("newDir=%s", newDir.toString());
 	Log.d("rootDir=%s", rootDir.toString());
-	if (newDir.equals(rootDir))
-	    items.add(0, new FileItem(new File(newDir, ".")));
+	items.add(0, new FileItem(new File(newDir, ".")));
 	
 	adapter.clear();
 	adapter.addAll(items);
