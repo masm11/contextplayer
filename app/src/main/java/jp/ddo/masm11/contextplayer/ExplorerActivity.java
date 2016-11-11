@@ -287,6 +287,11 @@ public class ExplorerActivity extends AppCompatActivity {
 	    if (slash != -1)
 		dir = new File(ctxt.path.substring(0, slash));
 	}
+	if (savedInstanceState != null) {
+	    String str = savedInstanceState.getString("CUR_DIR");
+	    if (str != null)
+		dir = new File(str);
+	}
 	renewAdapter(dir);
 	
 	ListView listView = (ListView) findViewById(R.id.list);
@@ -484,6 +489,13 @@ public class ExplorerActivity extends AppCompatActivity {
 	Intent intent = new Intent(this, PlayerService.class);
 	conn = new PlayerServiceConnection();
 	bindService(intent, conn, Service.BIND_AUTO_CREATE);
+    }
+    
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+	super.onSaveInstanceState(outState);
+	
+	outState.putString("CUR_DIR", curDir.getAbsolutePath());
     }
     
     @Override
