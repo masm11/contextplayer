@@ -16,6 +16,8 @@
 */
 package jp.ddo.masm11.contextplayer;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.File;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -75,6 +77,9 @@ class Log {
 			writer.println(time + " " + item.klass + ": " + msg);
 			writer.flush();
 		    }
+		    
+		    if (item.priority >= android.util.Log.ERROR)
+			Crashlytics.logException(item.e);
 		}
 	    } catch (InterruptedException e) {
 		android.util.Log.d("Logger", "interrupted", e);
