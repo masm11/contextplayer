@@ -20,6 +20,8 @@ import android.support.v7.app.NotificationCompat;
 import android.app.Service;
 import android.app.NotificationManager;
 import android.app.Notification;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.media.MediaPlayer;
 import android.media.MediaTimestamp;
 import android.media.AudioAttributes;
@@ -663,6 +665,13 @@ public class PlayerService extends Service {
 	    builder.setContentTitle(getResources().getString(R.string.app_name));
 	    builder.setContentText(getResources().getString(R.string.playing, contextName));
 	    builder.setSmallIcon(R.drawable.notification);
+	    Intent intent = new Intent(this, MainActivity.class);
+	    TaskStackBuilder tsBuilder = TaskStackBuilder.create(this);
+	    tsBuilder.addParentStack(MainActivity.class);
+	    tsBuilder.addNextIntent(intent);
+	    PendingIntent pendingIntent = tsBuilder.getPendingIntent(
+		    0, PendingIntent.FLAG_UPDATE_CURRENT);
+	    builder.setContentIntent(pendingIntent);
 	    startForeground(1, builder.build());
 	} else {
 	    stopForeground(true);
