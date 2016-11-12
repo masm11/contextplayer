@@ -29,8 +29,11 @@
     <!-- MainActivity.java -->
     <string name="default_context">Default Context</string>
     <string name="please_grant_permission">This app accesses Music files in the external strorage. Please grant permission on the following dialog, or this app will exit.</string>
-    <string name="about_this_app">Context Player v%1$s\n\nThis app is licensed under GPLv3.\nThis app uses Activeandroid.</string>
     
     <!-- PlayerService.java -->
     <string name="playing">Playing %1$s&#8230;</string>
+
+    <!-- ActionBarFragment.java -->
+    <string name="about_this_app">Context Player v%1$s\n\nThis app is licensed under GPLv3.\nThis app uses Activeandroid.</string>
+    
 </resources>

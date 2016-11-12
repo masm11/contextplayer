@@ -13,6 +13,9 @@
     <string name="op_pause">一時停止</string>
     <string name="op_next">次</string>
     
+    <!-- actionbar.xml -->
+    <string name="action_about">このアプリについて&#8230;</string>
+    
     <!-- ContextActivity.java -->
     <string name="edit_the_context_name">コンテキスト名を編集</string>
     <string name="are_you_sure_to_delete_it">削除してよろしいですか?</string>
@@ -29,4 +32,8 @@
     
     <!-- PlayerService.java -->
     <string name="playing">%1$sを再生中&#8230;</string>
+
+    <!-- ActionBarFragment.java -->
+    <string name="about_this_app">Context Player v%1$s\n\nこのアプリのライセンスは GPLv3 です。\nこのアプリは Activeandroid を使用しています。</string>
+    
 </resources>
