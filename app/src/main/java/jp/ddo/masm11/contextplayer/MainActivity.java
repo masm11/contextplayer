@@ -17,6 +17,7 @@
 package jp.ddo.masm11.contextplayer;
 
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.annotation.NonNull;
@@ -26,6 +27,9 @@ import android.os.IBinder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MenuInflater;
 import android.net.Uri;
 import android.widget.Button;
 import android.widget.TextView;
@@ -36,10 +40,12 @@ import android.content.ServiceConnection;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageInfo;
 import android.Manifest;
 
 import com.crashlytics.android.Crashlytics;
 import io.fabric.sdk.android.Fabric;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
@@ -91,6 +97,8 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
+	Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+	setSupportActionBar(toolbar);
 	
 	rootDir = Environment.getExternalStoragePublicDirectory(
 		Environment.DIRECTORY_MUSIC);
@@ -300,5 +308,39 @@ public class MainActivity extends AppCompatActivity
 	if (s1 != null && s2 == null)
 	    return false;
 	return s1.equals(s2);
+    }
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+	MenuInflater inflater = getMenuInflater();
+	inflater.inflate(R.menu.actionbar, menu);
+	return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+	switch (item.getItemId()) {
+	case R.id.action_about:
+	    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+	    PackageManager pm = getPackageManager();
+	    String ver = "???";
+	    try {
+		PackageInfo pi = pm.getPackageInfo("jp.ddo.masm11.contextplayer", 0);
+		ver = pi.versionName;
+	    } catch (PackageManager.NameNotFoundException e) {
+		Log.e(e, "namenotfoundexception");
+	    }
+	    builder.setMessage(getResources().getString(R.string.about_this_app, ver));
+	    builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+		public void onClick(DialogInterface dialog, int which) {
+		    // NOP
+		}
+	    });
+	    builder.show();
+	    return true;
+	    
+	default:
+	    return super.onOptionsItemSelected(item);
+	}
     }
 }
