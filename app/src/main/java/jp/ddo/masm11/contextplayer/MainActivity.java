@@ -23,6 +23,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.annotation.NonNull;
 import android.app.Service;
 import android.app.AlertDialog;
+import android.app.FragmentManager;
 import android.os.IBinder;
 import android.os.Bundle;
 import android.os.Environment;
@@ -97,8 +98,10 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
-	Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-	setSupportActionBar(toolbar);
+	
+	FragmentManager fragMan = getFragmentManager();
+	ActionBarFragment frag = (ActionBarFragment) fragMan.findFragmentById(R.id.actionbar_frag);
+	setSupportActionBar(frag.getToolbar());
 	
 	rootDir = Environment.getExternalStoragePublicDirectory(
 		Environment.DIRECTORY_MUSIC);
@@ -308,39 +311,5 @@ public class MainActivity extends AppCompatActivity
 	if (s1 != null && s2 == null)
 	    return false;
 	return s1.equals(s2);
-    }
-    
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-	MenuInflater inflater = getMenuInflater();
-	inflater.inflate(R.menu.actionbar, menu);
-	return true;
-    }
-    
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-	switch (item.getItemId()) {
-	case R.id.action_about:
-	    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-	    PackageManager pm = getPackageManager();
-	    String ver = "???";
-	    try {
-		PackageInfo pi = pm.getPackageInfo("jp.ddo.masm11.contextplayer", 0);
-		ver = pi.versionName;
-	    } catch (PackageManager.NameNotFoundException e) {
-		Log.e(e, "namenotfoundexception");
-	    }
-	    builder.setMessage(getResources().getString(R.string.about_this_app, ver));
-	    builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-		public void onClick(DialogInterface dialog, int which) {
-		    // NOP
-		}
-	    });
-	    builder.show();
-	    return true;
-	    
-	default:
-	    return super.onOptionsItemSelected(item);
-	}
     }
 }

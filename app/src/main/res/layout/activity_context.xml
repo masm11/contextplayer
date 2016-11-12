@@ -11,6 +11,13 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="jp.ddo.masm11.contextplayer.ContextActivity">
 
+  <!-- action bar -->
+  <fragment
+      class="jp.ddo.masm11.contextplayer.ActionBarFragment"
+      android:id="@+id/actionbar_frag"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"/>
+
   <ListView
       android:id="@+id/context_list"
       android:layout_width="match_parent"

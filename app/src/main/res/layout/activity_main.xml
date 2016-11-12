@@ -13,14 +13,11 @@
     tools:context="jp.ddo.masm11.contextplayer.MainActivity">
 
   <!-- action bar -->
-  <android.support.v7.widget.Toolbar
-      android:id="@+id/toolbar"
+  <fragment
+      class="jp.ddo.masm11.contextplayer.ActionBarFragment"
+      android:id="@+id/actionbar_frag"
       android:layout_width="match_parent"
-      android:layout_height="?attr/actionBarSize"
-      android:background="?attr/colorPrimary"
-      android:elevation="4dp"
-      android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-      app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+      android:layout_height="wrap_content"/>
   
   <!-- カテゴリ名 -->
   <TextView

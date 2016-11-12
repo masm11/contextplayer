@@ -36,6 +36,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.app.AlertDialog;
 import android.app.Service;
+import android.app.FragmentManager;
 import android.text.InputType;
 
 import java.io.File;
@@ -119,6 +120,10 @@ public class ContextActivity extends AppCompatActivity {
 	Log.init(getExternalCacheDir());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_context);
+	
+	FragmentManager fragMan = getFragmentManager();
+	ActionBarFragment frag = (ActionBarFragment) fragMan.findFragmentById(R.id.actionbar_frag);
+	setSupportActionBar(frag.getToolbar());
 	
 	rootDir = Environment.getExternalStoragePublicDirectory(
 		Environment.DIRECTORY_MUSIC);

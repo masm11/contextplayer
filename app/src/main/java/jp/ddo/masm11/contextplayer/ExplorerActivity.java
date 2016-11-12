@@ -18,6 +18,7 @@ package jp.ddo.masm11.contextplayer;
 
 import android.support.v7.app.AppCompatActivity;
 import android.app.Service;
+import android.app.FragmentManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Environment;
@@ -263,6 +264,10 @@ public class ExplorerActivity extends AppCompatActivity {
 	Log.init(getExternalCacheDir());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explorer);
+	
+	FragmentManager fragMan = getFragmentManager();
+	ActionBarFragment frag = (ActionBarFragment) fragMan.findFragmentById(R.id.actionbar_frag);
+	setSupportActionBar(frag.getToolbar());
 	
 	handler = new Handler();
 	
