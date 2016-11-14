@@ -4,10 +4,11 @@
 
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.BLUETOOTH"/>
+  <uses-permission android:name="android.permission.INTERNET" />
 
     <application
 	android:name="com.activeandroid.app.Application"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@drawable/launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -20,22 +21,23 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".ExplorerActivity">
-        </activity>
-        <activity android:name=".ContextActivity">
-        </activity>
-        <service android:name=".PlayerService">
-        </service>
-	<receiver android:name="BluetoothReceiver">
+	
+        <activity android:name=".ExplorerActivity"/>
+	
+        <activity android:name=".ContextActivity"/>
+	
+        <service android:name=".PlayerService"/>
+	
+	<receiver android:name="BluetoothReceiver"
+		  android:exported="false">
             <intent-filter>
                 <action android:name="android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED"/>
             </intent-filter>
 	</receiver>
+	
     </application>
 
-    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>
