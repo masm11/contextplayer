@@ -31,8 +31,7 @@
 	
         <service android:name=".PlayerService"/>
 	
-	<receiver android:name="BluetoothReceiver"
-		  android:exported="false">
+	<receiver android:name="BluetoothReceiver">
             <intent-filter>
                 <action android:name="android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED"/>
             </intent-filter>
