@@ -37,6 +37,11 @@ import android.content.ComponentName;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageInfo;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.IOException;
+
 public class ActionBarFragment extends Fragment {
     private Toolbar toolbar;
     
@@ -76,7 +81,9 @@ public class ActionBarFragment extends Fragment {
 	    } catch (PackageManager.NameNotFoundException e) {
 		Log.e(e, "namenotfoundexception");
 	    }
-	    builder.setMessage(getResources().getString(R.string.about_this_app, ver));
+	    String gpl3 = readFile(R.raw.copying3);
+	    String apache2 = readFile(R.raw.license_20);
+	    builder.setMessage(getResources().getString(R.string.about_this_app, ver, gpl3, apache2));
 	    builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 		public void onClick(DialogInterface dialog, int which) {
 		    // NOP
@@ -88,6 +95,40 @@ public class ActionBarFragment extends Fragment {
 	default:
 	    return super.onOptionsItemSelected(item);
 	}
+    }
+    
+    private String readFile(int id) {
+	InputStream is = null;
+	Reader r = null;
+	try {
+	    is = getResources().openRawResource(id);
+	    r = new InputStreamReader(is);
+	    StringBuilder sb = new StringBuilder();
+	    char[] buf = new char[1024];
+	    int s;
+	    while ((s = r.read(buf)) != -1)
+		sb.append(buf, 0, s);
+	    return sb.toString();
+	} catch (IOException e) {
+	    Log.e(e, "ioexception");
+	} finally {
+	    if (r != null) {
+		try {
+		    r.close();
+		} catch (IOException e) {
+		    Log.e(e, "ioexception");
+		}
+	    }
+	    if (is != null) {
+		try {
+		    is.close();
+		} catch (IOException e) {
+		    Log.e(e, "ioexception");
+		}
+	    }
+	}
+	
+	return "";
     }
     
     public Toolbar getToolbar() {
