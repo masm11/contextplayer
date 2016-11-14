@@ -139,7 +139,6 @@ public class MainActivity extends AppCompatActivity
 	    public void onClick(View v) {
 		Intent i = new Intent(MainActivity.this, ExplorerActivity.class);
 		PlayContext ctxt = PlayContext.all().get(0);
-		i.putExtra("CONTEXT_ID", ctxt.getId());
 		startActivity(i);
 	    }
 	});

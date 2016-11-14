@@ -42,6 +42,8 @@ import java.util.Set;
 import java.util.Locale;
 
 public class PlayerService extends Service {
+    public final static String ACTION_A2DP_DISCONNECTED = "jp.ddo.masm11.contextplayer.A2DP_DISCONNECTED";
+    
     public class CurrentStatus {
 	public final long contextId;
 	public final String path;
@@ -110,7 +112,7 @@ public class PlayerService extends Service {
 	Log.d("action=%s", action);
 	if (action != null) {
 	    switch (action) {
-	    case "A2DP_DISCONNECTED":
+	    case ACTION_A2DP_DISCONNECTED:
 		pause();
 		break;
 	    }

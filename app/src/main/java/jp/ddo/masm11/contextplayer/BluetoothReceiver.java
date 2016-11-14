@@ -39,7 +39,7 @@ public class BluetoothReceiver extends BroadcastReceiver {
 		if (state == BluetoothProfile.STATE_DISCONNECTED && prevstate != BluetoothProfile.STATE_DISCONNECTED) {
 		    Log.d("a2dp disconnected.");
 		    Intent i = new Intent(context, PlayerService.class);
-		    i.setAction("A2DP_DISCONNECTED");
+		    i.setAction(PlayerService.ACTION_A2DP_DISCONNECTED);
 		    context.startService(i);
 		}
 	    }

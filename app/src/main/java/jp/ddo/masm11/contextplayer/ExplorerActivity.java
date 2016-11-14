@@ -47,6 +47,8 @@ import java.util.Comparator;
 import java.util.Locale;
 
 public class ExplorerActivity extends AppCompatActivity {
+    private static final String STATE_CUR_DIR = "jp.ddo.masm11.contextplayer.CUR_DIR";
+    
     private static MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
     private PlayerServiceConnection conn;
     private PlayerService.PlayerServiceBinder svc;
@@ -293,7 +295,7 @@ public class ExplorerActivity extends AppCompatActivity {
 		dir = new File(ctxt.path.substring(0, slash));
 	}
 	if (savedInstanceState != null) {
-	    String str = savedInstanceState.getString("CUR_DIR");
+	    String str = savedInstanceState.getString(STATE_CUR_DIR);
 	    if (str != null)
 		dir = new File(str);
 	}
@@ -500,7 +502,7 @@ public class ExplorerActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
 	super.onSaveInstanceState(outState);
 	
-	outState.putString("CUR_DIR", curDir.getAbsolutePath());
+	outState.putString(STATE_CUR_DIR, curDir.getAbsolutePath());
     }
     
     @Override
