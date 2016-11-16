@@ -34,6 +34,12 @@
     <string name="playing">%1$sを再生中&#8230;</string>
 
     <!-- ActionBarFragment.java -->
-    <string name="about_this_app">Context Player v%1$s\n\nこのアプリのライセンスは GPLv3 です。\n\n%2$s\n\nこのアプリは Activeandroid を使用しています。Activeandroid のライセンスは Apache License 2.0 です。\n\n%3$s\n\n</string>
+    <string name="about">
+      &lt;html&gt;&lt;body&gt;
+	&lt;p&gt;コンテキストプレイヤー v%1$s&lt;/p&gt;
+	&lt;p&gt;このアプリのライセンスは&lt;a href=&quot;http://www.gnu.org/licenses/gpl-3.0-standalone.html&quot;&gt;GPLv3&lt;a&gt;です。&lt;/p&gt;
+	&lt;p&gt;このアプリはActiveandroidを使用しています。そのライセンスは&lt;a href=&quot;https://www.apache.org/licenses/LICENSE-2.0&quot;&gt;Apache License 2.0&lt;a&gt;です。&lt;/p&gt;
+      &lt;/body&gt;&lt;/html&gt;
+    </string>
     
 </resources>

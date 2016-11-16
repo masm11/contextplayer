@@ -20,7 +20,7 @@ import android.support.v7.widget.Toolbar;
 import android.app.Fragment;
 import android.app.Service;
 import android.app.AlertDialog;
-import android.widget.ImageButton;
+import android.webkit.WebView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
@@ -73,17 +73,22 @@ public class ActionBarFragment extends Fragment {
 	case R.id.action_about:
 	    Context context = getContext();
 	    AlertDialog.Builder builder = new AlertDialog.Builder(context);
-	    PackageManager pm = context.getPackageManager();
+	    LayoutInflater inflater = getActivity().getLayoutInflater();
+	    
 	    String ver = "???";
 	    try {
+		PackageManager pm = context.getPackageManager();
 		PackageInfo pi = pm.getPackageInfo("jp.ddo.masm11.contextplayer", 0);
 		ver = pi.versionName;
 	    } catch (PackageManager.NameNotFoundException e) {
 		Log.e(e, "namenotfoundexception");
 	    }
-	    String gpl3 = readFile(R.raw.copying3);
-	    String apache2 = readFile(R.raw.license_20);
-	    builder.setMessage(getResources().getString(R.string.about_this_app, ver, gpl3, apache2));
+	    
+	    WebView webView = (WebView) inflater.inflate(R.layout.about_dialog, null);
+	    webView.loadData(getResources().getString(R.string.about, ver), "text/html", null);
+	    
+	    builder.setView(webView);
+	    
 	    builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 		public void onClick(DialogInterface dialog, int which) {
 		    // NOP
