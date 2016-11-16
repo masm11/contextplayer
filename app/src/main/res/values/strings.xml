@@ -34,12 +34,6 @@
     <string name="playing">Playing %1$s&#8230;</string>
 
     <!-- ActionBarFragment.java -->
-    <string name="about">
-      &lt;html&gt;&lt;body&gt;
-	&lt;p&gt;Context Player v%1$s&lt;/p&gt;
-	&lt;p&gt;This app is licensed under &lt;a href=&quot;http://www.gnu.org/licenses/gpl-3.0-standalone.html&quot;&gt;GPLv3&lt;a&gt;.&lt;/p&gt;
-	&lt;p&gt;This app uses Activeandroid, whose license is &lt;a href=&quot;https://www.apache.org/licenses/LICENSE-2.0&quot;&gt;Apache License 2.0&lt;a&gt;.&lt;/p&gt;
-      &lt;/body&gt;&lt;/html&gt;
-    </string>
+    <string name="about_url">file:///android_asset/about_this_app.html</string>
     
 </resources>

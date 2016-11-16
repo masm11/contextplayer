@@ -85,7 +85,7 @@ public class ActionBarFragment extends Fragment {
 	    }
 	    
 	    WebView webView = (WebView) inflater.inflate(R.layout.about_dialog, null);
-	    webView.loadData(getResources().getString(R.string.about, ver), "text/html", null);
+	    webView.loadUrl(getResources().getString(R.string.about_url));
 	    
 	    builder.setView(webView);
 	    
