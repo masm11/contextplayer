@@ -21,6 +21,8 @@ import android.app.Fragment;
 import android.app.Service;
 import android.app.AlertDialog;
 import android.webkit.WebView;
+import android.webkit.WebSettings;
+import android.webkit.JavascriptInterface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
@@ -43,6 +45,24 @@ import java.io.Reader;
 import java.io.IOException;
 
 public class ActionBarFragment extends Fragment {
+    private class WebAppInterface {
+	private Context context;
+	public WebAppInterface(Context context) {
+	    this.context = context;
+	}
+	@JavascriptInterface
+	public String getAppVersion() {
+	    try {
+		PackageManager pm = context.getPackageManager();
+		PackageInfo pi = pm.getPackageInfo("jp.ddo.masm11.contextplayer", 0);
+		return pi.versionName;
+	    } catch (PackageManager.NameNotFoundException e) {
+		Log.e(e, "namenotfoundexception");
+	    }
+	    return "???";
+	}
+    }
+    
     private Toolbar toolbar;
     
     @Override
@@ -75,16 +95,10 @@ public class ActionBarFragment extends Fragment {
 	    AlertDialog.Builder builder = new AlertDialog.Builder(context);
 	    LayoutInflater inflater = getActivity().getLayoutInflater();
 	    
-	    String ver = "???";
-	    try {
-		PackageManager pm = context.getPackageManager();
-		PackageInfo pi = pm.getPackageInfo("jp.ddo.masm11.contextplayer", 0);
-		ver = pi.versionName;
-	    } catch (PackageManager.NameNotFoundException e) {
-		Log.e(e, "namenotfoundexception");
-	    }
-	    
 	    WebView webView = (WebView) inflater.inflate(R.layout.about_dialog, null);
+	    WebSettings settings = webView.getSettings();
+	    settings.setJavaScriptEnabled(true);
+	    webView.addJavascriptInterface(new WebAppInterface(context), "android");
 	    webView.loadUrl(getResources().getString(R.string.about_url));
 	    
 	    builder.setView(webView);
