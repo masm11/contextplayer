@@ -28,6 +28,8 @@ import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.BroadcastReceiver;
 import android.os.IBinder;
 import android.os.Binder;
 import android.os.Handler;
@@ -43,6 +45,7 @@ import java.util.Locale;
 
 public class PlayerService extends Service {
     public final static String ACTION_A2DP_DISCONNECTED = "jp.ddo.masm11.contextplayer.A2DP_DISCONNECTED";
+    public final static String ACTION_HEADSET_UNPLUGGED = "jp.ddo.masm11.contextplayer.HEADSET_UNPLUGGED";
     
     public class CurrentStatus {
 	public final long contextId;
@@ -74,6 +77,7 @@ public class PlayerService extends Service {
     private Thread broadcaster;
     private Handler handler;
     private Set<OnStatusChangedListener> statusChangedListeners;
+    private BroadcastReceiver headsetReceiver;
     
     public void setOnStatusChangedListener(OnStatusChangedListener listener) {
 	Log.d("listener=%s", listener.toString());
@@ -86,6 +90,9 @@ public class PlayerService extends Service {
 	
 	statusChangedListeners = Collections.newSetFromMap(
 		new WeakHashMap<OnStatusChangedListener, Boolean>());
+	
+	headsetReceiver = new HeadsetReceiver();
+	registerReceiver(headsetReceiver, new IntentFilter(AudioManager.ACTION_HEADSET_PLUG));
 	
 	audioAttributes = new AudioAttributes.Builder()
 		.setUsage(AudioAttributes.USAGE_MEDIA)
@@ -113,6 +120,9 @@ public class PlayerService extends Service {
 	if (action != null) {
 	    switch (action) {
 	    case ACTION_A2DP_DISCONNECTED:
+		pause();
+		break;
+	    case ACTION_HEADSET_UNPLUGGED:
 		pause();
 		break;
 	    }
@@ -803,5 +813,7 @@ public class PlayerService extends Service {
 	stopPlay();
 	Log.d("release curPlayer.");
 	releaseCurPlayer();
+	
+	unregisterReceiver(headsetReceiver);
     }
 }
