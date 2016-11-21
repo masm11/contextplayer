@@ -38,6 +38,10 @@ Android スマホ用の音楽再生プレイヤーです。
 
   Crashlytics が使うため。
 
+- com.android.launcher.permission.INSTALL_SHORTCUT
+
+  ホーム画面にショートカットアイコンを作成するため。
+
 動作確認環境:
 - Xperia X Performance (au SOV33)
 - Android 6.0.1

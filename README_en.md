@@ -34,6 +34,10 @@ It uses these permissions:
 
   for Crashlytics.
 
+- com.android.launcher.permission.INSTALL_SHORTCUT
+
+  to create shortcut icons on the home screen.
+
 Environments I use:
 
 - Xperia X Performance (au SOV33)
