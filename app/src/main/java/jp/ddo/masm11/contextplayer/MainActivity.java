@@ -75,6 +75,11 @@ public class MainActivity extends AppCompatActivity
 	    svc.setOnStatusChangedListener(listener);
 	    
 	    updateTrackInfo(svc.getCurrentStatus());
+	    
+	    if (needSwitchContext) {
+		svc.switchContext();
+		needSwitchContext = false;
+	    }
 	}
 	
 	@Override
@@ -91,6 +96,7 @@ public class MainActivity extends AppCompatActivity
     private int curPos;	// msec
     private int maxPos;	// msec
     private boolean seeking;
+    private boolean needSwitchContext;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -189,6 +195,22 @@ public class MainActivity extends AppCompatActivity
 	} else {
 	    // permission がある
 	    rootDir.mkdirs();
+	}
+	
+	Intent intent = getIntent();
+	if (intent != null) {
+	    String action = intent.getAction();
+	    if (action != null && action.equals(Intent.ACTION_MAIN)) {
+		long id = intent.getLongExtra("jp.ddo.masm11.contextplayer.CONTEXT_ID", -1);
+		
+		if (id != -1) {
+		    config = Config.findByKey("context_id");
+		    config.value = "" + id;
+		    config.save();
+		    
+		    needSwitchContext = true;
+		}
+	    }
 	}
     }
     

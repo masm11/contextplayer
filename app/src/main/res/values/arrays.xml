@@ -2,5 +2,6 @@
   <string-array name="context_list_menu">
     <item>Edit</item>
     <item>Delete</item>
+    <item>Create shortcut icon</item>
   </string-array>
 </resources>

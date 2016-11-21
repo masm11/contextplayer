@@ -18,6 +18,7 @@
     
     <!-- ContextActivity.java -->
     <string name="edit_the_context_name">Edit the context name</string>
+    <string name="edit_the_icon_label">Edit the icon label</string>
     <string name="are_you_sure_to_delete_it">Are you sure to delete it?</string>
     <string name="cant_delete_the_last_context">Can\'t delete the last context.</string>
     <string name="name_the_new_context">Name the new context</string>

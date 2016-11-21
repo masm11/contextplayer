@@ -20,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.content.Intent;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -175,58 +176,15 @@ public class ContextActivity extends AppCompatActivity {
 			AlertDialog.Builder builder;
 			switch (which) {
 			case 0:	// edit
-			    final EditText editText = new EditText(ContextActivity.this);
-			    editText.setInputType(InputType.TYPE_CLASS_TEXT);
-			    editText.setText(datum.name);
-			    builder = new AlertDialog.Builder(ContextActivity.this);
-			    builder.setTitle(R.string.edit_the_context_name);
-			    builder.setView(editText);
-			    builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-				    // NOP.
-				}
-			    });
-			    builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-				    String newName = editText.getText().toString();
-				    PlayContext ctxt = PlayContext.find(datum.id);
-				    ctxt.name = newName;
-				    ctxt.save();
-				    
-				    datum.name = newName;
-				    adapter.notifyDataSetChanged();
-				}
-			    });
-			    builder.show();
+			    editContextName(datum);
 			    break;
 			    
 			case 1:	// delete
-			    if (adapter.getCount() >= 2) {
-				builder = new AlertDialog.Builder(ContextActivity.this);
-				builder.setMessage(R.string.are_you_sure_to_delete_it);
-				builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-				    public void onClick(DialogInterface dialog, int which) {
-					// NOP.
-				    }
-				});
-				builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-				    public void onClick(DialogInterface dialog, int which) {
-					PlayContext ctxt = PlayContext.find(datum.id);
-					ctxt.delete();
-					adapter.remove(datum);
-				    }
-				});
-				builder.show();
-			    } else {
-				builder = new AlertDialog.Builder(ContextActivity.this);
-				builder.setMessage(R.string.cant_delete_the_last_context);
-				builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-				    public void onClick(DialogInterface dialog, int which) {
-					// NOP.
-				    }
-				});
-				builder.show();
-			    }
+			    deleteContext(datum);
+			    break;
+			    
+			case 2:	// create icon
+			    createIcon(datum);
 			    break;
 			}
 		    }
@@ -234,6 +192,95 @@ public class ContextActivity extends AppCompatActivity {
 		builder.show();
 		
 		return true;
+	    }
+	    
+	    private void editContextName(final Datum datum) {
+		final EditText editText = new EditText(ContextActivity.this);
+		editText.setInputType(InputType.TYPE_CLASS_TEXT);
+		editText.setText(datum.name);
+		AlertDialog.Builder builder = new AlertDialog.Builder(ContextActivity.this);
+		builder.setTitle(R.string.edit_the_context_name);
+		builder.setView(editText);
+		builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+		    public void onClick(DialogInterface dialog, int which) {
+			// NOP.
+		    }
+		});
+		builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+		    public void onClick(DialogInterface dialog, int which) {
+			String newName = editText.getText().toString();
+			PlayContext ctxt = PlayContext.find(datum.id);
+			ctxt.name = newName;
+			ctxt.save();
+			
+			datum.name = newName;
+			adapter.notifyDataSetChanged();
+		    }
+		});
+		builder.show();
+	    }
+	    
+	    private void deleteContext(final Datum datum) {
+		if (adapter.getCount() >= 2) {
+		    AlertDialog.Builder builder = new AlertDialog.Builder(ContextActivity.this);
+		    builder.setMessage(R.string.are_you_sure_to_delete_it);
+		    builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+			    // NOP.
+			}
+		    });
+		    builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+			    PlayContext ctxt = PlayContext.find(datum.id);
+			    ctxt.delete();
+			    adapter.remove(datum);
+			}
+		    });
+		    builder.show();
+		} else {
+		    AlertDialog.Builder builder = new AlertDialog.Builder(ContextActivity.this);
+		    builder.setMessage(R.string.cant_delete_the_last_context);
+		    builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+			    // NOP.
+			}
+		    });
+		    builder.show();
+		}
+	    }
+	    
+	    private void createIcon(final Datum datum) {
+		final EditText editText = new EditText(ContextActivity.this);
+		editText.setInputType(InputType.TYPE_CLASS_TEXT);
+		editText.setText(datum.name);
+		AlertDialog.Builder builder = new AlertDialog.Builder(ContextActivity.this);
+		builder.setTitle(R.string.edit_the_icon_label);
+		builder.setView(editText);
+		builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+		    public void onClick(DialogInterface dialog, int which) {
+			// NOP.
+		    }
+		});
+		builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+		    public void onClick(DialogInterface dialog, int which) {
+			String label = editText.getText().toString();
+			long id = datum.id;
+			
+			Parcelable icon = Intent.ShortcutIconResource.fromContext(ContextActivity.this, R.drawable.launcher);
+			
+			Intent intent = new Intent(Intent.ACTION_MAIN);
+			intent.setClassName(ContextActivity.this, MainActivity.class.getName());
+			intent.putExtra("jp.ddo.masm11.contextplayer.CONTEXT_ID", id);
+			
+			Intent inst = new Intent("com.android.launcher.action.INSTALL_SHORTCUT");
+			inst.putExtra(Intent.EXTRA_SHORTCUT_INTENT, intent);
+			inst.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, icon);
+			inst.putExtra(Intent.EXTRA_SHORTCUT_NAME, label);
+			
+			sendBroadcast(inst);
+		    }
+		});
+		builder.show();
 	    }
 	});
 	
