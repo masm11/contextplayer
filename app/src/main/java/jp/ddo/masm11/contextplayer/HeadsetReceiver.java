@@ -22,6 +22,8 @@ import android.content.Context;
 import android.media.AudioManager;
 
 public class HeadsetReceiver extends BroadcastReceiver {
+    private int isPlugged = -1;
+    
     @Override
     public void onReceive(Context context, Intent intent) {
 	Log.d("");
@@ -35,11 +37,19 @@ public class HeadsetReceiver extends BroadcastReceiver {
 		Log.d("state=%d", state);
 		Log.d("name=%s", name);
 		Log.d("microphone=%d", microphone);
-		if (state == 0) {
-		    Log.d("headset unplugged.");
-		    Intent i = new Intent(context, PlayerService.class);
-		    i.setAction(PlayerService.ACTION_HEADSET_UNPLUGGED);
-		    context.startService(i);
+		/* PlayerService を起動すると、必ず飛んでくる。
+		 * もしかして現在の状態の通知のつもりか?
+		 */
+		if (isPlugged != -1) {
+		    if (state == 0) {
+			Log.d("headset unplugged.");
+			Intent i = new Intent(context, PlayerService.class);
+			i.setAction(PlayerService.ACTION_HEADSET_UNPLUGGED);
+			context.startService(i);
+		    }
+		    isPlugged = state;
+		} else {
+		    isPlugged = state;
 		}
 	    }
 	}
