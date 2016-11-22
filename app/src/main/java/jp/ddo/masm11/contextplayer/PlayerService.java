@@ -339,8 +339,14 @@ public class PlayerService extends Service {
 	    setForeground(false);
 	    
 	    if (curPlayer != null) {
-		Log.d("pause %s", curPlayer.toString());
-		curPlayer.pause();
+		/* paused から pause() は問題ないが、
+		 * prepared から pause() は正しくないみたい。
+		 */
+		if (curPlayer.isPlaying()) {
+		    Log.d("pause %s", curPlayer.toString());
+		    curPlayer.pause();
+		} else
+		    Log.d("already paused %s", curPlayer.toString());
 	    }
 	    
 	    Log.d("abandon audio focus.");
