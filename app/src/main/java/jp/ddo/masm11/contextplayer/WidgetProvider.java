@@ -41,10 +41,10 @@ public class WidgetProvider extends AppWidgetProvider {
 	    rv.setOnClickPendingIntent(R.id.widget_button, pendingIntent);
 	    
 	    appWidgetManager.updateAppWidget(appWidgetId, rv);
-	    
-	    intent = new Intent(context, PlayerService.class);
-	    intent.setAction(PlayerService.ACTION_UPDATE_APPWIDGET);
-	    context.startService(intent);
 	}
+	
+	Intent intent = new Intent(context, PlayerService.class);
+	intent.setAction(PlayerService.ACTION_UPDATE_APPWIDGET);
+	context.startService(intent);
     }
 }
