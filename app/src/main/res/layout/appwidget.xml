@@ -1,19 +1,23 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="10dp">
   
   <Button
       android:id="@+id/widget_text"
       android:layout_width="0dp"
       android:layout_weight="1"
       android:layout_height="match_parent"
+      android:background="@drawable/appwidget_text"
       style="@style/Button2"/>
   
   <ImageButton
       android:id="@+id/widget_button"
       android:layout_width="wrap_content"
       android:layout_height="match_parent"
-      android:src="@android:drawable/ic_media_play"/>
+      android:padding="5dp"
+      android:src="@android:drawable/ic_media_play"
+      android:background="@drawable/appwidget_button"/>
   
 </LinearLayout>
