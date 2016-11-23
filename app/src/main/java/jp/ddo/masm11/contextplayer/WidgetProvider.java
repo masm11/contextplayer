@@ -24,7 +24,7 @@ import android.content.Intent;
 import android.app.PendingIntent;
 
 public class WidgetProvider extends AppWidgetProvider {
-    
+    @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
 	for (int i = 0; i < appWidgetIds.length; i++) {
 	    int appWidgetId = appWidgetIds[i];
@@ -38,6 +38,10 @@ public class WidgetProvider extends AppWidgetProvider {
 	    rv.setImageViewResource(R.id.widget_button, android.R.drawable.ic_media_pause);
 	    
 	    appWidgetManager.updateAppWidget(appWidgetId, rv);
+	    
+	    intent = new Intent(context, PlayerService.class);
+	    intent.setAction(PlayerService.ACTION_UPDATE_APPWIDGET);
+	    context.startService(intent);
 	}
     }
 }

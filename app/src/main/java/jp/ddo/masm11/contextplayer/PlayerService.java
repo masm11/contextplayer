@@ -50,6 +50,7 @@ public class PlayerService extends Service {
     public final static String ACTION_A2DP_DISCONNECTED = "jp.ddo.masm11.contextplayer.A2DP_DISCONNECTED";
     public final static String ACTION_HEADSET_UNPLUGGED = "jp.ddo.masm11.contextplayer.HEADSET_UNPLUGGED";
     public final static String ACTION_TOGGLE = "jp.ddo.masm11.contextplayer.TOGGLE";
+    public final static String ACTION_UPDATE_APPWIDGET = "jp.ddo.masm11.contextplayer.UPDATE_APP_WIDGET";
     
     public class CurrentStatus {
 	public final long contextId;
@@ -131,6 +132,9 @@ public class PlayerService extends Service {
 		break;
 	    case ACTION_TOGGLE:
 		toggle();
+		break;
+	    case ACTION_UPDATE_APPWIDGET:
+		updateAppWidget();
 		break;
 	    }
 	}
