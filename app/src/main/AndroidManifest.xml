@@ -30,12 +30,25 @@
 	
         <activity android:name=".ContextActivity"/>
 	
-        <service android:name=".PlayerService"/>
+        <service android:name=".PlayerService">
+          <intent-filter>
+            <action android:name="jp.ddo.masm11.contextplayer.TOGGLE"/>
+          </intent-filter>
+	</service>
 	
 	<receiver android:name="BluetoothReceiver">
             <intent-filter>
                 <action android:name="android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED"/>
             </intent-filter>
+	</receiver>
+	
+	<receiver android:name=".WidgetProvider">
+	  <intent-filter>
+	    <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+	  </intent-filter>
+	  <meta-data
+	      android:name="android.appwidget.provider"
+	      android:resource="@xml/appwidget_info"/>
 	</receiver>
 	
     </application>

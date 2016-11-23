@@ -30,9 +30,12 @@ import android.net.Uri;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.os.IBinder;
 import android.os.Binder;
 import android.os.Handler;
+import android.appwidget.AppWidgetManager;
+import android.widget.RemoteViews;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -46,6 +49,7 @@ import java.util.Locale;
 public class PlayerService extends Service {
     public final static String ACTION_A2DP_DISCONNECTED = "jp.ddo.masm11.contextplayer.A2DP_DISCONNECTED";
     public final static String ACTION_HEADSET_UNPLUGGED = "jp.ddo.masm11.contextplayer.HEADSET_UNPLUGGED";
+    public final static String ACTION_TOGGLE = "jp.ddo.masm11.contextplayer.TOGGLE";
     
     public class CurrentStatus {
 	public final long contextId;
@@ -124,6 +128,9 @@ public class PlayerService extends Service {
 		break;
 	    case ACTION_HEADSET_UNPLUGGED:
 		pause();
+		break;
+	    case ACTION_TOGGLE:
+		toggle();
 		break;
 	    }
 	}
@@ -263,6 +270,14 @@ public class PlayerService extends Service {
 	stopPlay();
     }
     
+    private void toggle() {
+	Log.d("");
+	if (curPlayer != null && curPlayer.isPlaying())
+	    pause();
+	else
+	    play(null);
+    }
+    
     private void prevTrack() {
 	if (curPlayer != null) {
 	    int pos = curPlayer.getCurrentPosition();
@@ -327,6 +342,8 @@ public class PlayerService extends Service {
 	    
 	    startBroadcast();
 	    
+	    updateAppWidget();
+	    
 	    saveContext();
 	}
     }
@@ -348,6 +365,8 @@ public class PlayerService extends Service {
 		} else
 		    Log.d("already paused %s", curPlayer.toString());
 	    }
+	    
+	    updateAppWidget();
 	    
 	    Log.d("abandon audio focus.");
 	    audioManager.abandonAudioFocus(audioFocusChangeListener);
@@ -821,5 +840,16 @@ public class PlayerService extends Service {
 	releaseCurPlayer();
 	
 	unregisterReceiver(headsetReceiver);
+    }
+    
+    private void updateAppWidget() {
+	int icon = curPlayer != null && curPlayer.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play;
+	AppWidgetManager manager = AppWidgetManager.getInstance(this);
+	int[] ids = manager.getAppWidgetIds(new ComponentName(this, WidgetProvider.class));
+	for (int id: ids) {
+	    RemoteViews rv = new RemoteViews(getPackageName(), R.layout.appwidget);
+	    rv.setImageViewResource(R.id.widget_button, icon);
+	    manager.updateAppWidget(id, rv);
+	}
     }
 }
