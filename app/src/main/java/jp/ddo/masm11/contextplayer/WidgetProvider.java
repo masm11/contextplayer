@@ -31,11 +31,14 @@ public class WidgetProvider extends AppWidgetProvider {
 	    
 	    RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.appwidget);
 	    
-	    Intent intent = new Intent(context, PlayerService.class);
+	    Intent intent = new Intent(context, ContextActivity.class);
+	    PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+	    rv.setOnClickPendingIntent(R.id.widget_text, pendingIntent);
+	    
+	    intent = new Intent(context, PlayerService.class);
 	    intent.setAction(PlayerService.ACTION_TOGGLE);
-	    PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, 0);
+	    pendingIntent = PendingIntent.getService(context, 0, intent, 0);
 	    rv.setOnClickPendingIntent(R.id.widget_button, pendingIntent);
-	    rv.setImageViewResource(R.id.widget_button, android.R.drawable.ic_media_pause);
 	    
 	    appWidgetManager.updateAppWidget(appWidgetId, rv);
 	    
