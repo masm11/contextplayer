@@ -22,6 +22,7 @@ import android.content.Context;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothA2dp;
+import android.os.Parcelable;
 
 public class BluetoothReceiver extends BroadcastReceiver {
     @Override
@@ -29,13 +30,14 @@ public class BluetoothReceiver extends BroadcastReceiver {
 	Log.d("");
 	if (intent != null) {
 	    String action = intent.getAction();
-	    Log.d("action=%s", action);
-	    if (action.equals(BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED)) {
+	    Log.d("action=%s", action != null ? action : "null");
+	    if (action != null && action.equals(BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED)) {
 		int state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1);
 		int prevstate = intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1);
 		Log.d("state=%d", state);
 		Log.d("prevstate=%d", prevstate);
-		Log.d("device=%s", intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE).toString());
+		Parcelable parcelable = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+		Log.d("device=%s", parcelable != null ? parcelable.toString() : "null");
 		if (state == BluetoothProfile.STATE_DISCONNECTED && prevstate != BluetoothProfile.STATE_DISCONNECTED) {
 		    Log.d("a2dp disconnected.");
 		    Intent i = new Intent(context, PlayerService.class);
