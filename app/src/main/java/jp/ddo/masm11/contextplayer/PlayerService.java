@@ -843,12 +843,21 @@ public class PlayerService extends Service {
     }
     
     private void updateAppWidget() {
-	int icon = curPlayer != null && curPlayer.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play;
+	PlayContext ctxt = PlayContext.find(contextId);
+	String contextName = null;
+	if (ctxt != null)
+	    contextName = ctxt.name;
+	
+	int icon = android.R.drawable.ic_media_play;
+	if (curPlayer != null && curPlayer.isPlaying())
+	    icon = android.R.drawable.ic_media_pause;
+	
 	AppWidgetManager manager = AppWidgetManager.getInstance(this);
 	int[] ids = manager.getAppWidgetIds(new ComponentName(this, WidgetProvider.class));
 	for (int id: ids) {
 	    RemoteViews rv = new RemoteViews(getPackageName(), R.layout.appwidget);
 	    rv.setImageViewResource(R.id.widget_button, icon);
+	    rv.setTextViewText(R.id.widget_text, contextName);
 	    manager.updateAppWidget(id, rv);
 	}
     }
