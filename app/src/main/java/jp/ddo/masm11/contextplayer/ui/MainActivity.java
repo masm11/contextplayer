@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer;
+package jp.ddo.masm11.contextplayer.ui;
 
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -50,6 +50,13 @@ import io.fabric.sdk.android.Fabric;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
+
+import jp.ddo.masm11.contextplayer.R;
+import jp.ddo.masm11.contextplayer.service.PlayerService;
+import jp.ddo.masm11.contextplayer.util.Log;
+import jp.ddo.masm11.contextplayer.util.Metadata;
+import jp.ddo.masm11.contextplayer.db.PlayContext;
+import jp.ddo.masm11.contextplayer.db.Config;
 
 public class MainActivity extends AppCompatActivity
     implements ActivityCompat.OnRequestPermissionsResultCallback {

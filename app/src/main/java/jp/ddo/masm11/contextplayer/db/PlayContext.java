@@ -14,30 +14,50 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer;
+package jp.ddo.masm11.contextplayer.db;
 
 import com.activeandroid.Model;
 import com.activeandroid.query.Select;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
 
-@Table(name = "Configs")
-public class Config extends Model {
+import java.util.List;
+
+@Table(name = "PlayContexts")
+public class PlayContext extends Model {
     
-    @Column(name = "key", notNull = true, unique = true)
-    public String key;
+    @Column(name = "name", notNull = true)
+    public String name;
     
-    @Column(name = "value")
-    public String value;
+    @Column(name = "topdir", notNull = true)
+    public String topDir;
     
-    public Config() {
+    @Column(name = "path")
+    public String path;
+    
+    @Column(name = "pos")
+    public long pos;	// msec
+    
+    public PlayContext() {
 	super();
     }
     
-    public static Config findByKey(String key) {
+    public static PlayContext find(long id) {
 	return new Select()
-		.from(Config.class)
-		.where("key = ?", key)
+		.from(PlayContext.class)
+		.where("id = ?", id)
 		.executeSingle();
+    }
+    
+    public static List<PlayContext> all() {
+	return new Select()
+		.from(PlayContext.class)
+		.orderBy("id")
+		.execute();
+    }
+    
+    @Override
+    public String toString() {
+	return name;
     }
 }

@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer;
+package jp.ddo.masm11.contextplayer.ui;
 
 import android.app.Fragment;
 import android.app.Service;
@@ -27,6 +27,10 @@ import android.os.IBinder;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.ComponentName;
+
+import jp.ddo.masm11.contextplayer.R;
+import jp.ddo.masm11.contextplayer.service.PlayerService;
+import jp.ddo.masm11.contextplayer.util.Log;
 
 public class OperationFragment extends Fragment {
     private class PlayerServiceConnection implements ServiceConnection {

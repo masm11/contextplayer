@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer;
+package jp.ddo.masm11.contextplayer.ui;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -43,6 +43,12 @@ import android.text.InputType;
 import java.io.File;
 import java.util.List;
 import java.util.LinkedList;
+
+import jp.ddo.masm11.contextplayer.R;
+import jp.ddo.masm11.contextplayer.service.PlayerService;
+import jp.ddo.masm11.contextplayer.util.Log;
+import jp.ddo.masm11.contextplayer.db.PlayContext;
+import jp.ddo.masm11.contextplayer.db.Config;
 
 public class ContextActivity extends AppCompatActivity {
     private class PlayerServiceConnection implements ServiceConnection {

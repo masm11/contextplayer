@@ -5,11 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="jp.ddo.masm11.contextplayer.Explorer">
+    tools:context="jp.ddo.masm11.contextplayer.ui.ExplorerActivity">
 
   <!-- action bar -->
   <fragment
-      class="jp.ddo.masm11.contextplayer.ActionBarFragment"
+      class="jp.ddo.masm11.contextplayer.ui.ActionBarFragment"
       android:id="@+id/actionbar_frag"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"/>
@@ -23,7 +23,7 @@
       android:paddingRight="@dimen/activity_horizontal_margin"
       android:paddingTop="@dimen/activity_vertical_margin">
 
-    <jp.ddo.masm11.contextplayer.PathView
+    <jp.ddo.masm11.contextplayer.ui.PathView
 	android:id="@+id/path"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
@@ -35,7 +35,7 @@
 	android:layout_weight="1"/>
 
   <fragment
-      class="jp.ddo.masm11.contextplayer.OperationFragment"
+      class="jp.ddo.masm11.contextplayer.ui.OperationFragment"
       android:id="@+id/op_frag"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"/>

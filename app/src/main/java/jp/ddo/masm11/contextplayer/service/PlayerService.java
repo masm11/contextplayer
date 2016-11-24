@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer;
+package jp.ddo.masm11.contextplayer.service;
 
 import android.support.v7.app.NotificationCompat;
 import android.app.Service;
@@ -45,6 +45,15 @@ import java.util.HashSet;
 import java.util.WeakHashMap;
 import java.util.Set;
 import java.util.Locale;
+
+import jp.ddo.masm11.contextplayer.R;
+import jp.ddo.masm11.contextplayer.ui.MainActivity;
+import jp.ddo.masm11.contextplayer.ui.ExplorerActivity;
+import jp.ddo.masm11.contextplayer.receiver.HeadsetReceiver;
+import jp.ddo.masm11.contextplayer.db.PlayContext;
+import jp.ddo.masm11.contextplayer.db.Config;
+import jp.ddo.masm11.contextplayer.util.Log;
+import jp.ddo.masm11.contextplayer.widget.WidgetProvider;
 
 public class PlayerService extends Service {
     public final static String ACTION_A2DP_DISCONNECTED = "jp.ddo.masm11.contextplayer.A2DP_DISCONNECTED";
@@ -859,6 +868,7 @@ public class PlayerService extends Service {
 	AppWidgetManager manager = AppWidgetManager.getInstance(this);
 	int[] ids = manager.getAppWidgetIds(new ComponentName(this, WidgetProvider.class));
 	for (int id: ids) {
+	    Log.d("packageName=%s", getPackageName());
 	    RemoteViews rv = new RemoteViews(getPackageName(), R.layout.appwidget);
 	    rv.setImageViewResource(R.id.widget_button, icon);
 	    rv.setTextViewText(R.id.widget_text, contextName);

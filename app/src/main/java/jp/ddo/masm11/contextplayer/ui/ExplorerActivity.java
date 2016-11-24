@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer;
+package jp.ddo.masm11.contextplayer.ui;
 
 import android.support.v7.app.AppCompatActivity;
 import android.app.Service;
@@ -45,6 +45,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Locale;
+
+import jp.ddo.masm11.contextplayer.R;
+import jp.ddo.masm11.contextplayer.db.PlayContext;
+import jp.ddo.masm11.contextplayer.db.Config;
+import jp.ddo.masm11.contextplayer.util.Log;
+import jp.ddo.masm11.contextplayer.util.Metadata;
+import jp.ddo.masm11.contextplayer.service.PlayerService;
 
 public class ExplorerActivity extends AppCompatActivity {
     private static final String STATE_CUR_DIR = "jp.ddo.masm11.contextplayer.CUR_DIR";

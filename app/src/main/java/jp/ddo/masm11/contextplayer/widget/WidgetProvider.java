@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer;
+package jp.ddo.masm11.contextplayer.widget;
 
 import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetManager;
@@ -22,6 +22,10 @@ import android.widget.RemoteViews;
 import android.content.Context;
 import android.content.Intent;
 import android.app.PendingIntent;
+
+import jp.ddo.masm11.contextplayer.R;
+import jp.ddo.masm11.contextplayer.ui.ContextActivity;
+import jp.ddo.masm11.contextplayer.service.PlayerService;
 
 public class WidgetProvider extends AppWidgetProvider {
     @Override
@@ -31,6 +35,7 @@ public class WidgetProvider extends AppWidgetProvider {
 	for (int i = 0; i < appWidgetIds.length; i++) {
 	    int appWidgetId = appWidgetIds[i];
 	    
+	    android.util.Log.d("WidgetProvider", "packageName=" + context.getPackageName());
 	    RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.appwidget);
 	    
 	    Intent intent = new Intent(context, ContextActivity.class);

@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer;
+package jp.ddo.masm11.contextplayer.util;
 
 import com.crashlytics.android.Crashlytics;
 
@@ -28,7 +28,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.LinkedList;
 
-class Log {
+public class Log {
     private static class Item {
 	final int priority;
 	final Throwable e;
@@ -88,7 +88,7 @@ class Log {
     }
     
     private static Thread thread;
-    static void init(File dir) {
+    public static void init(File dir) {
 	if (thread != null)
 	    return;
 	
@@ -110,35 +110,35 @@ class Log {
 	thread.start();
     }
     
-    static void d(String fmt, Object... args) {
+    public static void d(String fmt, Object... args) {
 	common(android.util.Log.DEBUG, null, fmt, args);
     }
     
-    static void d(Throwable e, String fmt, Object... args) {
+    public static void d(Throwable e, String fmt, Object... args) {
 	common(android.util.Log.DEBUG, e, fmt, args);
     }
     
-    static void i(String fmt, Object... args) {
+    public static void i(String fmt, Object... args) {
 	common(android.util.Log.INFO, null, fmt, args);
     }
     
-    static void i(Throwable e, String fmt, Object... args) {
+    public static void i(Throwable e, String fmt, Object... args) {
 	common(android.util.Log.INFO, e, fmt, args);
     }
     
-    static void w(String fmt, Object... args) {
+    public static void w(String fmt, Object... args) {
 	common(android.util.Log.WARN, null, fmt, args);
     }
     
-    static void w(Throwable e, String fmt, Object... args) {
+    public static void w(Throwable e, String fmt, Object... args) {
 	common(android.util.Log.WARN, e, fmt, args);
     }
     
-    static void e(String fmt, Object... args) {
+    public static void e(String fmt, Object... args) {
 	common(android.util.Log.ERROR, null, fmt, args);
     }
     
-    static void e(Throwable e, String fmt, Object... args) {
+    public static void e(Throwable e, String fmt, Object... args) {
 	common(android.util.Log.ERROR, e, fmt, args);
     }
     

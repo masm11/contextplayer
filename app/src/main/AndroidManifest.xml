@@ -19,26 +19,26 @@
       <meta-data android:name="AA_DB_VERSION" android:value="2"/>
       <meta-data android:name="AA_MODELS" android:value="jp.ddo.masm11.contextplayer.PlayContext, jp.ddo.masm11.contextplayer.Config"/>
       
-        <activity android:name=".MainActivity">
+        <activity android:name=".ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 	
-        <activity android:name=".ExplorerActivity"/>
+        <activity android:name=".ui.ExplorerActivity"/>
 	
-        <activity android:name=".ContextActivity"/>
+        <activity android:name=".ui.ContextActivity"/>
 	
-        <service android:name=".PlayerService"/>
+        <service android:name=".service.PlayerService"/>
 	
-	<receiver android:name="BluetoothReceiver">
+	<receiver android:name=".receiver.BluetoothReceiver">
             <intent-filter>
                 <action android:name="android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED"/>
             </intent-filter>
 	</receiver>
 	
-	<receiver android:name=".WidgetProvider">
+	<receiver android:name=".widget.WidgetProvider">
 	  <intent-filter>
 	    <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
 	  </intent-filter>
