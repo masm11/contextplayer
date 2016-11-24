@@ -26,6 +26,8 @@ import android.app.PendingIntent;
 public class WidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+	android.util.Log.d("WidgetProvider", "onUpdate(): begin.");
+	
 	for (int i = 0; i < appWidgetIds.length; i++) {
 	    int appWidgetId = appWidgetIds[i];
 	    
@@ -46,5 +48,7 @@ public class WidgetProvider extends AppWidgetProvider {
 	Intent intent = new Intent(context, PlayerService.class);
 	intent.setAction(PlayerService.ACTION_UPDATE_APPWIDGET);
 	context.startService(intent);
+	
+	android.util.Log.d("WidgetProvider", "onUpdate(): end.");
     }
 }
