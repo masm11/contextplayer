@@ -16,6 +16,9 @@
 */
 package jp.ddo.masm11.contextplayer;
 
+import com.crashlytics.android.Crashlytics;
+import io.fabric.sdk.android.Fabric;
+
 import jp.ddo.masm11.logger.Log;
 
 public class Application extends com.activeandroid.app.Application {
@@ -23,6 +26,7 @@ public class Application extends com.activeandroid.app.Application {
     public void onCreate() {
 	super.onCreate();
 	
+        Fabric.with(this, new Crashlytics());
 	Log.init(getExternalFilesDir(null));
     }
 }
