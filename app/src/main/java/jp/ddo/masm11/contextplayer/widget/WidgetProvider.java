@@ -28,18 +28,20 @@ import jp.ddo.masm11.contextplayer.R;
 import jp.ddo.masm11.contextplayer.ui.ContextActivity;
 import jp.ddo.masm11.contextplayer.service.PlayerService;
 
+import jp.ddo.masm11.logger.Log;
+
 public class WidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-	android.util.Log.d("WidgetProvider", "onUpdate(): begin.");
-	android.util.Log.d("WidgetProvider", "onUpdate(): appWidgetId.length=" + appWidgetIds.length);
+	Log.d("begin.");
+	Log.d("appWidgetId.length=" + appWidgetIds.length);
 	for (int i = 0; i < appWidgetIds.length; i++)
-	    android.util.Log.d("WidgetProvider", "onUpdate(): appWidgetId=" + appWidgetIds[i]);
+	    Log.d("appWidgetId=" + appWidgetIds[i]);
 	
 	for (int i = 0; i < appWidgetIds.length; i++) {
 	    int appWidgetId = appWidgetIds[i];
 	    
-	    android.util.Log.d("WidgetProvider", "packageName=" + context.getPackageName());
+	    Log.d("packageName=" + context.getPackageName());
 	    RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.appwidget);
 	    
 	    Intent intent = new Intent(context, ContextActivity.class);
@@ -58,22 +60,22 @@ public class WidgetProvider extends AppWidgetProvider {
 	intent.setAction(PlayerService.ACTION_UPDATE_APPWIDGET);
 	context.startService(intent);
 	
-	android.util.Log.d("WidgetProvider", "onUpdate(): end.");
+	Log.d("end.");
     }
     
     @Override
     public void onReceive(Context context, Intent intent) {
-	android.util.Log.d("WidgetProvider", "intent=" + intent.toString());
+	Log.d("intent=" + intent.toString());
 	String action = intent.getAction();
-	android.util.Log.d("WidgetProvider", "action=" + (action != null ? action : "null"));
+	Log.d("action=" + (action != null ? action : "null"));
 	Bundle bundle = intent.getExtras();
 	if (bundle != null) {
 	    for (String key: bundle.keySet()) {
 		Object val = bundle.get(key);
-		android.util.Log.d("WidgetProvider", "key=" + key + ", val=" + (val != null ? val : "null"));
+		Log.d("key=" + key + ", val=" + (val != null ? val : "null"));
 	    }
 	} else
-	    android.util.Log.d("WidgetProvider", "extras=none");
+	    Log.d("extras=none");
 	
 	super.onReceive(context, intent);
     }

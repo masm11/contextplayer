@@ -25,7 +25,8 @@ import android.bluetooth.BluetoothA2dp;
 import android.os.Parcelable;
 
 import jp.ddo.masm11.contextplayer.service.PlayerService;
-import jp.ddo.masm11.contextplayer.util.Log;
+
+import jp.ddo.masm11.logger.Log;
 
 public class BluetoothReceiver extends BroadcastReceiver {
     @Override

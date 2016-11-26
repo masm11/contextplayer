@@ -46,7 +46,6 @@ import java.util.LinkedList;
 
 import jp.ddo.masm11.contextplayer.R;
 import jp.ddo.masm11.contextplayer.service.PlayerService;
-import jp.ddo.masm11.contextplayer.util.Log;
 import jp.ddo.masm11.contextplayer.db.PlayContext;
 import jp.ddo.masm11.contextplayer.db.Config;
 
@@ -124,7 +123,6 @@ public class ContextActivity extends AppCompatActivity {
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-	Log.init(getExternalCacheDir());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_context);
 	

@@ -49,9 +49,10 @@ import java.util.Locale;
 import jp.ddo.masm11.contextplayer.R;
 import jp.ddo.masm11.contextplayer.db.PlayContext;
 import jp.ddo.masm11.contextplayer.db.Config;
-import jp.ddo.masm11.contextplayer.util.Log;
 import jp.ddo.masm11.contextplayer.util.Metadata;
 import jp.ddo.masm11.contextplayer.service.PlayerService;
+
+import jp.ddo.masm11.logger.Log;
 
 public class ExplorerActivity extends AppCompatActivity {
     private static final String STATE_CUR_DIR = "jp.ddo.masm11.contextplayer.CUR_DIR";
@@ -270,7 +271,6 @@ public class ExplorerActivity extends AppCompatActivity {
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-	Log.init(getExternalCacheDir());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explorer);
 	

@@ -53,10 +53,11 @@ import java.util.Locale;
 
 import jp.ddo.masm11.contextplayer.R;
 import jp.ddo.masm11.contextplayer.service.PlayerService;
-import jp.ddo.masm11.contextplayer.util.Log;
 import jp.ddo.masm11.contextplayer.util.Metadata;
 import jp.ddo.masm11.contextplayer.db.PlayContext;
 import jp.ddo.masm11.contextplayer.db.Config;
+
+import jp.ddo.masm11.logger.Log;
 
 public class MainActivity extends AppCompatActivity
     implements ActivityCompat.OnRequestPermissionsResultCallback {
@@ -107,7 +108,6 @@ public class MainActivity extends AppCompatActivity
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-	Log.init(getExternalCacheDir());
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);

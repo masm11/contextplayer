@@ -45,7 +45,8 @@ import java.io.Reader;
 import java.io.IOException;
 
 import jp.ddo.masm11.contextplayer.R;
-import jp.ddo.masm11.contextplayer.util.Log;
+
+import jp.ddo.masm11.logger.Log;
 
 public class ActionBarFragment extends Fragment {
     private class WebAppInterface {
@@ -60,7 +61,7 @@ public class ActionBarFragment extends Fragment {
 		PackageInfo pi = pm.getPackageInfo("jp.ddo.masm11.contextplayer", 0);
 		return pi.versionName;
 	    } catch (PackageManager.NameNotFoundException e) {
-		Log.e(e, "namenotfoundexception");
+		Log.e("namenotfoundexception", e);
 	    }
 	    return "???";
 	}
@@ -132,20 +133,20 @@ public class ActionBarFragment extends Fragment {
 		sb.append(buf, 0, s);
 	    return sb.toString();
 	} catch (IOException e) {
-	    Log.e(e, "ioexception");
+	    Log.e("ioexception", e);
 	} finally {
 	    if (r != null) {
 		try {
 		    r.close();
 		} catch (IOException e) {
-		    Log.e(e, "ioexception");
+		    Log.e("ioexception", e);
 		}
 	    }
 	    if (is != null) {
 		try {
 		    is.close();
 		} catch (IOException e) {
-		    Log.e(e, "ioexception");
+		    Log.e("ioexception", e);
 		}
 	    }
 	}

@@ -23,6 +23,8 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
+import jp.ddo.masm11.logger.Log;
+
 public class Metadata {
     private static MediaMetadataRetriever retr = new MediaMetadataRetriever();
     
@@ -193,14 +195,14 @@ public class Metadata {
 	    
 	    return true;
 	} catch (IOException e) {
-	    Log.e(e, "ioexception");
+	    Log.e("ioexception", e);
 	    return false;
 	} finally {
 	    if (bis != null) {
 		try {
 		    bis.close();
 		} catch (IOException e) {
-		    Log.e(e, "ioexception");
+		    Log.e("ioexception", e);
 		}
 	    }
 	}
@@ -400,7 +402,7 @@ public class Metadata {
 			if (isArtist)
 			    artist = str;
 		    } catch (UnsupportedEncodingException e) {
-			Log.e(e, "unsupportedencodingexception");
+			Log.e("unsupportedencodingexception", e);
 		    }
 		}
 	    }
@@ -408,14 +410,14 @@ public class Metadata {
 	    Log.d("done.");
 	    return true;
 	} catch (IOException e) {
-	    Log.e(e, "ioexception");
+	    Log.e("ioexception", e);
 	    return false;
 	} finally {
 	    if (bis != null) {
 		try {
 		    bis.close();
 		} catch (IOException e) {
-		    Log.e(e, "ioexception");
+		    Log.e("ioexception", e);
 		}
 	    }
 	}
@@ -496,7 +498,7 @@ public class Metadata {
 		
 		return true;
 	    } catch (Exception e) {
-		Log.i(e, "exception");
+		Log.i("exception", e);
 		return false;
 	    }
 	}

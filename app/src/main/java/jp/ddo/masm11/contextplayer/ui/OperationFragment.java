@@ -30,7 +30,8 @@ import android.content.ComponentName;
 
 import jp.ddo.masm11.contextplayer.R;
 import jp.ddo.masm11.contextplayer.service.PlayerService;
-import jp.ddo.masm11.contextplayer.util.Log;
+
+import jp.ddo.masm11.logger.Log;
 
 public class OperationFragment extends Fragment {
     private class PlayerServiceConnection implements ServiceConnection {

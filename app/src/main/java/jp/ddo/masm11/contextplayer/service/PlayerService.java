@@ -52,8 +52,9 @@ import jp.ddo.masm11.contextplayer.ui.ExplorerActivity;
 import jp.ddo.masm11.contextplayer.receiver.HeadsetReceiver;
 import jp.ddo.masm11.contextplayer.db.PlayContext;
 import jp.ddo.masm11.contextplayer.db.Config;
-import jp.ddo.masm11.contextplayer.util.Log;
 import jp.ddo.masm11.contextplayer.widget.WidgetProvider;
+
+import jp.ddo.masm11.logger.Log;
 
 public class PlayerService extends Service {
     public final static String ACTION_A2DP_DISCONNECTED = "jp.ddo.masm11.contextplayer.A2DP_DISCONNECTED";
@@ -347,7 +348,7 @@ public class PlayerService extends Service {
 		Log.d("starting.");
 		curPlayer.start();
 	    } catch (Exception e) {
-		Log.e(e, "exception");
+		Log.e("exception", e);
 	    }
 	    
 	    Log.d("set to foreground");
@@ -387,7 +388,7 @@ public class PlayerService extends Service {
 	    Log.d("save context");
 	    saveContext();
 	} catch (Exception e) {
-	    Log.e(e, "exception");
+	    Log.e("exception", e);
 	}
     }
     
@@ -432,7 +433,7 @@ public class PlayerService extends Service {
 	    Log.d("setting it as nextmediaplayer.");
 	    curPlayer.setNextMediaPlayer(nextPlayer);
 	} catch (Exception e) {
-	    Log.e(e, "exception");
+	    Log.e("exception", e);
 	}
     }
     
@@ -523,7 +524,7 @@ public class PlayerService extends Service {
 		Log.d("done. player=%s, path=%s", player.toString(), path);
 		return new Object[] { player, path };
 	    } catch (Exception e) {
-		Log.e(e, "exception");
+		Log.e("exception", e);
 	    }
 	    
 	    return null;
@@ -540,7 +541,7 @@ public class PlayerService extends Service {
 		curPlayer = null;
 	    }
 	} catch (Exception e) {
-	    Log.e(e, "exception");
+	    Log.e("exception", e);
 	}
     }
     
@@ -554,7 +555,7 @@ public class PlayerService extends Service {
 		nextPlayer = null;
 	    }
 	} catch (Exception e) {
-	    Log.e(e, "exception");
+	    Log.e("exception", e);
 	}
     }
     
@@ -807,7 +808,7 @@ public class PlayerService extends Service {
 			Thread.sleep(500);
 		    }
 		} catch (InterruptedException e) {
-		    Log.d(e, "interrupted.");
+		    Log.d("interrupted.", e);
 		}
 	    }
 	};
@@ -823,7 +824,7 @@ public class PlayerService extends Service {
 	    try {
 		broadcaster.join();
 	    } catch (InterruptedException e) {
-		Log.e(e, "interrupted.");
+		Log.e("interrupted.", e);
 	    }
 	    broadcaster = null;
 	}

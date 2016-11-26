@@ -21,8 +21,9 @@ import android.content.Intent;
 import android.content.Context;
 import android.media.AudioManager;
 
-import jp.ddo.masm11.contextplayer.util.Log;
 import jp.ddo.masm11.contextplayer.service.PlayerService;
+
+import jp.ddo.masm11.logger.Log;
 
 public class HeadsetReceiver extends BroadcastReceiver {
     private int isPlugged = -1;
