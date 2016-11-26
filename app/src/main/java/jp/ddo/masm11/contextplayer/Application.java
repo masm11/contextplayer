@@ -27,6 +27,6 @@ public class Application extends com.activeandroid.app.Application {
 	super.onCreate();
 	
         Fabric.with(this, new Crashlytics());
-	Log.init(getExternalFilesDir(null));
+	Log.init(getExternalFilesDir(null), BuildConfig.DEBUG);
     }
 }

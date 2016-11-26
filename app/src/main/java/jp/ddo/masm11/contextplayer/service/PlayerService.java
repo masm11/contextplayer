@@ -101,8 +101,6 @@ public class PlayerService extends Service {
     
     @Override
     public void onCreate() {
-	Log.init(getExternalCacheDir());
-	
 	statusChangedListeners = Collections.newSetFromMap(
 		new WeakHashMap<OnStatusChangedListener, Boolean>());
 	
