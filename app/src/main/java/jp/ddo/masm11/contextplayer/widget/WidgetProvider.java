@@ -21,6 +21,7 @@ import android.appwidget.AppWidgetManager;
 import android.widget.RemoteViews;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ComponentName;
 import android.app.PendingIntent;
 import android.os.Bundle;
 
@@ -38,23 +39,7 @@ public class WidgetProvider extends AppWidgetProvider {
 	for (int i = 0; i < appWidgetIds.length; i++)
 	    Log.d("appWidgetId=" + appWidgetIds[i]);
 	
-	for (int i = 0; i < appWidgetIds.length; i++) {
-	    int appWidgetId = appWidgetIds[i];
-	    
-	    Log.d("packageName=" + context.getPackageName());
-	    RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.appwidget);
-	    
-	    Intent intent = new Intent(context, ContextActivity.class);
-	    PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
-	    rv.setOnClickPendingIntent(R.id.widget_text, pendingIntent);
-	    
-	    intent = new Intent(context, PlayerService.class);
-	    intent.setAction(PlayerService.ACTION_TOGGLE);
-	    pendingIntent = PendingIntent.getService(context, 0, intent, 0);
-	    rv.setOnClickPendingIntent(R.id.widget_button, pendingIntent);
-	    
-	    appWidgetManager.updateAppWidget(appWidgetId, rv);
-	}
+	updateAppWidget(context, appWidgetIds, 0, null);
 	
 	Intent intent = new Intent(context, PlayerService.class);
 	intent.setAction(PlayerService.ACTION_UPDATE_APPWIDGET);
@@ -78,5 +63,38 @@ public class WidgetProvider extends AppWidgetProvider {
 	    Log.d("extras=none");
 	
 	super.onReceive(context, intent);
+    }
+    
+    public static void updateAppWidget(Context context, int[] appWidgetIds,
+	    int icon, String contextName) {
+	AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+	
+	if (appWidgetIds == null)
+	    appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(context, WidgetProvider.class));
+	
+	for (int i = 0; i < appWidgetIds.length; i++) {
+	    int appWidgetId = appWidgetIds[i];
+	    
+	    Log.d("packageName=" + context.getPackageName());
+	    
+	    RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.appwidget);
+	    
+	    Intent intent = new Intent(context, ContextActivity.class);
+	    PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+	    rv.setOnClickPendingIntent(R.id.widget_text, pendingIntent);
+	    
+	    intent = new Intent(context, PlayerService.class);
+	    intent.setAction(PlayerService.ACTION_TOGGLE);
+	    pendingIntent = PendingIntent.getService(context, 0, intent, 0);
+	    rv.setOnClickPendingIntent(R.id.widget_button, pendingIntent);
+	    
+	    if (icon != 0)
+		rv.setImageViewResource(R.id.widget_button, icon);
+	    
+	    if (contextName != null)
+		rv.setTextViewText(R.id.widget_text, contextName);
+	    
+	    appWidgetManager.updateAppWidget(appWidgetId, rv);
+	}
     }
 }

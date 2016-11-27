@@ -864,14 +864,6 @@ public class PlayerService extends Service {
 	if (curPlayer != null && curPlayer.isPlaying())
 	    icon = android.R.drawable.ic_media_pause;
 	
-	AppWidgetManager manager = AppWidgetManager.getInstance(this);
-	int[] ids = manager.getAppWidgetIds(new ComponentName(this, WidgetProvider.class));
-	for (int id: ids) {
-	    Log.d("packageName=%s", getPackageName());
-	    RemoteViews rv = new RemoteViews(getPackageName(), R.layout.appwidget);
-	    rv.setImageViewResource(R.id.widget_button, icon);
-	    rv.setTextViewText(R.id.widget_text, contextName);
-	    manager.updateAppWidget(id, rv);
-	}
+	WidgetProvider.updateAppWidget(this, null, icon, contextName);
     }
 }
