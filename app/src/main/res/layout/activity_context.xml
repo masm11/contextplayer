@@ -33,7 +33,11 @@
 	android:id="@+id/context_add"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	android:text="@string/create_new_context"/>
+	android:text="@string/create_new_context"
+	android:padding="3dp"
+	android:layout_margin="4dp"
+	android:background="@drawable/image_button"
+	android:stateListAnimator="@anim/image_button"/>
     
     <fragment
 	class="jp.ddo.masm11.contextplayer.ui.OperationFragment"
