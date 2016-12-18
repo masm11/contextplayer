@@ -15,7 +15,7 @@ props.load(new FileInputStream(rootProject.file('signingkey.properties')))
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "24.0.0"
+    buildToolsVersion "25.0.2"
 
     defaultConfig {
         applicationId "jp.ddo.masm11.contextplayer"
