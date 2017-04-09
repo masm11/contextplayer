@@ -333,9 +333,9 @@ public class Metadata {
 			    start = -1;
 			    break;
 			}
-			if (data[1] == 0xfe && data[2] == 0xff)
+			if ((data[1] & 0xff) == 0xfe && (data[2] & 0xff) == 0xff)
 			    encoding = "UTF-16BE";
-			else if (data[1] == 0xff && data[2] == 0xfe)
+			else if ((data[1] & 0xff) == 0xff && (data[2] & 0xff) == 0xfe)
 			    encoding = "UTF-16LE";
 			else {
 			    start = -1;
