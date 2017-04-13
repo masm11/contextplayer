@@ -92,7 +92,16 @@ public class ExplorerActivity extends AppCompatActivity {
 	public FileItem(File file) {
 	    this.file = file;
 	    if (!file.isDirectory()) {
-		String ext = mimeTypeMap.getFileExtensionFromUrl(file.toURI().toString());
+		Log.d("uri=%s", file.toURI().toASCIIString());
+		
+		String absPath = file.getAbsolutePath();
+		int extPos = absPath.lastIndexOf('.');
+		String ext = "";
+		if (extPos >= 0) {
+		    ext = absPath.substring(extPos + 1);
+		    if (ext.contains("/"))
+			ext = "";
+		}
 		Log.d("ext=%s", ext);
 		mimeType = mimeTypeMap.getMimeTypeFromExtension(ext);
 		Log.d("mimeType=%s", mimeType);
