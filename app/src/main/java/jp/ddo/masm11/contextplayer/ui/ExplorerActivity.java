@@ -105,6 +105,14 @@ public class ExplorerActivity extends AppCompatActivity {
 		Log.d("ext=%s", ext);
 		mimeType = mimeTypeMap.getMimeTypeFromExtension(ext);
 		Log.d("mimeType=%s", mimeType);
+		if (mimeType == null) {
+		    ext = ext.toLowerCase();
+		    mimeType = mimeTypeMap.getMimeTypeFromExtension(ext);
+		    if (mimeType == null) {
+			ext = ext.toUpperCase();
+			mimeType = mimeTypeMap.getMimeTypeFromExtension(ext);
+		    }
+		}
 	    }
 	}
 	public void retrieveMetadata() {
