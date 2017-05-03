@@ -101,9 +101,9 @@ path でソートして、その順に再生します。
 
   よく知りませんが、たぶん機種ごとに音楽ファイルを置く場所が決まっていて、
   以下の API で取得できるようになっています。
-```
+  ```
     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
-```
+  ```
   例えば私の環境では `/storage/emulated/0/Music` のようです。
   このアプリはそこしか参照しませんので、その中に置いて下さい。
 

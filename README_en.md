@@ -97,9 +97,9 @@ in Explorer.
 
   I don't know well but the directory to place the audio files is fixed
   per phone model, and apps can get it with this API.
-```
+  ```
     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
-```
+  ```
   For example, it is `/storage/emulated/0/Music` in my case.
   The app finds files in it, so you need to place audio files in it.
 
