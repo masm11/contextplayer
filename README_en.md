@@ -40,8 +40,8 @@ It uses these permissions:
 
 Environments I use:
 
-- Xperia X Performance (au SOV33)
-- Android 6.0.1
+- Xperia X Performance (au SOV33, Japan)
+- Android 7.0
 
 ## Contexts
 

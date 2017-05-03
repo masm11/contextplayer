@@ -44,7 +44,7 @@ Android スマホ用の音楽再生プレイヤーです。
 
 動作確認環境:
 - Xperia X Performance (au SOV33)
-- Android 6.0.1
+- Android 7.0
 
 ## コンテキストとは
 
