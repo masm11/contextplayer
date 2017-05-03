@@ -164,6 +164,28 @@ public class MainActivity extends AppCompatActivity
 	    }
 	});
 	
+	SeekBar volumeBar = (SeekBar) findViewById(R.id.volume);
+	assert volumeBar != null;
+	volumeBar.setMax(50);
+	volumeBar.setProgress(Config.loadVolume() - 50);
+	volumeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+	    @Override
+	    public void onProgressChanged(SeekBar volumeBar, int progress, boolean fromUser) {
+		if (svc != null)
+		    svc.setVolume(50 + progress);
+		
+		Config.saveVolume(50 + progress);
+	    }
+	    @Override
+	    public void onStartTrackingTouch(SeekBar volumeBar) {
+		/*NOP*/
+	    }
+	    @Override
+	    public void onStopTrackingTouch(SeekBar volumeBar) {
+		/*NOP*/
+	    }
+	});
+	
 	if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 	    if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
 		// permission がない && 説明必要 => 説明
