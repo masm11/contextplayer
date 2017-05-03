@@ -754,7 +754,7 @@ public class PlayerService extends Service {
 	setForeground(false);
 	
 	Log.d("getting context_id");
-	contextId = Long.parseLong(Config.findByKey("context_id").value);
+	contextId = Config.loadContextId();
 	Log.d("contextId=%d.", contextId);
 	PlayContext ctxt = PlayContext.find(contextId);
 	if (ctxt != null) {

@@ -123,14 +123,6 @@ public class MainActivity extends AppCompatActivity
 	    ctxt.save();
 	}
 	
-	Config config = Config.findByKey("context_id");
-	if (config == null) {
-	    config = new Config();
-	    config.key = "context_id";
-	    config.value = PlayContext.all().get(0).getId().toString();
-	    config.save();
-	}
-	
 	TextView textView;
 	textView = (TextView) findViewById(R.id.context_name);
 	assert textView != null;
@@ -207,9 +199,7 @@ public class MainActivity extends AppCompatActivity
 		long id = intent.getLongExtra("jp.ddo.masm11.contextplayer.CONTEXT_ID", -1);
 		
 		if (id != -1) {
-		    config = Config.findByKey("context_id");
-		    config.value = "" + id;
-		    config.save();
+		    Config.saveContextId(id);
 		    
 		    needSwitchContext = true;
 		}
@@ -243,7 +233,7 @@ public class MainActivity extends AppCompatActivity
     
     @Override
     protected void onResume() {
-	PlayContext ctxt = PlayContext.find(Long.parseLong(Config.findByKey("context_id").value));
+	PlayContext ctxt = PlayContext.find(Config.loadContextId());
 	TextView textView = (TextView) findViewById(R.id.context_name);
 	assert textView != null;
 	if (ctxt != null)
