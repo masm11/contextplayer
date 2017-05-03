@@ -104,11 +104,29 @@
 	
       </LinearLayout>
       
-      <SeekBar
-	  android:id="@+id/volume"
-	  android:layout_width="match_parent"
-	  android:layout_height="wrap_content"/>
+      <LinearLayout
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:orientation="horizontal">
+
+	<ImageView
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:src="@drawable/ic_volume_down_black_24px"/>
+
+	<SeekBar
+	    android:id="@+id/volume"
+	    android:layout_width="0dp"
+	    android:layout_weight="1"
+	    android:layout_height="wrap_content"/>
+
+	<ImageView
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:src="@drawable/ic_volume_up_black_24px"/>
       
+      </LinearLayout>
+
     </LinearLayout>
     
     <!-- seekbar -->
@@ -144,10 +162,28 @@
 	
       </LinearLayout>
       
-      <SeekBar
-	  android:id="@+id/playing_pos"
-	  android:layout_width="match_parent"
-	  android:layout_height="wrap_content"/>
+      <LinearLayout
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:orientation="horizontal">
+
+	<ImageView
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:src="@drawable/ic_fast_rewind_black_24px"/>
+      
+	<SeekBar
+	    android:id="@+id/playing_pos"
+	    android:layout_width="0dp"
+	    android:layout_weight="1"
+	    android:layout_height="wrap_content"/>
+
+	<ImageView
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:src="@drawable/ic_fast_forward_black_24px"/>
+      
+      </LinearLayout>
       
     </LinearLayout>
     
