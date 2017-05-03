@@ -301,7 +301,7 @@ public class ExplorerActivity extends AppCompatActivity {
 	rootDir = Environment.getExternalStoragePublicDirectory(
 		Environment.DIRECTORY_MUSIC);
 	
-	long ctxtId = Long.parseLong(Config.findByKey("context_id").value);
+	long ctxtId = Config.loadContextId();
 	ctxt = PlayContext.find(ctxtId);
 	if (ctxt == null)
 	    ctxt = new PlayContext();

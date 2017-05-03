@@ -156,9 +156,7 @@ public class ContextActivity extends AppCompatActivity {
 		ListView listView = (ListView) parent;
 		Datum data = (Datum) listView.getItemAtPosition(position);
 		
-		Config config = Config.findByKey("context_id");
-		config.value = "" + data.id;
-		config.save();
+		Config.saveContextId(data.id);
 		
 		if (svc != null)
 		    svc.switchContext();

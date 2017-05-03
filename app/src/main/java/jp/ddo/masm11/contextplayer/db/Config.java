@@ -34,6 +34,40 @@ public class Config extends Model {
 	super();
     }
     
+    public static long loadContextId() {
+	Config config = findByKey("context_id");
+	if (config == null)
+	    return PlayContext.all().get(0).getId();
+	return Long.parseLong(config.value);
+    }
+    
+    public static void saveContextId(long context_id) {
+	Config config = findByKey("context_id");
+	if (config == null) {
+	    config = new Config();
+	    config.key = "context_id";
+	}
+	config.value = new Long(context_id).toString();
+	config.save();
+    }
+    
+    public static int loadVolume() {
+	Config config = findByKey("volume");
+	if (config == null)
+	    return 100;
+	return Integer.parseInt(config.value);
+    }
+    
+    public static void saveVolume(int volume) {
+	Config config = findByKey("volume");
+	if (config == null) {
+	    config = new Config();
+	    config.key = "volume";
+	}
+	config.value = new Integer(volume).toString();
+	config.save();
+    }
+
     public static Config findByKey(String key) {
 	return new Select()
 		.from(Config.class)

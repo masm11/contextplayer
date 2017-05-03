@@ -66,6 +66,15 @@ Some points which you may not understand by seeing are here:
 
   You can long tap the back key to back to the main screen.
 
+- Volume slider
+
+  You can adjust volume between 50-100%. It changes not the media volume,
+  but the ContextPlayer volume.
+
+  You can adjust only 50%-. Because you rarely changes to less than 50%
+  (if you want to do so, you should change the media volume), and I want
+  to keep resolution high.
+
 ## Play order
 
 The app lists up all the files under the top folder recursively, and

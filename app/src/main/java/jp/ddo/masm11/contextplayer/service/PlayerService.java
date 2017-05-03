@@ -93,6 +93,7 @@ public class PlayerService extends Service {
     private Handler handler;
     private Set<OnStatusChangedListener> statusChangedListeners;
     private BroadcastReceiver headsetReceiver;
+    private int volume, volumeDuck;
     
     public void setOnStatusChangedListener(OnStatusChangedListener listener) {
 	Log.d("listener=%s", listener.toString());
@@ -122,6 +123,9 @@ public class PlayerService extends Service {
 	};
 	
 	handler = new Handler();
+	
+	volume = Config.loadVolume();
+	volumeDuck = 100;
 	
 	loadContext();
     }
@@ -176,6 +180,9 @@ public class PlayerService extends Service {
 	}
 	public void setTopDir(String topDir) {
 	    PlayerService.this.setTopDir(topDir);
+	}
+	public void setVolume(int volume) {
+	    PlayerService.this.setVolume(volume);
 	}
     }
     
@@ -266,6 +273,7 @@ public class PlayerService extends Service {
 	}
 	
 	Log.d("starting.");
+	setMediaPlayerVolume();
 	startPlay();
 	Log.d("enqueue next player.");
 	enqueueNext();
@@ -306,6 +314,7 @@ public class PlayerService extends Service {
 		} else {
 		    curPlayer = (MediaPlayer) ret[0];
 		    playingPath = (String) ret[1];
+		    setMediaPlayerVolume();
 		    curPlayer.start();
 		    enqueueNext();
 		}
@@ -390,24 +399,28 @@ public class PlayerService extends Service {
 	}
     }
     
+    private void setMediaPlayerVolume() {
+	float vol = volume * volumeDuck / 100.0f / 100.0f;
+	if (curPlayer != null)
+	    curPlayer.setVolume(vol, vol);
+	if (nextPlayer != null)
+	    nextPlayer.setVolume(vol, vol);
+    }
+    
     private void handleAudioFocusChangeEvent(int focusChange) {
 	Log.d("focusChange=%d.", focusChange);
 	switch (focusChange) {
 	case AudioManager.AUDIOFOCUS_GAIN:
-	    if (curPlayer != null)
-		curPlayer.setVolume(1.0f, 1.0f);
-	    if (nextPlayer != null)
-		nextPlayer.setVolume(1.0f, 1.0f);
+	    volumeDuck = 100;
+	    setMediaPlayerVolume();
 	    break;
 	case AudioManager.AUDIOFOCUS_LOSS:
 	case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
 	    pause();
 	    break;
 	case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-	    if (curPlayer != null)
-		curPlayer.setVolume(0.25f, 0.25f);
-	    if (nextPlayer != null)
-		nextPlayer.setVolume(0.25f, 0.25f);
+	    volumeDuck = 25;
+	    setMediaPlayerVolume();
 	    break;
 	}
     }
@@ -425,6 +438,7 @@ public class PlayerService extends Service {
 	Log.d("creating mediaplayer OK.");
 	nextPlayer = (MediaPlayer) ret[0];
 	nextPath = (String) ret[1];
+	setMediaPlayerVolume();
 	Log.d("nextPlayer=%s", nextPlayer.toString());
 	Log.d("nextPath=%s", nextPath);
 	try {
@@ -506,12 +520,14 @@ public class PlayerService extends Service {
 			
 			curPlayer = (MediaPlayer) ret[0];
 			playingPath = (String) ret[1];
+			setMediaPlayerVolume();
 			
 			Log.d("starting it.");
 			curPlayer.start();
 			
 			Log.d("enqueuing next.");
 			enqueueNext();
+			setMediaPlayerVolume();
 			
 			saveContext();
 			
@@ -754,7 +770,7 @@ public class PlayerService extends Service {
 	setForeground(false);
 	
 	Log.d("getting context_id");
-	contextId = Long.parseLong(Config.findByKey("context_id").value);
+	contextId = Config.loadContextId();
 	Log.d("contextId=%d.", contextId);
 	PlayContext ctxt = PlayContext.find(contextId);
 	if (ctxt != null) {
@@ -775,6 +791,7 @@ public class PlayerService extends Service {
 		playingPath = (String) ret[1];
 		Log.d("curPlayer=%s", curPlayer.toString());
 		Log.d("playingPath=%s", playingPath);
+		setMediaPlayerVolume();
 	    } else {
 		// 作られたばかりの context の場合。
 		Log.d("creating mediaplayer.");
@@ -788,6 +805,7 @@ public class PlayerService extends Service {
 		playingPath = (String) ret[1];
 		Log.d("curPlayer=%s", curPlayer.toString());
 		Log.d("playingPath=%s", playingPath);
+		setMediaPlayerVolume();
 	    }
 	}
     }
@@ -865,5 +883,10 @@ public class PlayerService extends Service {
 	    icon = android.R.drawable.ic_media_pause;
 	
 	WidgetProvider.updateAppWidget(this, null, icon, contextName);
+    }
+
+    private void setVolume(int volume) {
+	this.volume = volume;
+	setMediaPlayerVolume();
     }
 }
