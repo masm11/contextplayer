@@ -21,8 +21,8 @@ android {
         applicationId "jp.ddo.masm11.contextplayer"
         minSdkVersion 23
         targetSdkVersion 23
-        versionCode 20008
-        versionName "2.0.8"
+        versionCode 20009
+        versionName "2.0.9"
     }
     signingConfigs {
 	release {
@@ -55,7 +55,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.michaelpardo:activeandroid:3.1.0-SNAPSHOT'
-    compile('com.crashlytics.sdk.android:crashlytics:2.6.5@aar') {
+    compile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
         transitive = true;
     }
 }
