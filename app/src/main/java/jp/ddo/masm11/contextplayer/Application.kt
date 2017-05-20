@@ -14,19 +14,18 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer;
+package jp.ddo.masm11.contextplayer
 
-import com.crashlytics.android.Crashlytics;
-import io.fabric.sdk.android.Fabric;
+import com.crashlytics.android.Crashlytics
+import io.fabric.sdk.android.Fabric
 
-import jp.ddo.masm11.logger.Log;
+import jp.ddo.masm11.logger.Log
 
-public class Application extends com.activeandroid.app.Application {
-    @Override
-    public void onCreate() {
-	super.onCreate();
-	
-        Fabric.with(this, new Crashlytics());
-	Log.init(getExternalFilesDir(null), BuildConfig.DEBUG);
+class Application : com.activeandroid.app.Application() {
+    override fun onCreate() {
+        super.onCreate()
+
+        Fabric.with(this, Crashlytics())
+        Log.init(getExternalFilesDir(null), BuildConfig.DEBUG)
     }
 }
