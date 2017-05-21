@@ -22,8 +22,8 @@ android {
         applicationId "jp.ddo.masm11.contextplayer"
         minSdkVersion 23
         targetSdkVersion 23
-        versionCode 20009
-        versionName "2.0.9"
+        versionCode 29900
+        versionName "2.99.0"
     }
     signingConfigs {
 	release {
@@ -39,6 +39,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 	    signingConfig signingConfigs.release
         }
+    }
+    sourceSets.all {
+	java.srcDirs += "src/${name}/kotlin"
     }
     lintOptions {
 	checkAllWarnings true
