@@ -112,43 +112,4 @@ class ActionBarFragment : Fragment() {
             else -> return super.onOptionsItemSelected(item)
         }
     }
-
-    private fun readFile(id: Int): String {
-        var `is`: InputStream? = null
-        var r: Reader? = null
-        try {
-            `is` = resources.openRawResource(id)
-            r = InputStreamReader(`is`!!)
-            val sb = StringBuilder()
-            val buf = CharArray(1024)
-	    while (true) {
-		val s = r.read(buf)
-		if (s == -1)
-		    break
-                sb.append(buf, 0, s)
-	    }
-            return sb.toString()
-        } catch (e: IOException) {
-            Log.e("ioexception", e)
-        } finally {
-            if (r != null) {
-                try {
-                    r.close()
-                } catch (e: IOException) {
-                    Log.e("ioexception", e)
-                }
-
-            }
-            if (`is` != null) {
-                try {
-                    `is`.close()
-                } catch (e: IOException) {
-                    Log.e("ioexception", e)
-                }
-
-            }
-        }
-
-        return ""
-    }
 }
