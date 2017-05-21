@@ -66,57 +66,55 @@ class Metadata(private val path: String) {
 
             var b: Int
             var step = 0
-            run {
-                var i = 0
-                while (step < 7 && i < 0x10000) {
-                    b = bis!!.read()
+	    var i = 0
+	    while (step < 7 && i < 0x10000) {
+		b = bis.read()
 
-                    if (b == -1)
-                        return false
+		if (b == -1)
+		    return false
 
-                    when (step) {
-                        0 -> if (b == 0x03)
-                            step++
+		when (step) {
+		    0 -> if (b == 0x03)
+			step++
 
-                        1 -> when (b) {
-                            'v'.toInt() -> step++
-                            0x03 -> step = 1
-                            else -> step = 0
-                        }
+		    1 -> when (b) {
+			'v'.toInt() -> step++
+			0x03 -> step = 1
+			else -> step = 0
+		    }
 
-                        2 -> when (b) {
-                            'o'.toInt() -> step++
-                            0x03 -> step = 1
-                            else -> step = 0
-                        }
+		    2 -> when (b) {
+			'o'.toInt() -> step++
+			0x03 -> step = 1
+			else -> step = 0
+		    }
 
-                        3 -> when (b) {
-                            'r'.toInt() -> step++
-                            0x03 -> step = 1
-                            else -> step = 0
-                        }
+		    3 -> when (b) {
+			'r'.toInt() -> step++
+			0x03 -> step = 1
+			else -> step = 0
+		    }
 
-                        4 -> when (b) {
-                            'b'.toInt() -> step++
-                            0x03 -> step = 1
-                            else -> step = 0
-                        }
+		    4 -> when (b) {
+			'b'.toInt() -> step++
+			0x03 -> step = 1
+			else -> step = 0
+		    }
 
-                        5 -> when (b) {
-                            'i'.toInt() -> step++
-                            0x03 -> step = 1
-                            else -> step = 0
-                        }
+		    5 -> when (b) {
+			'i'.toInt() -> step++
+			0x03 -> step = 1
+			else -> step = 0
+		    }
 
-                        6 -> when (b) {
-                            's'.toInt() -> step++
-                            0x03 -> step = 1
-                            else -> step = 0
-                        }
-                    }
-                    i++
-                }
-            }
+		    6 -> when (b) {
+			's'.toInt() -> step++
+			0x03 -> step = 1
+			else -> step = 0
+		    }
+		}
+		i++
+	    }
             if (step != 7)
                 return false
 
@@ -344,7 +342,7 @@ class Metadata(private val path: String) {
 
                         else -> start = -1
                     }
-                    if (start < 0)
+                    if (start < 0 || encoding == null)
                         continue
 
                     Log.d("encoding=%s", encoding)
@@ -353,7 +351,7 @@ class Metadata(private val path: String) {
                     // バイト列のバイト数。
                     // terminator(0x00) は必須ではないが、あればそこまで。
                     var len = 0
-                    if (!encoding!!.startsWith("UTF-16")) {
+                    if (!encoding.startsWith("UTF-16")) {
                         while (true) {
                             if (start + len >= data.size)
                                 break
