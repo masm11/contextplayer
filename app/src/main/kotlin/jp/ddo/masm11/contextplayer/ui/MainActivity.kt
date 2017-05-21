@@ -43,6 +43,8 @@ import android.content.pm.PackageManager
 import android.content.pm.PackageInfo
 import android.Manifest
 
+import kotlinx.android.synthetic.main.activity_main.*
+
 import java.io.File
 import java.io.IOException
 import java.util.Locale
@@ -115,23 +117,18 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             ctxt.save()
         }
 
-        val textView: TextView?
-        textView = findViewById(R.id.context_name) as TextView?
-        assert(textView != null)
-        textView!!.setOnClickListener {
+        context_name.setOnClickListener {
             val i = Intent(this@MainActivity, ContextActivity::class.java)
             startActivity(i)
         }
 
-        val layout = findViewById(R.id.playing_info)!!
-        layout.setOnClickListener {
+        playing_info.setOnClickListener {
             val i = Intent(this@MainActivity, ExplorerActivity::class.java)
             val ctxt = PlayContext.all()[0]
             startActivity(i)
         }
 
-        val seekBar = (findViewById(R.id.playing_pos) as SeekBar?)!!
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        playing_pos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
                     if (svc != null)
@@ -148,22 +145,21 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             }
         })
 
-        val volumeBar = (findViewById(R.id.volume) as SeekBar?)!!
-        volumeBar.max = 50
-        volumeBar.progress = Config.loadVolume() - 50
-        volumeBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(volumeBar: SeekBar, progress: Int, fromUser: Boolean) {
+        volume.max = 50
+        volume.progress = Config.loadVolume() - 50
+        volume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(volume: SeekBar, progress: Int, fromUser: Boolean) {
                 if (svc != null)
                     svc!!.setVolume(50 + progress)
 
                 Config.saveVolume(50 + progress)
             }
 
-            override fun onStartTrackingTouch(volumeBar: SeekBar) {
+            override fun onStartTrackingTouch(volume: SeekBar) {
                 /*NOP*/
             }
 
-            override fun onStopTrackingTouch(volumeBar: SeekBar) {
+            override fun onStopTrackingTouch(volume: SeekBar) {
                 /*NOP*/
             }
         })
@@ -228,9 +224,8 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
     override fun onResume() {
         val ctxt = PlayContext.find(Config.loadContextId())
-        val textView = (findViewById(R.id.context_name) as TextView?)!!
         if (ctxt != null)
-            textView.text = ctxt.name
+            context_name.text = ctxt.name
 
         super.onResume()
     }
@@ -245,9 +240,8 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         if (!strEq(curPath, status.path)) {
             curPath = status.path
 
-            val pathView = (findViewById(R.id.playing_filename) as PathView?)!!
-            pathView.rootDir = rootDir!!.absolutePath
-            pathView.path = curPath
+            playing_filename.rootDir = rootDir!!.absolutePath
+            playing_filename.path = curPath
 
             val meta = Metadata(curPath!!)
             var title: String? = null
@@ -262,45 +256,33 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             if (artist == null)
                 artist = resources.getString(R.string.unknown_artist)
 
-            var textView: TextView?
-            textView = findViewById(R.id.playing_title) as TextView?
-            assert(textView != null)
-            textView!!.text = title
-
-            textView = findViewById(R.id.playing_artist) as TextView?
-            assert(textView != null)
-            textView!!.text = artist
+            playing_title.text = title
+            playing_artist.text = artist
         }
 
         if (!strEq(curTopDir, status.topDir)) {
             curTopDir = status.topDir
-
-            val pathView = (findViewById(R.id.playing_filename) as PathView?)!!
-            pathView.topDir = curTopDir!!
+            playing_filename.topDir = curTopDir!!
         }
 
         if (maxPos != status.duration) {
             maxPos = status.duration
 
-            val seekBar = (findViewById(R.id.playing_pos) as SeekBar?)!!
-            seekBar.max = maxPos
+            playing_pos.max = maxPos
 
             val sec = maxPos / 1000
             val maxTime = String.format(Locale.US, "%d:%02d", sec / 60, sec % 60)
-            val textView = (findViewById(R.id.playing_maxtime) as TextView?)!!
-            textView.text = maxTime
+            playing_maxtime.text = maxTime
         }
 
         if (curPos != status.position) {
             curPos = status.position
 
-            val seekBar = (findViewById(R.id.playing_pos) as SeekBar?)!!
-            seekBar.progress = curPos
+            playing_pos.progress = curPos
 
             val sec = curPos / 1000
             val curTime = String.format(Locale.US, "%d:%02d", sec / 60, sec % 60)
-            val textView = (findViewById(R.id.playing_curtime) as TextView?)!!
-            textView.text = curTime
+            playing_curtime.text = curTime
         }
     }
 

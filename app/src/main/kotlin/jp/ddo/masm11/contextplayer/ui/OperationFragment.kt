@@ -28,6 +28,8 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.content.ComponentName
 
+import kotlinx.android.synthetic.main.operation_fragment.view.*
+
 import jp.ddo.masm11.contextplayer.R
 import jp.ddo.masm11.contextplayer.service.PlayerService
 
@@ -55,23 +57,19 @@ class OperationFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.operation_fragment, container, false)
 
-        val btnPlay = view.findViewById(R.id.op_play) as ImageButton
-        btnPlay.setOnClickListener {
+        view.op_play.setOnClickListener {
             svc?.play(null)
         }
 
-        val btnPause = view.findViewById(R.id.op_pause) as ImageButton
-        btnPause.setOnClickListener {
+        view.op_pause.setOnClickListener {
             svc?.pause()
         }
 
-        val btnPrev = view.findViewById(R.id.op_prev) as ImageButton
-        btnPrev.setOnClickListener {
+        view.op_prev.setOnClickListener {
             svc?.prevTrack()
         }
 
-        val btnNext = view.findViewById(R.id.op_next) as ImageButton
-        btnNext.setOnClickListener {
+        view.op_next.setOnClickListener {
             svc?.nextTrack()
         }
 

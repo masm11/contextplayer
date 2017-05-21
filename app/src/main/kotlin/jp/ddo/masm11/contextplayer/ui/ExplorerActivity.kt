@@ -37,6 +37,9 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.content.ComponentName
 
+import kotlinx.android.synthetic.main.activity_explorer.*
+import kotlinx.android.synthetic.main.list_explorer.view.*
+
 import java.io.File
 import java.io.FileFilter
 import java.util.ArrayList
@@ -161,50 +164,30 @@ class ExplorerActivity : AppCompatActivity() {
             var str: String?
 
             if (!item!!.isDir) {
-                textView = convertView!!.findViewById(R.id.filename) as TextView
-                assert(textView != null)
                 str = item.filename
-                textView.text = str
+                convertView!!.filename.text = str
 
-                textView = convertView.findViewById(R.id.mime_type) as TextView
-                assert(textView != null)
                 str = item.mimeType
-                textView.text = str
+                convertView.mime_type.text = str
 
-                textView = convertView.findViewById(R.id.title) as TextView
-                assert(textView != null)
                 str = item.title
                 if (str == null)
                     str = convertView.context.resources.getString(R.string.unknown_title)
-                textView.text = str
+                convertView.title.text = str
 
-                textView = convertView.findViewById(R.id.artist) as TextView
-                assert(textView != null)
                 str = item.artist
                 if (str == null)
                     str = convertView.context.resources.getString(R.string.unknown_artist)
-                textView.text = str
+                convertView.artist.text = str
 
-                view = convertView.findViewById(R.id.for_file)
-                assert(view != null)
-                view!!.visibility = View.VISIBLE
-
-                view = convertView.findViewById(R.id.for_dir)
-                assert(view != null)
-                view!!.visibility = View.GONE
+                convertView.for_file.visibility = View.VISIBLE
+                convertView.for_dir.visibility = View.GONE
             } else {
-                textView = convertView!!.findViewById(R.id.dirname) as TextView
-                assert(textView != null)
                 str = item.filename + "/"
-                textView.text = str
+                convertView!!.dirname.text = str
 
-                view = convertView.findViewById(R.id.for_file)
-                assert(view != null)
-                view!!.visibility = View.GONE
-
-                view = convertView.findViewById(R.id.for_dir)
-                assert(view != null)
-                view!!.visibility = View.VISIBLE
+                convertView.for_file.visibility = View.GONE
+                convertView.for_dir.visibility = View.VISIBLE
             }
 
             return convertView
@@ -301,8 +284,7 @@ class ExplorerActivity : AppCompatActivity() {
         }
         renewAdapter(dir)
 
-        val listView = (findViewById(R.id.list) as ListView?)!!
-        listView.setOnItemClickListener(object : AdapterView.OnItemClickListener {
+        list.setOnItemClickListener(object : AdapterView.OnItemClickListener {
             override fun onItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
                 val listView = parent as ListView
                 val item = listView.getItemAtPosition(position) as FileItem
@@ -317,7 +299,7 @@ class ExplorerActivity : AppCompatActivity() {
                 }
             }
         })
-        listView.setOnItemLongClickListener(object : AdapterView.OnItemLongClickListener {
+        list.setOnItemLongClickListener(object : AdapterView.OnItemLongClickListener {
             override fun onItemLongClick(parent: AdapterView<*>, view: View, position: Int, id: Long): Boolean {
                 val listView = parent as ListView
                 val item = listView.getItemAtPosition(position) as FileItem
@@ -386,10 +368,9 @@ class ExplorerActivity : AppCompatActivity() {
                 relPath = "."
             relPath += "/"
         }
-        val pathView = (findViewById(R.id.path) as PathView?)!!
-        pathView.rootDir = rootDir!!.toString()
-        pathView.topDir = topPath
-        pathView.path = curPath + "/"
+        path.rootDir = rootDir!!.toString()
+        path.topDir = topPath
+        path.path = curPath + "/"
 
         if (svc != null)
             svc!!.setTopDir(newDir.absolutePath)
@@ -417,8 +398,7 @@ class ExplorerActivity : AppCompatActivity() {
 
         bretr!!.setNewItems(items)
 
-        val listView = (findViewById(R.id.list) as ListView?)!!
-        listView.adapter = adapter
+        list.adapter = adapter
 
         // topDir からの相対で newDir を表示
         val topPath = topDir!!.toString()
@@ -432,10 +412,9 @@ class ExplorerActivity : AppCompatActivity() {
                 relPath = "."
             relPath += "/"
         }
-        val pathView = (findViewById(R.id.path) as PathView?)!!
-        pathView.rootDir = rootDir!!.toString()
-        pathView.path = newPath + "/"
-        pathView.topDir = topPath
+        path.rootDir = rootDir!!.toString()
+        path.path = newPath + "/"
+        path.topDir = topPath
 
         curDir = newDir
     }

@@ -40,6 +40,9 @@ import android.app.Service
 import android.app.FragmentManager
 import android.text.InputType
 
+import kotlinx.android.synthetic.main.activity_context.*
+import kotlinx.android.synthetic.main.list_context.view.*
+
 import java.io.File
 import java.util.LinkedList
 
@@ -110,13 +113,11 @@ class ContextActivity : AppCompatActivity() {
 
             val item = getItem(position)
 
-            val textView = convertView!!.findViewById(R.id.context_name) as TextView
-            textView.text = item!!.name
+	    convertView!!.context_name.text = item!!.name
 
-            val pathView = convertView.findViewById(R.id.context_topdir) as PathView
-            pathView.rootDir = rootDir!!.absolutePath
-            pathView.topDir = item.topDir
-            pathView.path = item.path
+            convertView!!.context_topdir.rootDir = rootDir!!.absolutePath
+            convertView!!.context_topdir.topDir = item.topDir
+            convertView!!.context_topdir.path = item.path
 
             return convertView
         }
@@ -130,8 +131,6 @@ class ContextActivity : AppCompatActivity() {
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
         setSupportActionBar(frag.toolbar)
 
-        val listView = (findViewById(R.id.context_list) as ListView?)!!
-
         data = LinkedList<Datum>()
         for (ctxt in PlayContext.all()) {
             val datum = Datum(ctxt.id!!, ctxt.name, ctxt.topDir, ctxt.path)
@@ -140,9 +139,9 @@ class ContextActivity : AppCompatActivity() {
 
         adapter = DatumAdapter(this, data!!)
 
-        listView.adapter = adapter
+        context_list.adapter = adapter
 
-        listView.setOnItemClickListener(object : AdapterView.OnItemClickListener {
+        context_list.setOnItemClickListener(object : AdapterView.OnItemClickListener {
             override fun onItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
                 val listView = parent as ListView
                 val data = listView.getItemAtPosition(position) as Datum
@@ -153,7 +152,7 @@ class ContextActivity : AppCompatActivity() {
             }
         })
 
-        listView.setOnItemLongClickListener(object : AdapterView.OnItemLongClickListener {
+        context_list.setOnItemLongClickListener(object : AdapterView.OnItemLongClickListener {
             override fun onItemLongClick(parent: AdapterView<*>, view: View, position: Int, id: Long): Boolean {
                 val listView = parent as ListView
                 val adapter = parent.adapter as ArrayAdapter<Datum>
@@ -257,8 +256,7 @@ class ContextActivity : AppCompatActivity() {
             }
         })
 
-        val button = (findViewById(R.id.context_add) as Button?)!!
-        button.setOnClickListener {
+        context_add.setOnClickListener {
             val editText = EditText(this@ContextActivity)
             editText.inputType = InputType.TYPE_CLASS_TEXT
             val builder = AlertDialog.Builder(this@ContextActivity)
@@ -276,8 +274,7 @@ class ContextActivity : AppCompatActivity() {
 
                 val datum = Datum(ctxt.id!!, newName, ctxt.topDir, null)
 
-                val listView = (findViewById(R.id.context_list) as ListView?)!!
-                val adapter = listView.adapter as ArrayAdapter<Datum>
+                val adapter = context_list.adapter as ArrayAdapter<Datum>
                 adapter.add(datum)
             }
             builder.show()
