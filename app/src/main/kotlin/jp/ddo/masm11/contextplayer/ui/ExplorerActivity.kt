@@ -498,11 +498,13 @@ class ExplorerActivity : AppCompatActivity() {
         }
 
         /* dir に含まれるファイル名をリストアップする。
-     * '.' で始まるものは含まない。
-     * ソートされている。
-     */
+	 * '.' で始まるものは含まない。
+	 * ソートされている。
+	 */
         fun listFiles(dir: File, reverse: Boolean): Array<File> {
-            val files = dir.listFiles { pathname -> !pathname.name.startsWith(".") } ?: return Array(0, { i -> File(".") })// Array<File>() //arrayOfNulls(0)
+            val files = dir.listFiles { pathname -> !pathname.name.startsWith(".") }
+	    if (files == null)
+		return emptyArray<File>()
 
             var comparator: Comparator<File> = Comparator { o1, o2 ->
                 val name1 = o1.name.toLowerCase(Locale.getDefault())
