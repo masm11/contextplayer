@@ -64,7 +64,6 @@ class WidgetProvider : AppWidgetProvider() {
     }
 
     companion object {
-
         fun updateAppWidget(context: Context, appWidgetIds: IntArray?,
                             icon: Int, contextName: String?) {
             var appWidgetIds = appWidgetIds
@@ -73,30 +72,32 @@ class WidgetProvider : AppWidgetProvider() {
             if (appWidgetIds == null)
                 appWidgetIds = appWidgetManager.getAppWidgetIds(ComponentName(context, WidgetProvider::class.java))
 
-            for (i in appWidgetIds!!.indices) {
-                val appWidgetId = appWidgetIds[i]
+	    if (appWidgetIds != null) {
+		for (i in appWidgetIds.indices) {
+		    val appWidgetId = appWidgetIds[i]
 
-                Log.d("packageName=" + context.packageName)
+		    Log.d("packageName=" + context.packageName)
 
-                val rv = RemoteViews(context.packageName, R.layout.appwidget)
+		    val rv = RemoteViews(context.packageName, R.layout.appwidget)
 
-                var intent = Intent(context, ContextActivity::class.java)
-                var pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
-                rv.setOnClickPendingIntent(R.id.widget_text, pendingIntent)
+		    var intent = Intent(context, ContextActivity::class.java)
+		    var pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+		    rv.setOnClickPendingIntent(R.id.widget_text, pendingIntent)
 
-                intent = Intent(context, PlayerService::class.java)
-                intent.action = PlayerService.ACTION_TOGGLE
-                pendingIntent = PendingIntent.getService(context, 0, intent, 0)
-                rv.setOnClickPendingIntent(R.id.widget_button, pendingIntent)
+		    intent = Intent(context, PlayerService::class.java)
+		    intent.action = PlayerService.ACTION_TOGGLE
+		    pendingIntent = PendingIntent.getService(context, 0, intent, 0)
+		    rv.setOnClickPendingIntent(R.id.widget_button, pendingIntent)
 
-                if (icon != 0)
-                    rv.setImageViewResource(R.id.widget_button, icon)
+		    if (icon != 0)
+			rv.setImageViewResource(R.id.widget_button, icon)
 
-                if (contextName != null)
-                    rv.setTextViewText(R.id.widget_text, contextName)
+		    if (contextName != null)
+			rv.setTextViewText(R.id.widget_text, contextName)
 
-                appWidgetManager.updateAppWidget(appWidgetId, rv)
-            }
+		    appWidgetManager.updateAppWidget(appWidgetId, rv)
+		}
+	    }
         }
     }
 }
