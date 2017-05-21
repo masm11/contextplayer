@@ -23,8 +23,8 @@ android {
         applicationId "jp.ddo.masm11.contextplayer"
         minSdkVersion 23
         targetSdkVersion 23
-        versionCode 29900
-        versionName "2.99.0"
+        versionCode 29901
+        versionName "2.99.1"
     }
     signingConfigs {
 	release {
