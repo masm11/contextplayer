@@ -756,7 +756,7 @@ class PlayerService : Service() {
             ctxt.path = playingPath
             Log.d("path=%s", ctxt.path)
             val stamp = curPlayer!!.timestamp
-            ctxt.pos = stamp!!.anchorMediaTimeUs / 1000    // us -> ms
+            ctxt.pos = stamp.anchorMediaTimeUs / 1000    // us -> ms
             Log.d("pos=%d", ctxt.pos)
             Log.d("ctxt saving...")
             ctxt.save()

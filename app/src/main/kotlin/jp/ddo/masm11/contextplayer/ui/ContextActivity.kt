@@ -191,8 +191,10 @@ class ContextActivity : AppCompatActivity() {
                 builder.setPositiveButton(android.R.string.ok) { dialog, which ->
                     val newName = editText.text.toString()
                     val ctxt = PlayContext.find(datum.id)
-                    ctxt.name = newName
-                    ctxt.save()
+		    if (ctxt != null) {
+			ctxt.name = newName
+			ctxt.save()
+		    }
 
                     datum.name = newName
                     adapter!!.notifyDataSetChanged()
@@ -209,7 +211,8 @@ class ContextActivity : AppCompatActivity() {
                     }
                     builder.setPositiveButton(android.R.string.ok) { dialog, which ->
                         val ctxt = PlayContext.find(datum.id)
-                        ctxt.delete()
+			if (ctxt != null)
+                            ctxt.delete()
                         adapter!!.remove(datum)
                     }
                     builder.show()
