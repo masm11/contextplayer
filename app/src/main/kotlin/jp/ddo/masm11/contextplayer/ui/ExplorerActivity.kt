@@ -154,43 +154,28 @@ class ExplorerActivity : AppCompatActivity() {
         }
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            var convertView = convertView
-            if (convertView == null)
-                convertView = inflater.inflate(R.layout.list_explorer, parent, false)
+            var view = convertView
+            if (view == null)
+                view = inflater.inflate(R.layout.list_explorer, parent, false)!!
 
-            val item = getItem(position)
-            var textView: TextView?
-            var view: View?
-            var str: String?
+            val item = getItem(position)!!
 
-            if (!item!!.isDir) {
-                str = item.filename
-                convertView!!.filename.text = str
+            if (!item.isDir) {
+                view.filename.text = item.filename
+                view.mime_type.text = item.mimeType
+                view.title.text = item.title ?: view.context.resources.getString(R.string.unknown_title)
+                view.artist.text = item.artist ?: view.context.resources.getString(R.string.unknown_artist)
 
-                str = item.mimeType
-                convertView.mime_type.text = str
-
-                str = item.title
-                if (str == null)
-                    str = convertView.context.resources.getString(R.string.unknown_title)
-                convertView.title.text = str
-
-                str = item.artist
-                if (str == null)
-                    str = convertView.context.resources.getString(R.string.unknown_artist)
-                convertView.artist.text = str
-
-                convertView.for_file.visibility = View.VISIBLE
-                convertView.for_dir.visibility = View.GONE
+                view.for_file.visibility = View.VISIBLE
+                view.for_dir.visibility = View.GONE
             } else {
-                str = item.filename + "/"
-                convertView!!.dirname.text = str
+                view.dirname.text = item.filename + "/"
 
-                convertView.for_file.visibility = View.GONE
-                convertView.for_dir.visibility = View.VISIBLE
+                view.for_file.visibility = View.GONE
+                view.for_dir.visibility = View.VISIBLE
             }
 
-            return convertView
+            return view
         }
     }
 
@@ -237,9 +222,10 @@ class ExplorerActivity : AppCompatActivity() {
         }
     }
 
-    private var rootDir: File? = null    // これより上には戻れない
-    private var topDir: File? = null
-    private var curDir: File? = null
+    private var rootDir: File = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_MUSIC)    // これより上には戻れない
+    private var topDir: File = File(".")
+    private var curDir: File = File(".")
     private var adapter: FileAdapter? = null
     private var ctxt: PlayContext? = null
     private var bretr: BackgroundRetriever? = null
@@ -257,25 +243,26 @@ class ExplorerActivity : AppCompatActivity() {
         handler = Handler()
 
         adapter = FileAdapter(this, ArrayList<FileItem>())
-        rootDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_MUSIC)
 
         val ctxtId = Config.loadContextId()
-        ctxt = PlayContext.find(ctxtId)
-        if (ctxt == null)
-            ctxt = PlayContext()
+        var c = PlayContext.find(ctxtId)
+        if (c == null)
+            c = PlayContext()
+	ctxt = c
 
         bretr = BackgroundRetriever(adapter!!)
-        thread = Thread(bretr)
-        thread!!.priority = Thread.MIN_PRIORITY
-        thread!!.start()
+	val t = Thread(bretr)
+        thread = t
+        t.priority = Thread.MIN_PRIORITY
+        t.start()
 
-        topDir = File(ctxt!!.topDir!!)
-        var dir: File = topDir!!
-        if (ctxt!!.path != null && ctxt!!.path!!.startsWith(ctxt!!.topDir!!)) {
-            val slash = ctxt!!.path!!.lastIndexOf('/')
+        var dir = File(c.topDir)
+        topDir = dir
+	val path = c.path
+        if (path != null && path.startsWith(c.topDir)) {
+            val slash = path.lastIndexOf('/')
             if (slash != -1)
-                dir = File(ctxt!!.path!!.substring(0, slash))
+                dir = File(path.substring(0, slash))
         }
         if (savedInstanceState != null) {
             val str = savedInstanceState.getString(STATE_CUR_DIR)
@@ -291,9 +278,8 @@ class ExplorerActivity : AppCompatActivity() {
                 Log.d("clicked=%s", item.filename)
 
                 if (item.isDir) {
-                    val dir = item.file
                     if (item.filename != ".")
-                        renewAdapter(dir)
+                        renewAdapter(item.file)
                 } else {
                     play(item.file)
                 }
@@ -306,10 +292,7 @@ class ExplorerActivity : AppCompatActivity() {
                 Log.d("longclicked=%s", item.filename)
 
                 if (item.isDir) {
-                    var dir = item.file
-                    if (item.filename == ".")
-                        dir = curDir!!
-                    setTopDir(dir)
+		    setTopDir(if (item.filename == ".") curDir else item.file)
                     return true
                 } else
                     return false
@@ -342,10 +325,10 @@ class ExplorerActivity : AppCompatActivity() {
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (backKeyShortPress) {
-                if (curDir == rootDir || curDir!!.absolutePath == "/")
+                if (curDir == rootDir || curDir.absolutePath == "/")
                     finish()
                 else
-                    renewAdapter(curDir!!.parentFile)
+                    renewAdapter(curDir.parentFile)
             }
             backKeyShortPress = false
             return true
@@ -357,8 +340,8 @@ class ExplorerActivity : AppCompatActivity() {
         topDir = newDir
 
         // topDir からの相対で curDir を表示
-        val topPath = topDir!!.toString()
-        val curPath = curDir!!.toString()
+        val topPath = topDir.toString()
+        val curPath = curDir.toString()
         var relPath = curPath
         if (curPath.startsWith(topPath)) {
             relPath = curPath.substring(topPath.length)
@@ -368,17 +351,19 @@ class ExplorerActivity : AppCompatActivity() {
                 relPath = "."
             relPath += "/"
         }
-        path.rootDir = rootDir!!.toString()
+        path.rootDir = rootDir.toString()
         path.topDir = topPath
         path.path = curPath + "/"
 
-        if (svc != null)
-            svc!!.setTopDir(newDir.absolutePath)
+        svc?.setTopDir(newDir.absolutePath)
 
-        ctxt!!.topDir = newDir.absolutePath
-        ctxt!!.path = null
-        ctxt!!.pos = 0
-        ctxt!!.save()
+	val c = ctxt
+	if (c != null) {
+	    c.topDir = newDir.absolutePath
+	    c.path = null
+	    c.pos = 0
+	    c.save()
+	}
     }
 
     private fun renewAdapter(newDir: File) {
@@ -390,7 +375,7 @@ class ExplorerActivity : AppCompatActivity() {
         }
 
         Log.d("newDir=%s", newDir.toString())
-        Log.d("rootDir=%s", rootDir!!.toString())
+        Log.d("rootDir=%s", rootDir.toString())
         items.add(0, FileItem(File(newDir, ".")))
 
         adapter!!.clear()
@@ -401,7 +386,7 @@ class ExplorerActivity : AppCompatActivity() {
         list.adapter = adapter
 
         // topDir からの相対で newDir を表示
-        val topPath = topDir!!.toString()
+        val topPath = topDir.toString()
         val newPath = newDir.toString()
         var relPath = newPath
         if (newPath.startsWith(topPath)) {
@@ -412,7 +397,7 @@ class ExplorerActivity : AppCompatActivity() {
                 relPath = "."
             relPath += "/"
         }
-        path.rootDir = rootDir!!.toString()
+        path.rootDir = rootDir.toString()
         path.path = newPath + "/"
         path.topDir = topPath
 
@@ -420,8 +405,7 @@ class ExplorerActivity : AppCompatActivity() {
     }
 
     private fun play(file: File) {
-        if (svc != null)
-            svc!!.play(file.absolutePath)
+        svc?.play(file.absolutePath)
     }
 
     public override fun onStart() {
@@ -438,7 +422,7 @@ class ExplorerActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        outState.putString(STATE_CUR_DIR, curDir!!.absolutePath)
+        outState.putString(STATE_CUR_DIR, curDir.absolutePath)
     }
 
     public override fun onStop() {
@@ -448,10 +432,11 @@ class ExplorerActivity : AppCompatActivity() {
     }
 
     public override fun onDestroy() {
-        if (thread != null) {
-            thread!!.interrupt()
+	val t = thread
+        if (t != null) {
+            t.interrupt()
             try {
-                thread!!.join()
+                t.join()
             } catch (e: InterruptedException) {
             }
 
