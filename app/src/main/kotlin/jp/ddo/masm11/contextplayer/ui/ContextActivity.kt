@@ -56,10 +56,10 @@ class ContextActivity : AppCompatActivity() {
         private val listener = object : PlayerService.OnStatusChangedListener {
 	    override fun onStatusChanged(status: PlayerService.CurrentStatus) {
 		var changed = false
-		for (datum in data!!) {
-		    if (datum.id == status.contextId) {
-			if (!strEq(datum.path, status.path)) {
-			    datum.path = status.path
+		for (item in items!!) {
+		    if (item.id == status.contextId) {
+			if (!strEq(item.path, status.path)) {
+			    item.path = status.path
 			    changed = true
 			}
 		    }
@@ -83,23 +83,12 @@ class ContextActivity : AppCompatActivity() {
     private var svc: PlayerService.PlayerServiceBinder? = null
     private val rootDir = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_MUSIC)
-    private var data: MutableList<Datum>? = null
-    private var adapter: DatumAdapter? = null
+    private var items: MutableList<Item>? = null
+    private var adapter: ItemAdapter? = null
 
-    private inner class Datum(id: Long, name: String?, topDir: String, path: String?) {
-        val id: Long
-        var name: String?
-        val topDir: String
-        var path: String?
-	init {
-	    this.id = id
-	    this.name = name
-	    this.topDir = topDir
-	    this.path = path
-	}
-    }
+    private inner class Item(val id: Long, var name: String?, val topDir: String, var path: String?)
 
-    private inner class DatumAdapter(context: Context, items: List<Datum>) : ArrayAdapter<Datum>(context, R.layout.list_context, items) {
+    private inner class ItemAdapter(context: Context, items: List<Item>) : ArrayAdapter<Item>(context, R.layout.list_context, items) {
         private val inflater: LayoutInflater
 
         init {
@@ -131,22 +120,22 @@ class ContextActivity : AppCompatActivity() {
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
         setSupportActionBar(frag.toolbar)
 
-        data = LinkedList<Datum>()
+        items = LinkedList<Item>()
         for (ctxt in PlayContext.all()) {
-            val datum = Datum(ctxt.id!!, ctxt.name, ctxt.topDir, ctxt.path)
-            data?.add(datum)
+            val item = Item(ctxt.id!!, ctxt.name, ctxt.topDir, ctxt.path)
+            items?.add(item)
         }
 
-        adapter = DatumAdapter(this, data!!)
+        adapter = ItemAdapter(this, items!!)
 
         context_list.adapter = adapter
 
         context_list.setOnItemClickListener(object : AdapterView.OnItemClickListener {
             override fun onItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
                 val listView = parent as ListView
-                val data = listView.getItemAtPosition(position) as Datum
+                val item = listView.getItemAtPosition(position) as Item
 
-                Config.saveContextId(data.id)
+                Config.saveContextId(item.id)
 
                 svc?.switchContext()
             }
@@ -155,21 +144,21 @@ class ContextActivity : AppCompatActivity() {
         context_list.setOnItemLongClickListener(object : AdapterView.OnItemLongClickListener {
             override fun onItemLongClick(parent: AdapterView<*>, view: View, position: Int, id: Long): Boolean {
                 val listView = parent as ListView
-                val adapter = parent.adapter as ArrayAdapter<Datum>
-                val datum = listView.getItemAtPosition(position) as Datum
+                val adapter = parent.adapter as ArrayAdapter<Item>
+                val item = listView.getItemAtPosition(position) as Item
 
                 val builder = AlertDialog.Builder(this@ContextActivity)
                 builder.setItems(R.array.context_list_menu) { dialog, which ->
                     val builder: AlertDialog.Builder
                     when (which) {
                         0    // edit
-                        -> editContextName(datum)
+                        -> editContextName(item)
 
                         1    // delete
-                        -> deleteContext(datum)
+                        -> deleteContext(item)
 
                         2    // create icon
-                        -> createIcon(datum)
+                        -> createIcon(item)
                     }
                 }
                 builder.show()
@@ -177,10 +166,10 @@ class ContextActivity : AppCompatActivity() {
                 return true
             }
 
-            private fun editContextName(datum: Datum) {
+            private fun editContextName(item: Item) {
                 val editText = EditText(this@ContextActivity)
                 editText.inputType = InputType.TYPE_CLASS_TEXT
-                editText.setText(datum.name)
+                editText.setText(item.name)
                 val builder = AlertDialog.Builder(this@ContextActivity)
                 builder.setTitle(R.string.edit_the_context_name)
                 builder.setView(editText)
@@ -189,19 +178,19 @@ class ContextActivity : AppCompatActivity() {
                 }
                 builder.setPositiveButton(android.R.string.ok) { dialog, which ->
                     val newName = editText.text.toString()
-                    val ctxt = PlayContext.find(datum.id)
+                    val ctxt = PlayContext.find(item.id)
 		    if (ctxt != null) {
 			ctxt.name = newName
 			ctxt.save()
 		    }
 
-                    datum.name = newName
+                    item.name = newName
                     adapter!!.notifyDataSetChanged()
                 }
                 builder.show()
             }
 
-            private fun deleteContext(datum: Datum) {
+            private fun deleteContext(item: Item) {
                 if (adapter!!.count >= 2) {
                     val builder = AlertDialog.Builder(this@ContextActivity)
                     builder.setMessage(R.string.are_you_sure_to_delete_it)
@@ -209,10 +198,10 @@ class ContextActivity : AppCompatActivity() {
                         // NOP.
                     }
                     builder.setPositiveButton(android.R.string.ok) { dialog, which ->
-                        val ctxt = PlayContext.find(datum.id)
+                        val ctxt = PlayContext.find(item.id)
 			if (ctxt != null)
                             ctxt.delete()
-                        adapter!!.remove(datum)
+                        adapter!!.remove(item)
                     }
                     builder.show()
                 } else {
@@ -225,10 +214,10 @@ class ContextActivity : AppCompatActivity() {
                 }
             }
 
-            private fun createIcon(datum: Datum) {
+            private fun createIcon(item: Item) {
                 val editText = EditText(this@ContextActivity)
                 editText.inputType = InputType.TYPE_CLASS_TEXT
-                editText.setText(datum.name)
+                editText.setText(item.name)
                 val builder = AlertDialog.Builder(this@ContextActivity)
                 builder.setTitle(R.string.edit_the_icon_label)
                 builder.setView(editText)
@@ -237,7 +226,7 @@ class ContextActivity : AppCompatActivity() {
                 }
                 builder.setPositiveButton(android.R.string.ok) { dialog, which ->
                     val label = editText.text.toString()
-                    val id = datum.id
+                    val id = item.id
 
                     val icon = Intent.ShortcutIconResource.fromContext(this@ContextActivity, R.drawable.launcher)
 
@@ -272,10 +261,10 @@ class ContextActivity : AppCompatActivity() {
                 ctxt.topDir = rootDir!!.absolutePath
                 ctxt.save()
 
-                val datum = Datum(ctxt.id!!, newName, ctxt.topDir, null)
+                val item = Item(ctxt.id!!, newName, ctxt.topDir, null)
 
-                val adapter = context_list.adapter as ArrayAdapter<Datum>
-                adapter.add(datum)
+                val adapter = context_list.adapter as ArrayAdapter<Item>
+                adapter.add(item)
             }
             builder.show()
         }
