@@ -149,8 +149,8 @@ class ExplorerActivity : AppCompatActivity() {
         }
 
         override fun getItemId(position: Int): Long {
-            val item = getItem(position)
-            return item!!.hashCode().toLong()
+            val item = getItem(position)!!
+            return item.hashCode().toLong()
         }
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
