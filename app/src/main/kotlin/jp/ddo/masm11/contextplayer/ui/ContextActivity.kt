@@ -89,26 +89,22 @@ class ContextActivity : AppCompatActivity() {
     private inner class Item(val id: Long, var name: String?, val topDir: String, var path: String?)
 
     private inner class ItemAdapter(context: Context, items: List<Item>) : ArrayAdapter<Item>(context, R.layout.list_context, items) {
-        private val inflater: LayoutInflater
-
-        init {
-            inflater = LayoutInflater.from(context)
-        }
+        private val inflater = LayoutInflater.from(context)
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            var convertView = convertView
-            if (convertView == null)
-                convertView = inflater.inflate(R.layout.list_context, parent, false)
+            var view = convertView
+            if (view == null)
+                view = inflater.inflate(R.layout.list_context, parent, false)!!
 
             val item = getItem(position)
 
-	    convertView!!.context_name.text = item!!.name
+	    view.context_name.text = item?.name ?: "(?)"
 
-            convertView!!.context_topdir.rootDir = rootDir!!.absolutePath
-            convertView!!.context_topdir.topDir = item.topDir
-            convertView!!.context_topdir.path = item.path
+	    view.context_topdir.rootDir = rootDir.absolutePath
+	    view.context_topdir.topDir = item.topDir
+	    view.context_topdir.path = item.path
 
-            return convertView
+            return view
         }
     }
 
@@ -120,13 +116,14 @@ class ContextActivity : AppCompatActivity() {
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
         setSupportActionBar(frag.toolbar)
 
-        items = LinkedList<Item>()
+        val list = LinkedList<Item>()
+	items = list
         for (ctxt in PlayContext.all()) {
             val item = Item(ctxt.id!!, ctxt.name, ctxt.topDir, ctxt.path)
-            items?.add(item)
+            list.add(item)
         }
 
-        adapter = ItemAdapter(this, items!!)
+        adapter = ItemAdapter(this, list)
 
         context_list.adapter = adapter
 
@@ -144,12 +141,10 @@ class ContextActivity : AppCompatActivity() {
         context_list.setOnItemLongClickListener(object : AdapterView.OnItemLongClickListener {
             override fun onItemLongClick(parent: AdapterView<*>, view: View, position: Int, id: Long): Boolean {
                 val listView = parent as ListView
-                val adapter = parent.adapter as ArrayAdapter<Item>
                 val item = listView.getItemAtPosition(position) as Item
 
                 val builder = AlertDialog.Builder(this@ContextActivity)
-                builder.setItems(R.array.context_list_menu) { dialog, which ->
-                    val builder: AlertDialog.Builder
+                builder.setItems(R.array.context_list_menu) { _, which ->
                     when (which) {
                         0    // edit
                         -> editContextName(item)
@@ -173,10 +168,10 @@ class ContextActivity : AppCompatActivity() {
                 val builder = AlertDialog.Builder(this@ContextActivity)
                 builder.setTitle(R.string.edit_the_context_name)
                 builder.setView(editText)
-                builder.setNegativeButton(android.R.string.cancel) { dialog, which ->
+                builder.setNegativeButton(android.R.string.cancel) { _, _ ->
                     // NOP.
                 }
-                builder.setPositiveButton(android.R.string.ok) { dialog, which ->
+                builder.setPositiveButton(android.R.string.ok) { _, _ ->
                     val newName = editText.text.toString()
                     val ctxt = PlayContext.find(item.id)
 		    if (ctxt != null) {
@@ -194,10 +189,10 @@ class ContextActivity : AppCompatActivity() {
                 if (adapter!!.count >= 2) {
                     val builder = AlertDialog.Builder(this@ContextActivity)
                     builder.setMessage(R.string.are_you_sure_to_delete_it)
-                    builder.setNegativeButton(android.R.string.cancel) { dialog, which ->
+                    builder.setNegativeButton(android.R.string.cancel) { _, _ ->
                         // NOP.
                     }
-                    builder.setPositiveButton(android.R.string.ok) { dialog, which ->
+                    builder.setPositiveButton(android.R.string.ok) { _, _ ->
                         val ctxt = PlayContext.find(item.id)
 			if (ctxt != null)
                             ctxt.delete()
@@ -207,7 +202,7 @@ class ContextActivity : AppCompatActivity() {
                 } else {
                     val builder = AlertDialog.Builder(this@ContextActivity)
                     builder.setMessage(R.string.cant_delete_the_last_context)
-                    builder.setPositiveButton(android.R.string.ok) { dialog, which ->
+                    builder.setPositiveButton(android.R.string.ok) { _, _ ->
                         // NOP.
                     }
                     builder.show()
@@ -221,10 +216,10 @@ class ContextActivity : AppCompatActivity() {
                 val builder = AlertDialog.Builder(this@ContextActivity)
                 builder.setTitle(R.string.edit_the_icon_label)
                 builder.setView(editText)
-                builder.setNegativeButton(android.R.string.cancel) { dialog, which ->
+                builder.setNegativeButton(android.R.string.cancel) { _, _ ->
                     // NOP.
                 }
-                builder.setPositiveButton(android.R.string.ok) { dialog, which ->
+                builder.setPositiveButton(android.R.string.ok) { _, _ ->
                     val label = editText.text.toString()
                     val id = item.id
 
@@ -251,14 +246,14 @@ class ContextActivity : AppCompatActivity() {
             val builder = AlertDialog.Builder(this@ContextActivity)
             builder.setTitle(R.string.name_the_new_context)
             builder.setView(editText)
-            builder.setNegativeButton(android.R.string.cancel) { dialog, which ->
+            builder.setNegativeButton(android.R.string.cancel) { _, _ ->
                 // NOP.
             }
-            builder.setPositiveButton(android.R.string.ok) { dialog, which ->
+            builder.setPositiveButton(android.R.string.ok) { _, _ ->
                 val newName = editText.text.toString()
                 val ctxt = PlayContext()
                 ctxt.name = newName
-                ctxt.topDir = rootDir!!.absolutePath
+                ctxt.topDir = rootDir.absolutePath
                 ctxt.save()
 
                 val item = Item(ctxt.id!!, newName, ctxt.topDir, null)
