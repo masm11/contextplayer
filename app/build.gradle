@@ -8,6 +8,8 @@ buildscript {
     }
 }
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 apply plugin: 'io.fabric'
 
 Properties props = new Properties()
@@ -21,8 +23,8 @@ android {
         applicationId "jp.ddo.masm11.contextplayer"
         minSdkVersion 23
         targetSdkVersion 23
-        versionCode 20009
-        versionName "2.0.9"
+        versionCode 29901
+        versionName "2.99.1"
     }
     signingConfigs {
 	release {
@@ -38,6 +40,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 	    signingConfig signingConfigs.release
         }
+    }
+    sourceSets.all {
+	java.srcDirs += "src/${name}/kotlin"
     }
     lintOptions {
 	checkAllWarnings true
@@ -58,4 +63,5 @@ dependencies {
     compile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
         transitive = true;
     }
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
 }

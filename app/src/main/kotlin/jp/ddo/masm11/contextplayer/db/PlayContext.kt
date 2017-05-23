@@ -14,50 +14,49 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer.db;
+package jp.ddo.masm11.contextplayer.db
 
-import com.activeandroid.Model;
-import com.activeandroid.query.Select;
-import com.activeandroid.annotation.Column;
-import com.activeandroid.annotation.Table;
-
-import java.util.List;
+import com.activeandroid.Model
+import com.activeandroid.query.Select
+import com.activeandroid.annotation.Column
+import com.activeandroid.annotation.Table
 
 @Table(name = "PlayContexts")
-public class PlayContext extends Model {
+class PlayContext: Model() {
     
     @Column(name = "name", notNull = true)
-    public String name;
+    var name: String = ""
     
     @Column(name = "topdir", notNull = true)
-    public String topDir;
+    var topDir: String = ""
     
     @Column(name = "path")
-    public String path;
+    var path: String? = null
     
     @Column(name = "pos")
-    public long pos;	// msec
+    var pos: Long = 0		// msec
     
-    public PlayContext() {
-	super();
+    companion object {
+	fun find(id: Long): PlayContext? {
+	    return Select()
+		    .from(PlayContext::class.java)
+		    .where("id = ?", id)
+		    .executeSingle();
+	}
+
+	fun all(): List<PlayContext> {
+	    val ctxts = Select()
+		    .from(PlayContext::class.java)
+		    .orderBy("id")
+		    .execute<PlayContext>();
+	    val list = ArrayList<PlayContext>()
+	    for (ctxt in ctxts)
+		list.add(ctxt)
+	    return list
+	}
     }
     
-    public static PlayContext find(long id) {
-	return new Select()
-		.from(PlayContext.class)
-		.where("id = ?", id)
-		.executeSingle();
-    }
-    
-    public static List<PlayContext> all() {
-	return new Select()
-		.from(PlayContext.class)
-		.orderBy("id")
-		.execute();
-    }
-    
-    @Override
-    public String toString() {
+    override fun toString(): String {
 	return name;
     }
 }
