@@ -104,7 +104,7 @@ class ActionBarFragment : Fragment() {
 
                 builder.setView(webView)
 
-                builder.setPositiveButton(android.R.string.ok) { dialog, which ->
+                builder.setPositiveButton(android.R.string.ok) { _, _ ->
                     // NOP
                 }
                 builder.show()
