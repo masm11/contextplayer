@@ -18,7 +18,6 @@ package jp.ddo.masm11.contextplayer.service
 
 import android.support.v7.app.NotificationCompat
 import android.app.Service
-import android.app.NotificationManager
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.TaskStackBuilder
@@ -313,11 +312,11 @@ class PlayerService : Service() {
                     Log.w("No audio file.")
                     stopPlay()
                 } else {
-		    val player = ret.mediaPlayer
-                    curPlayer = player
+		    val mp = ret.mediaPlayer
+                    curPlayer = mp
                     playingPath = ret.path
                     setMediaPlayerVolume()
-                    player.start()
+                    mp.start()
                     enqueueNext()
                 }
             }
@@ -456,7 +455,6 @@ class PlayerService : Service() {
         Log.d("path=%s", path)
         Log.d("pos=%d", pos)
         val tested = HashSet<String>()
-        var player: MediaPlayer? = null
         while (true) {
             Log.d("iter")
             try {
@@ -469,7 +467,7 @@ class PlayerService : Service() {
                 tested.add(path)
 
                 Log.d("try create mediaplayer.")
-                player = MediaPlayer.create(this, Uri.parse("file://" + path), null, audioAttributes, audioSessionId)
+                val player = MediaPlayer.create(this, Uri.parse("file://" + path), null, audioAttributes, audioSessionId)
                 if (player == null) {
                     Log.w("MediaPlayer.create() failed: %s", path)
                     path = if (back) selectPrev(path) else selectNext(path)
@@ -501,7 +499,7 @@ class PlayerService : Service() {
                     } else
                         stopPlay()
                 }
-                player.setOnErrorListener(MediaPlayer.OnErrorListener { mp, what, extra ->
+                player.setOnErrorListener(MediaPlayer.OnErrorListener { _, what, extra ->
                     Log.d("error reported. %d, %d.", what, extra)
 
                     // 両方 release して新たに作り直す。
@@ -730,7 +728,6 @@ class PlayerService : Service() {
             var contextName = "noname"
             if (ctxt != null)
                 contextName = ctxt.name
-            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             val builder = NotificationCompat.Builder(this)
             builder.setContentTitle(resources.getString(R.string.app_name))
             builder.setContentText(resources.getString(R.string.playing, contextName))

@@ -66,8 +66,7 @@ class Metadata(private val path: String) {
 
             var b: Int
             var step = 0
-	    var i = 0
-	    while (step < 7 && i < 0x10000) {
+	    for (i in 0..0x10000) {
 		b = bis.read()
 
 		if (b == -1)
@@ -113,7 +112,8 @@ class Metadata(private val path: String) {
 			else -> step = 0
 		    }
 		}
-		i++
+		if (step >= 7)
+		    break
 	    }
             if (step != 7)
                 return false
