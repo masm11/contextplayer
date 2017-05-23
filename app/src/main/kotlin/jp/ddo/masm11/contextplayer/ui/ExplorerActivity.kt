@@ -180,13 +180,9 @@ class ExplorerActivity : AppCompatActivity() {
     }
 
     private inner class BackgroundRetriever(private val adapter: FileAdapter) : Runnable {
-        private val list: LinkedList<FileItem>
+        private val list: LinkedList<FileItem> = LinkedList<FileItem>()
 	private val mutex: Lock = ReentrantLock()
 	private val cond: Condition = mutex.newCondition()
-
-        init {
-            list = LinkedList<FileItem>()
-        }
 
         override fun run() {
             try {
