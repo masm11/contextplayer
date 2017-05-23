@@ -36,8 +36,6 @@ class Config: Model() {
 	    if (config == null)
 		return PlayContext.all().get(0).getId()
 	    val id = config.value
-	    if (id == null)
-		return 0
 	    return id.toLong()
 	}
 
@@ -56,8 +54,6 @@ class Config: Model() {
 	    if (config == null)
 		return 100
 	    val vol = config.value
-	    if (vol == null)
-		return 100
 	    return vol.toInt()
 	}
 

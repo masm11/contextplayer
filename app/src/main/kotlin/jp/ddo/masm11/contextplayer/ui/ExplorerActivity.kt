@@ -338,15 +338,6 @@ class ExplorerActivity : AppCompatActivity() {
         // topDir からの相対で curDir を表示
         val topPath = topDir.toString()
         val curPath = curDir.toString()
-        var relPath = curPath
-        if (curPath.startsWith(topPath)) {
-            relPath = curPath.substring(topPath.length)
-            if (relPath.startsWith("/"))
-                relPath = relPath.substring(1)
-            if (relPath.length == 0)
-                relPath = "."
-            relPath += "/"
-        }
         path.rootDir = rootDir.toString()
         path.topDir = topPath
         path.path = curPath + "/"
@@ -384,15 +375,6 @@ class ExplorerActivity : AppCompatActivity() {
         // topDir からの相対で newDir を表示
         val topPath = topDir.toString()
         val newPath = newDir.toString()
-        var relPath = newPath
-        if (newPath.startsWith(topPath)) {
-            relPath = newPath.substring(topPath.length)
-            if (relPath.startsWith("/"))
-                relPath = relPath.substring(1)
-            if (relPath.length == 0)
-                relPath = "."
-            relPath += "/"
-        }
         path.rootDir = rootDir.toString()
         path.path = newPath + "/"
         path.topDir = topPath
