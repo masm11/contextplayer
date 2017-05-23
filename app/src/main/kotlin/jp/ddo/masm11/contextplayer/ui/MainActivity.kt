@@ -90,7 +90,8 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
     private var svc: PlayerService.PlayerServiceBinder? = null
     private var conn: ServiceConnection? = null
-    private var rootDir: File? = null
+    private var rootDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_MUSIC)
     private var curPath: String? = null
     private var curTopDir: String? = null
     private var curPos: Int = 0    // msec
@@ -106,14 +107,12 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
         setSupportActionBar(frag.toolbar)
 
-        rootDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_MUSIC)
-        Log.d("rootDir=%s", rootDir!!.absolutePath)
+        Log.d("rootDir=%s", rootDir.absolutePath)
 
         if (PlayContext.all().size == 0) {
             val ctxt = PlayContext()
             ctxt.name = resources.getString(R.string.default_context)
-            ctxt.topDir = rootDir!!.absolutePath
+            ctxt.topDir = rootDir.absolutePath
             ctxt.save()
         }
 
@@ -124,7 +123,6 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
         playing_info.setOnClickListener {
             val i = Intent(this@MainActivity, ExplorerActivity::class.java)
-            val ctxt = PlayContext.all()[0]
             startActivity(i)
         }
 
@@ -169,7 +167,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
                 // permission がない && 説明必要 => 説明
                 val dialog = AlertDialog.Builder(this)
                         .setMessage(R.string.please_grant_permission)
-                        .setPositiveButton(android.R.string.ok) { dialog, id ->
+                        .setPositiveButton(android.R.string.ok) { _, _ ->
                             val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
                             ActivityCompat.requestPermissions(this@MainActivity, permissions, REQ_PERMISSION_ON_CREATE)
                         }
@@ -182,16 +180,16 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             }
         } else {
             // permission がある
-            rootDir!!.mkdirs()
+            rootDir.mkdirs()
         }
 
         val intent = getIntent()
         if (intent != null) {
-            val action = intent!!.getAction()
+            val action = intent.getAction()
             if (action != null && action == Intent.ACTION_MAIN) {
-                val id = intent!!.getLongExtra("jp.ddo.masm11.contextplayer.CONTEXT_ID", -1)
+                val id = intent.getLongExtra("jp.ddo.masm11.contextplayer.CONTEXT_ID", -1)
 
-                if (id != -1.toLong()) {
+                if (id != -1L) {
                     Config.saveContextId(id)
 
                     needSwitchContext = true
@@ -207,7 +205,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             if (grantResults[0] != PackageManager.PERMISSION_GRANTED)
                 finish()
             else
-                rootDir!!.mkdirs()
+                rootDir.mkdirs()
         }
     }
 
@@ -240,7 +238,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         if (!strEq(curPath, status.path)) {
             curPath = status.path
 
-            playing_filename.rootDir = rootDir!!.absolutePath
+            playing_filename.rootDir = rootDir.absolutePath
             playing_filename.path = curPath
 
             val meta = Metadata(curPath!!)
