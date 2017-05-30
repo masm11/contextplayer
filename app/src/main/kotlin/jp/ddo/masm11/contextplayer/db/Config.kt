@@ -33,10 +33,19 @@ class Config: Model() {
     companion object {
 	fun loadContextId(): Long {
 	    val config: Config? = findByKey("context_id")
-	    if (config == null)
-		return PlayContext.all().get(0).getId()
-	    val id = config.value
-	    return id.toLong()
+	    if (config == null) {
+		// 設定がない場合。
+		// context があるなら、どれか 1つの id を返す。
+		val ctxts = PlayContext.all()
+		if (ctxts.size >= 1)
+		    return ctxts.get(0).id
+
+		// context が一つもないなら、新規に作って id を返す。
+		val ctxt = PlayContext()
+		ctxt.save()
+		return ctxt.id
+	    }
+	    return config.value.toLong()
 	}
 
 	fun saveContextId(context_id: Long) {
@@ -53,8 +62,7 @@ class Config: Model() {
 	    val config: Config? = findByKey("volume")
 	    if (config == null)
 		return 100
-	    val vol = config.value
-	    return vol.toInt()
+	    return config.value.toInt()
 	}
 
 	fun saveVolume(volume: Int) {
