@@ -55,36 +55,29 @@ import jp.ddo.masm11.logger.Log
 
 class PlayerService : Service() {
 
-    inner class CurrentStatus {
-        val contextId: Long
-        val path: String?
-        val topDir: String?
-        val position: Int
-        val duration: Int
-
-        init {
-            contextId = this@PlayerService.contextId
-            path = playingPath
-            topDir = this@PlayerService.topDir
-	    val player: MediaPlayer? = curPlayer
-            position = if (player == null) 0 else player.currentPosition
-            duration = if (player == null) 0 else player.duration
-        }
+    class CurrentStatus(
+            val contextId: Long,
+            val path: String?,
+            val topDir: String?,
+            val position: Int,
+            val duration: Int)
+    
+    private fun buildCurrentStatus(): CurrentStatus {
+	val player: MediaPlayer? = curPlayer
+	return CurrentStatus(
+		this@PlayerService.contextId,
+		playingPath,
+		this@PlayerService.topDir,
+		position = if (player == null) 0 else player.currentPosition,
+		duration = if (player == null) 0 else player.duration)
     }
-
-    class CreatedMediaPlayer (mediaPlayer: MediaPlayer, path: String) {
-	val mediaPlayer: MediaPlayer
-	val path: String
-	init {
-	    this.mediaPlayer = mediaPlayer;
-	    this.path = path;
-	}
-    }
-
+    
+    class CreatedMediaPlayer (val mediaPlayer: MediaPlayer, val path: String)
+    
     interface OnStatusChangedListener {
         fun onStatusChanged(status: CurrentStatus)
     }
-
+    
     private var topDir: String? = null
     private var playingPath: String? = null
     private var nextPath: String? = null
@@ -843,7 +836,7 @@ class PlayerService : Service() {
     }
 
     private fun broadcastStatus() {
-        val status = CurrentStatus()
+        val status = buildCurrentStatus()
         for (listener in statusChangedListeners!!) {
             // Log.d("listener=%s", listener);
             listener.onStatusChanged(status)
@@ -851,7 +844,7 @@ class PlayerService : Service() {
     }
 
     private val currentStatus: CurrentStatus
-        get() = CurrentStatus()
+        get() = buildCurrentStatus()
 
     override fun onDestroy() {
         Log.d("save context")
