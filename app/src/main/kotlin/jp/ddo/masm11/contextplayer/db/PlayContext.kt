@@ -41,22 +41,19 @@ class PlayContext: Model() {
 	    return Select()
 		    .from(PlayContext::class.java)
 		    .where("id = ?", id)
-		    .executeSingle();
+		    .executeSingle()
 	}
 
 	fun all(): List<PlayContext> {
 	    val ctxts = Select()
 		    .from(PlayContext::class.java)
 		    .orderBy("id")
-		    .execute<PlayContext>();
-	    val list = ArrayList<PlayContext>()
-	    for (ctxt in ctxts)
-		list.add(ctxt)
-	    return list
+		    .execute<PlayContext>()
+	    return ctxts.toList()
 	}
     }
     
     override fun toString(): String {
-	return name;
+	return name
     }
 }
