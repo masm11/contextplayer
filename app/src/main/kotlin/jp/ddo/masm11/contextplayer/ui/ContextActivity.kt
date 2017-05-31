@@ -56,7 +56,7 @@ class ContextActivity : AppCompatActivity() {
         private val listener = object : PlayerService.OnStatusChangedListener {
 	    override fun onStatusChanged(status: PlayerService.CurrentStatus) {
 		var changed = false
-		for (item in items!!) {
+		for (item in items) {
 		    if (item.id == status.contextId) {
 			if (item.path != status.path) {
 			    item.path = status.path
@@ -65,7 +65,7 @@ class ContextActivity : AppCompatActivity() {
 		    }
 		}
 		if (changed)
-		    adapter!!.notifyDataSetChanged()
+		    adapter.notifyDataSetChanged()
 	    }
         }
 
@@ -83,8 +83,8 @@ class ContextActivity : AppCompatActivity() {
     private var svc: PlayerService.PlayerServiceBinder? = null
     private val rootDir = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_MUSIC)
-    private var items: MutableList<Item>? = null
-    private var adapter: ItemAdapter? = null
+    private lateinit var items: MutableList<Item>
+    private lateinit var adapter: ItemAdapter
 
     private inner class Item(val id: Long, var name: String?, val topDir: String, var path: String?)
 
@@ -116,14 +116,13 @@ class ContextActivity : AppCompatActivity() {
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
         setSupportActionBar(frag.toolbar)
 
-        val list = LinkedList<Item>()
-	items = list
+        items = LinkedList<Item>()
         for (ctxt in PlayContext.all()) {
             val item = Item(ctxt.id!!, ctxt.name, ctxt.topDir, ctxt.path)
-            list.add(item)
+            items.add(item)
         }
 
-        adapter = ItemAdapter(this, list)
+        adapter = ItemAdapter(this, items)
 
         context_list.adapter = adapter
 
@@ -180,13 +179,13 @@ class ContextActivity : AppCompatActivity() {
 		    }
 
                     item.name = newName
-                    adapter!!.notifyDataSetChanged()
+                    adapter.notifyDataSetChanged()
                 }
                 builder.show()
             }
 
             private fun deleteContext(item: Item) {
-                if (adapter!!.count >= 2) {
+                if (adapter.count >= 2) {
                     val builder = AlertDialog.Builder(this@ContextActivity)
                     builder.setMessage(R.string.are_you_sure_to_delete_it)
                     builder.setNegativeButton(android.R.string.cancel) { _, _ ->
@@ -196,7 +195,7 @@ class ContextActivity : AppCompatActivity() {
                         val ctxt = PlayContext.find(item.id)
 			if (ctxt != null)
                             ctxt.delete()
-                        adapter!!.remove(item)
+                        adapter.remove(item)
                     }
                     builder.show()
                 } else {
