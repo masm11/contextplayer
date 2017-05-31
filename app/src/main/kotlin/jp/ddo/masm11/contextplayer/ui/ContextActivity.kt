@@ -53,6 +53,7 @@ import jp.ddo.masm11.contextplayer.db.Config
 
 class ContextActivity : AppCompatActivity() {
     private inner class PlayerServiceConnection : ServiceConnection {
+	// 参照を保持しておかないと、GC に回収されてしまう。
         private val listener = object : PlayerService.OnStatusChangedListener {
 	    override fun onStatusChanged(status: PlayerService.CurrentStatus) {
 		var changed = false
@@ -126,16 +127,14 @@ class ContextActivity : AppCompatActivity() {
 
         context_list.adapter = adapter
 
-        context_list.setOnItemClickListener(object : AdapterView.OnItemClickListener {
-            override fun onItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                val listView = parent as ListView
-                val item = listView.getItemAtPosition(position) as Item
-
-                Config.context_id = item.id
-
-                svc?.switchContext()
-            }
-        })
+        context_list.setOnItemClickListener { parent, _, position, _ ->
+            val listView = parent as ListView
+            val item = listView.getItemAtPosition(position) as Item
+	    
+            Config.context_id = item.id
+	    
+            svc?.switchContext()
+        }
 
         context_list.setOnItemLongClickListener(object : AdapterView.OnItemLongClickListener {
             override fun onItemLongClick(parent: AdapterView<*>, view: View, position: Int, id: Long): Boolean {
