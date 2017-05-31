@@ -127,13 +127,11 @@ class PlayerService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
         Log.d("action=%s", action)
-        if (action != null) {
-            when (action) {
-                ACTION_A2DP_DISCONNECTED -> pause()
-                ACTION_HEADSET_UNPLUGGED -> pause()
-                ACTION_TOGGLE -> toggle()
-                ACTION_UPDATE_APPWIDGET -> updateAppWidget()
-            }
+        when (action) {
+            ACTION_A2DP_DISCONNECTED -> pause()
+            ACTION_HEADSET_UNPLUGGED -> pause()
+            ACTION_TOGGLE -> toggle()
+            ACTION_UPDATE_APPWIDGET -> updateAppWidget()
         }
         return Service.START_NOT_STICKY
     }
