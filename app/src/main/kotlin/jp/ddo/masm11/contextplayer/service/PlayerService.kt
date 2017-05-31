@@ -58,7 +58,7 @@ class PlayerService : Service() {
     class CurrentStatus(
             val contextId: Long,
             val path: String?,
-            val topDir: String?,
+            val topDir: String,
             val position: Int,
             val duration: Int)
     
@@ -78,7 +78,7 @@ class PlayerService : Service() {
         fun onStatusChanged(status: CurrentStatus)
     }
     
-    private var topDir: String? = null
+    private var topDir: String = "/"
     private var playingPath: String? = null
     private var nextPath: String? = null
     private var curPlayer: MediaPlayer? = null
@@ -179,7 +179,7 @@ class PlayerService : Service() {
         }
     }
 
-    override fun onBind(intent: Intent): IBinder? {
+    override fun onBind(intent: Intent): IBinder {
         return PlayerServiceBinder()
     }
 
@@ -569,13 +569,13 @@ class PlayerService : Service() {
         var nextOf = nextOf
         Log.d("nextOf=%s", nextOf)
         var found: String? = null
-        if (nextOf.startsWith(topDir!!)) {
-            nextOf = nextOf.substring(topDir!!.length + 1)    // +1: for '/'
+        if (nextOf.startsWith(topDir)) {
+            nextOf = nextOf.substring(topDir.length + 1)    // +1: for '/'
             val parts = nextOf.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            found = lookForFile(File(topDir!!), parts, 0, false)
+            found = lookForFile(File(topDir), parts, 0, false)
         }
         if (found == null)
-            found = lookForFile(File(topDir!!), null, 0, false)
+            found = lookForFile(File(topDir), null, 0, false)
         Log.d("found=%s", found)
         return found
     }
@@ -586,13 +586,13 @@ class PlayerService : Service() {
         var prevOf = prevOf
         Log.d("prevOf=%s", prevOf)
         var found: String? = null
-        if (prevOf.startsWith(topDir!!)) {
-            prevOf = prevOf.substring(topDir!!.length + 1)    // +1: for '/'
+        if (prevOf.startsWith(topDir)) {
+            prevOf = prevOf.substring(topDir.length + 1)    // +1: for '/'
             val parts = prevOf.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            found = lookForFile(File(topDir!!), parts, 0, true)
+            found = lookForFile(File(topDir), parts, 0, true)
         }
         if (found == null)
-            found = lookForFile(File(topDir!!), null, 0, true)
+            found = lookForFile(File(topDir), null, 0, true)
         Log.d("found=%s", found)
         return found
     }
@@ -674,20 +674,15 @@ class PlayerService : Service() {
     }
 
     /* topDir を変更する。
-     *  - path != null の場合:
-     *    → topDir を設定し、enqueueNext() し直す。
-     *  - path == null の場合:
-     *    → 何もしない。
+     *    topDir を設定し、enqueueNext() し直す。
      */
-    private fun setTopDir(path: String?) {
+    private fun setTopDir(path: String) {
         Log.d("path=%s", path)
-        if (path != null) {
-            topDir = path
-            // 「次の曲」が変わる可能性があるので、enqueue しなおす。
-            if (curPlayer != null) {
-                Log.d("enqueue next player.")
-                enqueueNext()
-            }
+        topDir = path
+        // 「次の曲」が変わる可能性があるので、enqueue しなおす。
+        if (curPlayer != null) {
+            Log.d("enqueue next player.")
+            enqueueNext()
         }
     }
 
