@@ -50,24 +50,19 @@ class Metadata(private val path: String) {
      *  http://www.xiph.org/vorbis/doc/Vorbis_I_spec.html
      */
     private fun tryExtractOgg(): Boolean {
-        var bis: BufferedInputStream? = null
-
-        try {
-            bis = BufferedInputStream(FileInputStream(path))
-
-            if (bis.read() != 'O'.toInt())
+        return BufferedInputStream(FileInputStream(path)).use<BufferedInputStream, Boolean> {
+            if (it.read() != 'O'.toInt())
                 return false
-            if (bis.read() != 'g'.toInt())
+            if (it.read() != 'g'.toInt())
                 return false
-            if (bis.read() != 'g'.toInt())
+            if (it.read() != 'g'.toInt())
                 return false
-            if (bis.read() != 'S'.toInt())
+            if (it.read() != 'S'.toInt())
                 return false
 
-            var b: Int
             var step = 0
 	    for (i in 0..0x10000) {
-		b = bis.read()
+		val b = it.read()
 
 		if (b == -1)
 		    return false
@@ -122,38 +117,38 @@ class Metadata(private val path: String) {
             var b2: Int
             var b3: Int
             var b4: Int
-            b1 = bis.read()
-            b2 = bis.read()
-            b3 = bis.read()
-            b4 = bis.read()
+            b1 = it.read()
+            b2 = it.read()
+            b3 = it.read()
+            b4 = it.read()
             if (b4 == -1)
                 return false
             val vendorLength = b4 shl 24 or (b3 shl 16) or (b2 shl 8) or b1
 
             for (i in 0..vendorLength - 1) {
-                if (bis.read() == -1)
+                if (it.read() == -1)
                     return false
             }
 
-            b1 = bis.read()
-            b2 = bis.read()
-            b3 = bis.read()
-            b4 = bis.read()
+            b1 = it.read()
+            b2 = it.read()
+            b3 = it.read()
+            b4 = it.read()
             if (b4 == -1)
                 return false
             val numComments = b4 shl 24 or (b3 shl 16) or (b2 shl 8) or b1
 
             for (i in 0..numComments - 1) {
-                b1 = bis.read()
-                b2 = bis.read()
-                b3 = bis.read()
-                b4 = bis.read()
+                b1 = it.read()
+                b2 = it.read()
+                b3 = it.read()
+                b4 = it.read()
                 if (b4 == -1)
                     return false
                 val length = b4 shl 24 or (b3 shl 16) or (b2 shl 8) or b1
 
                 val buf = ByteArray(length)
-                if (bis.read(buf) != length)
+                if (it.read(buf) != length)
                     return false
                 val str = String(buf)
                 val eq = str.indexOf('=')
@@ -167,25 +162,15 @@ class Metadata(private val path: String) {
                     artist = `val`
             }
 
-            b = bis.read()
-            if (b == -1)
-                return false
-            if (b and 0x01 != 1)
-                return false
+	    run {
+		val b = it.read()
+		if (b == -1)
+                    return false
+		if (b and 0x01 != 1)
+                    return false
+	    }
 
             return true
-        } catch (e: IOException) {
-            Log.e("ioexception", e)
-            return false
-        } finally {
-            if (bis != null) {
-                try {
-                    bis.close()
-                } catch (e: IOException) {
-                    Log.e("ioexception", e)
-                }
-
-            }
         }
     }
 
