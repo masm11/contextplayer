@@ -41,10 +41,9 @@ class PathView(context: Context, attrs: AttributeSet) : TextView(context, attrs)
 	}
 
     private fun updateText() {
-        var root: String = rootDir
-        var top: String = topDir
-	val p = path
-        var cur: String = if (p != null) p else top
+        var root = rootDir
+        var top = topDir
+        var cur = path ?: top
         if (!root.endsWith("/"))
             root = root + "/"
         if (!top.endsWith("/"))
