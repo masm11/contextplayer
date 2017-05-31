@@ -218,7 +218,7 @@ class ExplorerActivity : AppCompatActivity() {
         }
     }
 
-    private var rootDir: File = Environment.getExternalStoragePublicDirectory(
+    private val rootDir: File = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_MUSIC)    // これより上には戻れない
     private var topDir: File = File(".")
     private var curDir: File = File(".")

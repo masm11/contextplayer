@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
     private var svc: PlayerService.PlayerServiceBinder? = null
     private var conn: ServiceConnection? = null
-    private var rootDir = Environment.getExternalStoragePublicDirectory(
+    private val rootDir = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_MUSIC)
     private var curPath: String? = null
     private var curTopDir: String? = null
@@ -285,7 +285,6 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     }
 
     companion object {
-
         private val REQ_PERMISSION_ON_CREATE = 1
     }
 }
