@@ -58,7 +58,7 @@ class ContextActivity : AppCompatActivity() {
 		var changed = false
 		for (item in items!!) {
 		    if (item.id == status.contextId) {
-			if (!strEq(item.path, status.path)) {
+			if (item.path != status.path) {
 			    item.path = status.path
 			    changed = true
 			}
@@ -280,15 +280,5 @@ class ContextActivity : AppCompatActivity() {
         unbindService(conn)
 
         super.onStop()
-    }
-
-    private fun strEq(s1: String?, s2: String?): Boolean {
-        if (s1 === s2)
-            return true
-        if (s1 == null && s2 != null)
-            return false
-        if (s1 != null && s2 == null)
-            return false
-        return s1 == s2
     }
 }

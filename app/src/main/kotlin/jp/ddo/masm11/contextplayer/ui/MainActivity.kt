@@ -235,7 +235,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     }
 
     private fun updateTrackInfo(status: PlayerService.CurrentStatus) {
-        if (!strEq(curPath, status.path)) {
+        if (curPath != status.path) {
             curPath = status.path
 
             playing_filename.rootDir = rootDir.absolutePath
@@ -258,7 +258,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             playing_artist.text = artist
         }
 
-        if (!strEq(curTopDir, status.topDir)) {
+        if (curTopDir != status.topDir) {
             curTopDir = status.topDir
             playing_filename.topDir = curTopDir!!
         }
@@ -282,16 +282,6 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             val curTime = String.format(Locale.US, "%d:%02d", sec / 60, sec % 60)
             playing_curtime.text = curTime
         }
-    }
-
-    private fun strEq(s1: String?, s2: String?): Boolean {
-        if (s1 === s2)
-            return true
-        if (s1 == null && s2 != null)
-            return false
-        if (s1 != null && s2 == null)
-            return false
-        return s1 == s2
     }
 
     companion object {
