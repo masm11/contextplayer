@@ -31,49 +31,49 @@ class Config: Model() {
     var value: String = ""
     
     companion object {
-	fun loadContextId(): Long {
-	    val config: Config? = findByKey("context_id")
-	    if (config == null) {
-		// 設定がない場合。
-		// context があるなら、どれか 1つの id を返す。
-		val ctxts = PlayContext.all()
-		if (ctxts.size >= 1)
-		    return ctxts.get(0).id
+	var context_id: Long
+	    get () {
+		val config: Config? = findByKey("context_id")
+		if (config == null) {
+		    // 設定がない場合。
+		    // context があるなら、どれか 1つの id を返す。
+		    val ctxts = PlayContext.all()
+		    if (ctxts.size >= 1)
+			return ctxts.get(0).id
 
-		// context が一つもないなら、新規に作って id を返す。
-		val ctxt = PlayContext()
-		ctxt.save()
-		return ctxt.id
+		    // context が一つもないなら、新規に作って id を返す。
+		    val ctxt = PlayContext()
+		    ctxt.save()
+		    return ctxt.id
+		}
+		return config.value.toLong()
 	    }
-	    return config.value.toLong()
-	}
-
-	fun saveContextId(context_id: Long) {
-	    var config: Config? = findByKey("context_id")
-	    if (config == null) {
-		config = Config()
-		config.key = "context_id"
+	    set(value) {
+		var config: Config? = findByKey("context_id")
+		if (config == null) {
+		    config = Config()
+		    config.key = "context_id"
+		}
+		config.value = value.toString()
+		config.save()
 	    }
-	    config.value = context_id.toString()
-	    config.save()
-	}
 
-	fun loadVolume(): Int {
-	    val config: Config? = findByKey("volume")
-	    if (config == null)
-		return 100
-	    return config.value.toInt()
-	}
-
-	fun saveVolume(volume: Int) {
-	    var config: Config? = findByKey("volume")
-	    if (config == null) {
-		config = Config()
-		config.key = "volume"
+	var volume: Int
+	    get() {
+		val config: Config? = findByKey("volume")
+		if (config == null)
+		    return 100
+		return config.value.toInt()
 	    }
-	    config.value = volume.toString()
-	    config.save()
-	}
+	    set(value) {
+		var config: Config? = findByKey("volume")
+		if (config == null) {
+		    config = Config()
+		    config.key = "volume"
+		}
+		config.value = value.toString()
+		config.save()
+	    }
 
 	fun findByKey(key: String): Config? {
 	    return Select()

@@ -144,13 +144,13 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         })
 
         volume.max = 50
-        volume.progress = Config.loadVolume() - 50
+        volume.progress = Config.volume - 50
         volume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(volume: SeekBar, progress: Int, fromUser: Boolean) {
                 if (svc != null)
                     svc!!.setVolume(50 + progress)
 
-                Config.saveVolume(50 + progress)
+                Config.volume = 50 + progress
             }
 
             override fun onStartTrackingTouch(volume: SeekBar) {
@@ -190,7 +190,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
                 val id = intent.getLongExtra("jp.ddo.masm11.contextplayer.CONTEXT_ID", -1)
 
                 if (id != -1L) {
-                    Config.saveContextId(id)
+                    Config.context_id = id
 
                     needSwitchContext = true
                 }
@@ -221,7 +221,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     }
 
     override fun onResume() {
-        val ctxt = PlayContext.find(Config.loadContextId())
+        val ctxt = PlayContext.find(Config.context_id)
         if (ctxt != null)
             context_name.text = ctxt.name
 

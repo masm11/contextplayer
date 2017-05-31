@@ -240,7 +240,7 @@ class ExplorerActivity : AppCompatActivity() {
 
         adapter = FileAdapter(this, ArrayList<FileItem>())
 
-        val ctxtId = Config.loadContextId()
+        val ctxtId = Config.context_id
         var c = PlayContext.find(ctxtId)
         if (c == null)
             c = PlayContext()

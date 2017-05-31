@@ -118,7 +118,7 @@ class PlayerService : Service() {
 
         handler = Handler()
 
-        volume = Config.loadVolume()
+        volume = Config.volume
         volumeDuck = 100
 
         loadContext()
@@ -765,7 +765,7 @@ class PlayerService : Service() {
         setForeground(false)
 
         Log.d("getting context_id")
-        contextId = Config.loadContextId()
+        contextId = Config.context_id
         Log.d("contextId=%d.", contextId)
         val ctxt = PlayContext.find(contextId)
         if (ctxt != null) {

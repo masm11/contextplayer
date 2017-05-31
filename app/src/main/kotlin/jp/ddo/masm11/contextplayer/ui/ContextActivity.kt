@@ -132,7 +132,7 @@ class ContextActivity : AppCompatActivity() {
                 val listView = parent as ListView
                 val item = listView.getItemAtPosition(position) as Item
 
-                Config.saveContextId(item.id)
+                Config.context_id = item.id
 
                 svc?.switchContext()
             }
