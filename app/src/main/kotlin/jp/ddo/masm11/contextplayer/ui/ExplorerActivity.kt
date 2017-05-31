@@ -267,33 +267,30 @@ class ExplorerActivity : AppCompatActivity() {
         }
         renewAdapter(dir)
 
-        list.setOnItemClickListener(object : AdapterView.OnItemClickListener {
-            override fun onItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                val listView = parent as ListView
-                val item = listView.getItemAtPosition(position) as FileItem
-                Log.d("clicked=%s", item.filename)
+        list.setOnItemClickListener { parent, _, position, _ ->
+	    val listView = parent as ListView
+	    val item = listView.getItemAtPosition(position) as FileItem
+	    Log.d("clicked=%s", item.filename)
 
-                if (item.isDir) {
-                    if (item.filename != ".")
-                        renewAdapter(item.file)
-                } else {
-                    play(item.file)
-                }
-            }
-        })
-        list.setOnItemLongClickListener(object : AdapterView.OnItemLongClickListener {
-            override fun onItemLongClick(parent: AdapterView<*>, view: View, position: Int, id: Long): Boolean {
-                val listView = parent as ListView
-                val item = listView.getItemAtPosition(position) as FileItem
-                Log.d("longclicked=%s", item.filename)
+	    if (item.isDir) {
+		if (item.filename != ".")
+		    renewAdapter(item.file)
+	    } else {
+		play(item.file)
+	    }
+        }
+        list.setOnItemLongClickListener { parent, _, position, _ ->
+	    val listView = parent as ListView
+	    val item = listView.getItemAtPosition(position) as FileItem
+	    Log.d("longclicked=%s", item.filename)
 
-                if (item.isDir) {
-		    setTopDir(if (item.filename == ".") curDir else item.file)
-                    return true
-                } else
-                    return false
-            }
-        })
+	    var ret = false
+	    if (item.isDir) {
+		setTopDir(if (item.filename == ".") curDir else item.file)
+		ret = true
+	    }
+	    ret
+	}
     }
 
     /* 参考:
