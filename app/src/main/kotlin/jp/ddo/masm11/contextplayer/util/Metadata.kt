@@ -50,128 +50,128 @@ class Metadata(private val path: String) {
      *  http://www.xiph.org/vorbis/doc/Vorbis_I_spec.html
      */
     private fun tryExtractOgg(): Boolean {
-        return BufferedInputStream(FileInputStream(path)).use<BufferedInputStream, Boolean> {
-            if (it.read() != 'O'.toInt())
-                return false
-            if (it.read() != 'g'.toInt())
-                return false
-            if (it.read() != 'g'.toInt())
-                return false
-            if (it.read() != 'S'.toInt())
-                return false
-
-            var step = 0
-	    for (i in 0..0x10000) {
-		val b = it.read()
-
-		if (b == -1)
+	try {
+	    return BufferedInputStream(FileInputStream(path)).use<BufferedInputStream, Boolean> {
+		if (it.read() != 'O'.toInt())
+		    return false
+		if (it.read() != 'g'.toInt())
+		    return false
+		if (it.read() != 'g'.toInt())
+		    return false
+		if (it.read() != 'S'.toInt())
 		    return false
 
-		when (step) {
-		    0 -> if (b == 0x03)
-			step++
+		var step = 0
+		for (i in 0 until 0x10000) {
+		    val b = it.read()
 
-		    1 -> when (b) {
-			'v'.toInt() -> step++
-			0x03 -> step = 1
-			else -> step = 0
-		    }
+		    if (b == -1)
+			return false
 
-		    2 -> when (b) {
-			'o'.toInt() -> step++
-			0x03 -> step = 1
-			else -> step = 0
-		    }
+		    when (step) {
+			0 -> if (b == 0x03)
+			    step++
 
-		    3 -> when (b) {
-			'r'.toInt() -> step++
-			0x03 -> step = 1
-			else -> step = 0
-		    }
+			1 -> when (b) {
+			    'v'.toInt() -> step++
+			    0x03 -> step = 1
+			    else -> step = 0
+			}
 
-		    4 -> when (b) {
-			'b'.toInt() -> step++
-			0x03 -> step = 1
-			else -> step = 0
-		    }
+			2 -> when (b) {
+			    'o'.toInt() -> step++
+			    0x03 -> step = 1
+			    else -> step = 0
+			}
 
-		    5 -> when (b) {
-			'i'.toInt() -> step++
-			0x03 -> step = 1
-			else -> step = 0
-		    }
+			3 -> when (b) {
+			    'r'.toInt() -> step++
+			    0x03 -> step = 1
+			    else -> step = 0
+			}
 
-		    6 -> when (b) {
-			's'.toInt() -> step++
-			0x03 -> step = 1
-			else -> step = 0
+			4 -> when (b) {
+			    'b'.toInt() -> step++
+			    0x03 -> step = 1
+			    else -> step = 0
+			}
+
+			5 -> when (b) {
+			    'i'.toInt() -> step++
+			    0x03 -> step = 1
+			    else -> step = 0
+			}
+
+			6 -> when (b) {
+			    's'.toInt() -> step++
+			    0x03 -> step = 1
+			    else -> step = 0
+			}
 		    }
+		    if (step >= 7)
+			break
 		}
-		if (step >= 7)
-		    break
+		if (step != 7)
+		    return false
+
+		val vendorLength = readOggInt(it)
+		if (vendorLength == null)
+		    return false
+
+		for (i in 0 until vendorLength) {
+		    if (it.read() == -1)
+			return false
+		}
+
+		val numComments = readOggInt(it)
+		if (numComments == null)
+		    return false
+
+		for (i in 0 until numComments) {
+		    val length = readOggInt(it)
+		    if (length == null)
+			return false
+
+		    val buf = ByteArray(length)
+		    if (it.read(buf) != length)
+			return false
+		    val str = String(buf)
+		    val eq = str.indexOf('=')
+		    if (eq == -1)
+			continue
+		    val key = str.substring(0, eq)
+		    val `val` = str.substring(eq + 1)
+		    if (key.equals("TITLE", ignoreCase = true))
+			title = `val`
+		    if (key.equals("ARTIST", ignoreCase = true))
+			artist = `val`
+		}
+
+		run {
+		    val b = it.read()
+		    if (b == -1)
+			return false
+		    if (b and 0x01 != 1)
+			return false
+		}
+
+		return true
 	    }
-            if (step != 7)
-                return false
+	} catch (e: Exception) {
+            Log.e("exception", e)
+            return false
+	}
+    }
 
-            var b1: Int
-            var b2: Int
-            var b3: Int
-            var b4: Int
-            b1 = it.read()
-            b2 = it.read()
-            b3 = it.read()
-            b4 = it.read()
-            if (b4 == -1)
-                return false
-            val vendorLength = b4 shl 24 or (b3 shl 16) or (b2 shl 8) or b1
-
-            for (i in 0..vendorLength - 1) {
-                if (it.read() == -1)
-                    return false
-            }
-
-            b1 = it.read()
-            b2 = it.read()
-            b3 = it.read()
-            b4 = it.read()
-            if (b4 == -1)
-                return false
-            val numComments = b4 shl 24 or (b3 shl 16) or (b2 shl 8) or b1
-
-            for (i in 0..numComments - 1) {
-                b1 = it.read()
-                b2 = it.read()
-                b3 = it.read()
-                b4 = it.read()
-                if (b4 == -1)
-                    return false
-                val length = b4 shl 24 or (b3 shl 16) or (b2 shl 8) or b1
-
-                val buf = ByteArray(length)
-                if (it.read(buf) != length)
-                    return false
-                val str = String(buf)
-                val eq = str.indexOf('=')
-                if (eq == -1)
-                    continue
-                val key = str.substring(0, eq)
-                val `val` = str.substring(eq + 1)
-                if (key.equals("TITLE", ignoreCase = true))
-                    title = `val`
-                if (key.equals("ARTIST", ignoreCase = true))
-                    artist = `val`
-            }
-
-	    run {
-		val b = it.read()
-		if (b == -1)
-                    return false
-		if (b and 0x01 != 1)
-                    return false
-	    }
-
-            return true
-        }
+    @Throws(IOException::class)
+    private fun readOggInt(bis: BufferedInputStream): Int? {
+	val b1: Int = bis.read()
+	val b2: Int = bis.read()
+	val b3: Int = bis.read()
+	val b4: Int = bis.read()
+	if (b4 == -1)
+	    return null
+	return b4 shl 24 or (b3 shl 16) or (b2 shl 8) or b1
     }
 
     private fun tryExtractID3v2(): Boolean {
@@ -215,7 +215,7 @@ class Metadata(private val path: String) {
                     sz = readSyncsafeInt(bis)
                 if (sz == -1)
                     return false
-                for (i in 0..sz - 4 - 1)
+                for (i in 0 until sz - 4)
                     bis.read()
             }
 
@@ -256,7 +256,7 @@ class Metadata(private val path: String) {
                 }
 
                 val data = ByteArray(sz)
-                for (i in 0..sz - 1) {
+                for (i in 0 until sz) {
                     val b = bis.read()
                     if (b == -1)
                         return false
