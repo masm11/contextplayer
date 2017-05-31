@@ -84,20 +84,20 @@ class PlayerService : Service() {
     private var curPlayer: MediaPlayer? = null
     private var nextPlayer: MediaPlayer? = null
     private var contextId: Long = 0
-    private var audioManager: AudioManager? = null
-    private var audioAttributes: AudioAttributes? = null
+    private lateinit var audioManager: AudioManager
+    private lateinit var audioAttributes: AudioAttributes
     private var audioSessionId: Int = 0
-    private var audioFocusChangeListener: AudioManager.OnAudioFocusChangeListener? = null
+    private lateinit var audioFocusChangeListener: AudioManager.OnAudioFocusChangeListener
     private var broadcaster: Thread? = null
-    private var handler: Handler? = null
-    private var statusChangedListeners: MutableSet<OnStatusChangedListener>? = null
-    private var headsetReceiver: BroadcastReceiver? = null
+    private lateinit var handler: Handler
+    private lateinit var statusChangedListeners: MutableSet<OnStatusChangedListener>
+    private lateinit var headsetReceiver: BroadcastReceiver
     private var volume: Int = 0
     private var volumeDuck: Int = 0
 
     fun setOnStatusChangedListener(listener: OnStatusChangedListener) {
         Log.d("listener=%s", listener.toString())
-        statusChangedListeners!!.add(listener)
+        statusChangedListeners.add(listener)
     }
 
     override fun onCreate() {
@@ -112,7 +112,7 @@ class PlayerService : Service() {
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                 .build()
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
-        audioSessionId = audioManager!!.generateAudioSessionId()
+        audioSessionId = audioManager.generateAudioSessionId()
 
         audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange -> handleAudioFocusChangeEvent(focusChange) }
 
@@ -343,7 +343,7 @@ class PlayerService : Service() {
     private fun startPlay() {
         if (curPlayer != null) {
             Log.d("request audio focus.")
-            audioManager!!.requestAudioFocus(audioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
+            audioManager.requestAudioFocus(audioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
 
             try {
                 Log.d("starting.")
@@ -384,7 +384,7 @@ class PlayerService : Service() {
             updateAppWidget()
 
             Log.d("abandon audio focus.")
-            audioManager!!.abandonAudioFocus(audioFocusChangeListener)
+            audioManager.abandonAudioFocus(audioFocusChangeListener)
 
             Log.d("save context")
             saveContext()
@@ -809,7 +809,7 @@ class PlayerService : Service() {
         val code = Runnable {
             try {
                 while (true) {
-                    handler!!.post { broadcastStatus() }
+                    handler.post { broadcastStatus() }
                     Thread.sleep(500)
                 }
             } catch (e: InterruptedException) {
@@ -818,15 +818,17 @@ class PlayerService : Service() {
         }
 
         stopBroadcast()    // 念の為
-        broadcaster = Thread(code)
-        broadcaster!!.start()
+	val thr = Thread(code)
+        broadcaster = thr
+        thr.start()
     }
 
     private fun stopBroadcast() {
-        if (broadcaster != null) {
-            broadcaster!!.interrupt()
+	val thr = broadcaster
+        if (thr != null) {
+            thr.interrupt()
             try {
-                broadcaster!!.join()
+                thr.join()
             } catch (e: InterruptedException) {
                 Log.e("interrupted.", e)
             }
@@ -837,7 +839,7 @@ class PlayerService : Service() {
 
     private fun broadcastStatus() {
         val status = buildCurrentStatus()
-        for (listener in statusChangedListeners!!) {
+        for (listener in statusChangedListeners) {
             // Log.d("listener=%s", listener);
             listener.onStatusChanged(status)
         }
