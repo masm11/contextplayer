@@ -346,7 +346,6 @@ class Metadata(private val path: String) {
         return false
     }
 
-    @Throws(IOException::class)
     private fun readLEInt(bis: BufferedInputStream): Int? {
 	val b1: Int = bis.read()
 	val b2: Int = bis.read()
@@ -357,7 +356,6 @@ class Metadata(private val path: String) {
 	return b4 shl 24 or (b3 shl 16) or (b2 shl 8) or b1
     }
     
-    @Throws(IOException::class)
     private fun readInt(istrm: BufferedInputStream): Int? {
         val b1 = istrm.read()
         val b2 = istrm.read()
@@ -369,7 +367,6 @@ class Metadata(private val path: String) {
         return b1 shl 24 or (b2 shl 16) or (b3 shl 8) or b4
     }
 
-    @Throws(IOException::class)
     private fun readInt3(istrm: BufferedInputStream): Int? {
         val b1 = istrm.read()
         val b2 = istrm.read()
@@ -380,7 +377,6 @@ class Metadata(private val path: String) {
         return b1 shl 16 or (b2 shl 8) or b3
     }
 
-    @Throws(IOException::class)
     private fun readSyncsafeInt(istrm: BufferedInputStream): Int? {
         val b1 = istrm.read()
         val b2 = istrm.read()
@@ -418,7 +414,6 @@ class Metadata(private val path: String) {
 
     companion object {
         private val retr = MediaMetadataRetriever()
-	private val mutex = ReentrantLock()
 
 	private val BYTE_ARRAY_TT2 = "TT2".toByteArray()
 	private val BYTE_ARRAY_TIT2 = "TIT2".toByteArray()
