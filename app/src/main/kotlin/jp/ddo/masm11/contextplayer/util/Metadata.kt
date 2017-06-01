@@ -77,7 +77,7 @@ class Metadata(private val path: String) {
 		if (!isVorbis)
 		    return false
 
-		val vendorLength = readOggInt(it)
+		val vendorLength = readLEInt(it)
 		if (vendorLength == null)
 		    return false
 
@@ -86,12 +86,12 @@ class Metadata(private val path: String) {
 			return false
 		}
 
-		val numComments = readOggInt(it)
+		val numComments = readLEInt(it)
 		if (numComments == null)
 		    return false
 
 		for (i in 0 until numComments) {
-		    val length = readOggInt(it)
+		    val length = readLEInt(it)
 		    if (length == null)
 			return false
 
@@ -126,17 +126,6 @@ class Metadata(private val path: String) {
 	}
     }
 
-    @Throws(IOException::class)
-    private fun readOggInt(bis: BufferedInputStream): Int? {
-	val b1: Int = bis.read()
-	val b2: Int = bis.read()
-	val b3: Int = bis.read()
-	val b4: Int = bis.read()
-	if (b4 == -1)
-	    return null
-	return b4 shl 24 or (b3 shl 16) or (b2 shl 8) or b1
-    }
-
     private fun tryExtractID3v2(): Boolean {
         try {
             return BufferedInputStream(FileInputStream(path)).use<BufferedInputStream, Boolean> {
@@ -160,19 +149,19 @@ class Metadata(private val path: String) {
 		Log.d("flags=%d", flags)
 
 		val size = readSyncsafeInt(it)
-		if (size == -1)
+		if (size == null)
 		    return false
 		Log.d("size=%d\n", size)
 
 		// 拡張ヘッダがあるなら読み捨てる。
 		if (flags and (1 shl 6) != 0) {
 		    Log.d("ext header exists.")
-		    val sz: Int
+		    val sz: Int?
 		    if (majorVer < 4)
 			sz = readInt(it)
 		    else
 			sz = readSyncsafeInt(it)
-		    if (sz == -1)
+		    if (sz == null)
 			return false
 		    for (i in 0 until sz - 4)
 			it.read()
@@ -197,7 +186,7 @@ class Metadata(private val path: String) {
 		    }
 		    Log.d("frameId: %d, %d, %d, %d.", frameId[0], frameId[1], frameId[2], frameId[3])
 
-		    val sz: Int
+		    val sz: Int?
 		    when (majorVer) {
 			0, 1, 2 -> sz = readInt3(it)
 			3 -> sz = readInt(it)
@@ -206,6 +195,8 @@ class Metadata(private val path: String) {
 			    sz = readSyncsafeInt(it)
 			}
 		    }
+		    if (sz == null)
+		        return false
 		    Log.d("sz=%d.", sz)
 
 		    // flag を読み捨てる。
@@ -356,63 +347,73 @@ class Metadata(private val path: String) {
     }
 
     @Throws(IOException::class)
-    private fun readInt(`is`: BufferedInputStream): Int {
-        val b1 = `is`.read()
-        val b2 = `is`.read()
-        val b3 = `is`.read()
-        val b4 = `is`.read()
+    private fun readLEInt(bis: BufferedInputStream): Int? {
+	val b1: Int = bis.read()
+	val b2: Int = bis.read()
+	val b3: Int = bis.read()
+	val b4: Int = bis.read()
+	if (b4 == -1)
+	    return null
+	return b4 shl 24 or (b3 shl 16) or (b2 shl 8) or b1
+    }
+    
+    @Throws(IOException::class)
+    private fun readInt(istrm: BufferedInputStream): Int? {
+        val b1 = istrm.read()
+        val b2 = istrm.read()
+        val b3 = istrm.read()
+        val b4 = istrm.read()
         if (b4 == -1)
-            return -1
+            return null
 
         return b1 shl 24 or (b2 shl 16) or (b3 shl 8) or b4
     }
 
     @Throws(IOException::class)
-    private fun readInt3(`is`: BufferedInputStream): Int {
-        val b1 = `is`.read()
-        val b2 = `is`.read()
-        val b3 = `is`.read()
+    private fun readInt3(istrm: BufferedInputStream): Int? {
+        val b1 = istrm.read()
+        val b2 = istrm.read()
+        val b3 = istrm.read()
         if (b3 == -1)
-            return -1
+            return null
 
         return b1 shl 16 or (b2 shl 8) or b3
     }
 
     @Throws(IOException::class)
-    private fun readSyncsafeInt(`is`: BufferedInputStream): Int {
-        val b1 = `is`.read()
-        val b2 = `is`.read()
-        val b3 = `is`.read()
-        val b4 = `is`.read()
+    private fun readSyncsafeInt(istrm: BufferedInputStream): Int? {
+        val b1 = istrm.read()
+        val b2 = istrm.read()
+        val b3 = istrm.read()
+        val b4 = istrm.read()
         if (b4 == -1)
-            return -1
+            return null
 
         if (b1 and 0x80 != 0)
-            return -1
+            return null
         if (b2 and 0x80 != 0)
-            return -1
+            return null
         if (b3 and 0x80 != 0)
-            return -1
+            return null
         if (b4 and 0x80 != 0)
-            return -1
+            return null
 
         return b1 shl 21 or (b2 shl 14) or (b3 shl 7) or b4
     }
 
     private fun tryExtractOther(): Boolean {
-	mutex.lock()
-        try {
-            retr.setDataSource(path)
-            title = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
-            artist = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
+	synchronized(retr, {
+	    try {
+		retr.setDataSource(path)
+		title = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
+		artist = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
 
-            return true
-        } catch (e: Exception) {
-            Log.i("exception", e)
-            return false
-        } finally {
-	    mutex.unlock()
-	}
+		return true
+	    } catch (e: Exception) {
+		Log.i("exception", e)
+		return false
+	    }
+	})
     }
 
     companion object {
