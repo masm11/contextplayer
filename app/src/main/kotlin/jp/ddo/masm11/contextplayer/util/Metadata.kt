@@ -138,215 +138,199 @@ class Metadata(private val path: String) {
     }
 
     private fun tryExtractID3v2(): Boolean {
-        var bis: BufferedInputStream? = null
-
-        Log.d("path=%s", path)
         try {
-            bis = BufferedInputStream(FileInputStream(path))
+            return BufferedInputStream(FileInputStream(path)).use<BufferedInputStream, Boolean> {
+		if (it.read() != 'I'.toInt())
+		    return false
+		if (it.read() != 'D'.toInt())
+		    return false
+		if (it.read() != '3'.toInt())
+		    return false
+		Log.d("ID3 found.")
 
-            if (bis.read() != 'I'.toInt())
-                return false
-            if (bis.read() != 'D'.toInt())
-                return false
-            if (bis.read() != '3'.toInt())
-                return false
-            Log.d("ID3 found.")
+		val majorVer = it.read()
+		val minorVer = it.read()
+		if (minorVer == -1)
+		    return false
+		Log.d("major/minorVer: %d, %d.", majorVer, minorVer)
 
-            val majorVer = bis.read()
-            val minorVer = bis.read()
-            if (minorVer == -1)
-                return false
-            Log.d("major/minorVer: %d, %d.", majorVer, minorVer)
+		val flags = it.read()
+		if (flags == -1)
+		    return false
+		Log.d("flags=%d", flags)
 
-            val flags = bis.read()
-            if (flags == -1)
-                return false
-            Log.d("flags=%d", flags)
+		val size = readSyncsafeInt(it)
+		if (size == -1)
+		    return false
+		Log.d("size=%d\n", size)
 
-            val size = readSyncsafeInt(bis)
-            if (size == -1)
-                return false
-            Log.d("size=%d\n", size)
+		// 拡張ヘッダがあるなら読み捨てる。
+		if (flags and (1 shl 6) != 0) {
+		    Log.d("ext header exists.")
+		    val sz: Int
+		    if (majorVer < 4)
+			sz = readInt(it)
+		    else
+			sz = readSyncsafeInt(it)
+		    if (sz == -1)
+			return false
+		    for (i in 0 until sz - 4)
+			it.read()
+		}
 
-            // 拡張ヘッダがあるなら読み捨てる。
-            if (flags and (1 shl 6) != 0) {
-                Log.d("ext header exists.")
-                val sz: Int
-                if (majorVer < 4)
-                    sz = readInt(bis)
-                else
-                    sz = readSyncsafeInt(bis)
-                if (sz == -1)
-                    return false
-                for (i in 0 until sz - 4)
-                    bis.read()
-            }
-
-            Log.d("Now, frames.")
-            while (true) {
-                val frameId = ByteArray(4)
-                frameId[0] = bis.read().toByte()
-                frameId[1] = bis.read().toByte()
-                frameId[2] = bis.read().toByte()
-                if (!isValidFrameIdChar(frameId[0]))
-                    break
-                if (!isValidFrameIdChar(frameId[1]))
-                    break
-                if (!isValidFrameIdChar(frameId[2]))
-                    break
-                if (majorVer >= 3) {
-                    frameId[3] = bis.read().toByte()
-                    if (!isValidFrameIdChar(frameId[3]))
-                        break
-                }
-                Log.d("frameId: %d, %d, %d, %d.", frameId[0], frameId[1], frameId[2], frameId[3])
-
-                val sz: Int
-                when (majorVer) {
-                    0, 1, 2 -> sz = readInt3(bis)
-                    3 -> sz = readInt(bis)
-                    // 4,
-		    else -> {
-			sz = readSyncsafeInt(bis)
+		Log.d("Now, frames.")
+		while (true) {
+		    val frameId = ByteArray(4)
+		    frameId[0] = it.read().toByte()
+		    frameId[1] = it.read().toByte()
+		    frameId[2] = it.read().toByte()
+		    if (!isValidFrameIdChar(frameId[0]))
+			break
+		    if (!isValidFrameIdChar(frameId[1]))
+			break
+		    if (!isValidFrameIdChar(frameId[2]))
+			break
+		    if (majorVer >= 3) {
+			frameId[3] = it.read().toByte()
+			if (!isValidFrameIdChar(frameId[3]))
+			    break
 		    }
-                }
-                Log.d("sz=%d.", sz)
+		    Log.d("frameId: %d, %d, %d, %d.", frameId[0], frameId[1], frameId[2], frameId[3])
 
-                // flag を読み捨てる。
-                if (majorVer >= 3) {
-                    bis.read()
-                    bis.read()
-                }
+		    val sz: Int
+		    when (majorVer) {
+			0, 1, 2 -> sz = readInt3(it)
+			3 -> sz = readInt(it)
+			// 4,
+			else -> {
+			    sz = readSyncsafeInt(it)
+			}
+		    }
+		    Log.d("sz=%d.", sz)
 
-                val data = ByteArray(sz)
-                for (i in 0 until sz) {
-                    val b = bis.read()
-                    if (b == -1)
-                        return false
-                    data[i] = b.toByte()
-                }
+		    // flag を読み捨てる。
+		    if (majorVer >= 3) {
+			it.read()
+			it.read()
+		    }
 
-                var isTitle = false
-                var isArtist = false
-                if (testFrameId(frameId, byteArrayOf('T'.toByte(), 'T'.toByte(), '2'.toByte()), byteArrayOf('T'.toByte(), 'I'.toByte(), 'T'.toByte(), '2'.toByte()))) {
-                    Log.d("is title.")
-                    isTitle = true
-                } else if (testFrameId(frameId, byteArrayOf('T'.toByte(), 'P'.toByte(), '1'.toByte()), byteArrayOf('T'.toByte(), 'P'.toByte(), 'E'.toByte(), '1'.toByte()))) {
-                    Log.d("is artist.")
-                    isArtist = true
-                }
+		    val data = ByteArray(sz)
+		    if (it.read(data) != sz)
+		        return false
 
-                if (isTitle || isArtist) {
-                    var encoding: String? = null
-                    val start: Int
+		    var isTitle = false
+		    var isArtist = false
+		    if (testFrameId(frameId, BYTE_ARRAY_TT2, BYTE_ARRAY_TIT2)) {
+			Log.d("is title.")
+			isTitle = true
+		    } else if (testFrameId(frameId, BYTE_ARRAY_TP1, BYTE_ARRAY_TPE1)) {
+			Log.d("is artist.")
+			isArtist = true
+		    }
 
-                    val sb = StringBuilder()
-                    for (i in data.indices)
-                        sb.append(String.format(" %02x", data[i]))
-                    Log.d("data:%s", sb.toString())
+		    if (isTitle || isArtist) {
+			var encoding: String? = null
+			val start: Int
 
-                    when (data[0].toInt()) {
-                        0 -> {    // ISO-8859-1
-                            encoding = "ISO-8859-1"
-                            start = 1
-                        }
+			val sb = StringBuilder()
+			for (b in data)
+			    sb.append(String.format(" %02x", b))
+			Log.d("data:%s", sb.toString())
 
-                        1 -> {    // UTF-16 with BOM
-			    when {
-                                data.size < 3 -> {
+			when (data[0].toInt()) {
+			    0 -> {    // ISO-8859-1
+				encoding = "ISO-8859-1"
+				start = 1
+			    }
+
+			    1 -> {    // UTF-16 with BOM
+				when {
+				    data.size < 3 -> {
+					start = -1
+				    }
+				    ((data[1].toInt() and 0xff) == 0xfe && (data[2].toInt() and 0xff) == 0xff) -> {
+					encoding = "UTF-16BE"
+					start = 3
+				    }
+				    ((data[1].toInt() and 0xff) == 0xff && (data[2].toInt() and 0xff) == 0xfe) -> {
+					encoding = "UTF-16LE"
+					start = 3
+				    }
+				    else -> {
+					start = -1
+				    }
+				}
+			    }
+
+			    2 -> {    // UTF-16BE without BOM
+				if (majorVer < 4) {
 				    start = -1
-                                }
-                                ((data[1].toInt() and 0xff) == 0xfe && (data[2].toInt() and 0xff) == 0xff) -> {
-                                    encoding = "UTF-16BE"
-                                    start = 3
-                                }
-                                ((data[1].toInt() and 0xff) == 0xff && (data[2].toInt() and 0xff) == 0xfe) -> {
-                                    encoding = "UTF-16LE"
-                                    start = 3
-                                }
-                                else -> {
-                                    start = -1
-                                }
-                            }
-                        }
-
-                        2 -> {    // UTF-16BE without BOM
-                            if (majorVer < 4) {
-                                start = -1
-                            } else {
-				encoding = "UTF-16BE"
-				start = 1
+				} else {
+				    encoding = "UTF-16BE"
+				    start = 1
+				}
 			    }
-                        }
 
-                        3 -> {    // UTF-8
-                            if (majorVer < 4) {
-                                start = -1
-                            } else {
-				encoding = "UTF-8"
-				start = 1
+			    3 -> {    // UTF-8
+				if (majorVer < 4) {
+				    start = -1
+				} else {
+				    encoding = "UTF-8"
+				    start = 1
+				}
 			    }
-                        }
 
-                        else -> start = -1
-                    }
-                    if (start < 0 || encoding == null)
-                        continue
+			    else -> start = -1
+			}
+			if (start < 0 || encoding == null)
+			    continue
 
-                    Log.d("encoding=%s", encoding)
-                    Log.d("start=%d", start)
+			Log.d("encoding=%s", encoding)
+			Log.d("start=%d", start)
 
-                    // バイト列のバイト数。
-                    // terminator(0x00) は必須ではないが、あればそこまで。
-                    var len = 0
-                    if (!encoding.startsWith("UTF-16")) {
-                        while (true) {
-                            if (start + len >= data.size)
-                                break
-                            if (data[start + len].toInt() == 0)
-                                break
-                            len++
-                        }
-                    } else {
-                        while (true) {
-                            if (start + len + 1 >= data.size)
-                                break
-                            if (data[start + len].toInt() == 0 && data[start + len + 1].toInt() == 0)
-                                break
-                            len += 2
-                        }
-                    }
-                    Log.d("len=%d", len)
+			// バイト列のバイト数。
+			// terminator(0x00) は必須ではないが、あればそこまで。
+			var len = 0
+			if (!encoding.startsWith("UTF-16")) {
+			    while (true) {
+				if (start + len >= data.size)
+				    break
+				if (data[start + len].toInt() == 0)
+				    break
+				len++
+			    }
+			} else {
+			    while (true) {
+				if (start + len + 1 >= data.size)
+				    break
+				if (data[start + len].toInt() == 0 && data[start + len + 1].toInt() == 0)
+				    break
+				len += 2
+			    }
+			}
+			Log.d("len=%d", len)
 
-                    try {
-                        val str = String(data, start, len, Charset.forName(encoding))
-                        Log.d("str=%s", str)
-                        if (isTitle)
-                            title = str
-                        if (isArtist)
-                            artist = str
-                    } catch (e: UnsupportedEncodingException) {
-                        Log.e("unsupportedencodingexception", e)
-                    }
+			try {
+			    val str = String(data, start, len, Charset.forName(encoding))
+			    Log.d("str=%s", str)
+			    if (isTitle)
+				title = str
+			    if (isArtist)
+				artist = str
+			} catch (e: UnsupportedEncodingException) {
+			    Log.e("unsupportedencodingexception", e)
+			}
 
-                }
-            }
+		    }
+		}
 
-            Log.d("done.")
-            return true
-        } catch (e: IOException) {
-            Log.e("ioexception", e)
-            return false
-        } finally {
-            if (bis != null) {
-                try {
-                    bis.close()
-                } catch (e: IOException) {
-                    Log.e("ioexception", e)
-                }
-
-            }
-        }
+		Log.d("done.")
+		return true
+	    }
+	} catch (e: IOException) {
+	    Log.e("ioexception", e)
+	    return false
+	}
     }
 
     private fun isValidFrameIdChar(b: Byte): Boolean {
@@ -434,5 +418,10 @@ class Metadata(private val path: String) {
     companion object {
         private val retr = MediaMetadataRetriever()
 	private val mutex = ReentrantLock()
+
+	private val BYTE_ARRAY_TT2 = "TT2".toByteArray()
+	private val BYTE_ARRAY_TIT2 = "TIT2".toByteArray()
+	private val BYTE_ARRAY_TP1 = "TP1".toByteArray()
+	private val BYTE_ARRAY_TPE1 = "TPE1".toByteArray()
     }
 }
