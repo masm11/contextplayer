@@ -248,11 +248,11 @@ class Metadata(private val path: String) {
 				    data.size < 3 -> {
 					start = -1
 				    }
-				    ((data[1].toInt() and 0xff) == 0xfe && (data[2].toInt() and 0xff) == 0xff) -> {
+				    data[1] == 0xfe.toByte() && data[2] == 0xff.toByte() -> {
 					encoding = "UTF-16BE"
 					start = 3
 				    }
-				    ((data[1].toInt() and 0xff) == 0xff && (data[2].toInt() and 0xff) == 0xfe) -> {
+				    data[1] == 0xff.toByte() && data[2] == 0xfe.toByte() -> {
 					encoding = "UTF-16LE"
 					start = 3
 				    }
@@ -303,7 +303,7 @@ class Metadata(private val path: String) {
 			    while (true) {
 				if (start + len + 1 >= data.size)
 				    break
-				if (data[start + len].toInt() == 0 && data[start + len + 1].toInt() == 0)
+				if (data[start + len] == 0.toByte() && data[start + len + 1] == 0.toByte())
 				    break
 				len += 2
 			    }
