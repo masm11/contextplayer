@@ -61,57 +61,20 @@ class Metadata(private val path: String) {
 		if (it.read() != 'S'.toInt())
 		    return false
 
-		var step = 0
+		val test = intArrayOf(0x03, 'v'.toInt(), 'o'.toInt(), 'r'.toInt(), 'b'.toInt(), 'i'.toInt(), 's'.toInt())
+		var sample = IntArray(test.size)
+		var isVorbis = false
 		for (i in 0 until 0x10000) {
 		    val b = it.read()
-
 		    if (b == -1)
-			return false
-
-		    when (step) {
-			0 -> if (b == 0x03)
-			    step++
-
-			1 -> when (b) {
-			    'v'.toInt() -> step++
-			    0x03 -> step = 1
-			    else -> step = 0
-			}
-
-			2 -> when (b) {
-			    'o'.toInt() -> step++
-			    0x03 -> step = 1
-			    else -> step = 0
-			}
-
-			3 -> when (b) {
-			    'r'.toInt() -> step++
-			    0x03 -> step = 1
-			    else -> step = 0
-			}
-
-			4 -> when (b) {
-			    'b'.toInt() -> step++
-			    0x03 -> step = 1
-			    else -> step = 0
-			}
-
-			5 -> when (b) {
-			    'i'.toInt() -> step++
-			    0x03 -> step = 1
-			    else -> step = 0
-			}
-
-			6 -> when (b) {
-			    's'.toInt() -> step++
-			    0x03 -> step = 1
-			    else -> step = 0
-			}
-		    }
-		    if (step >= 7)
+		        return false
+		    sample = sample.copyOfRange(1, test.size).plus(b)
+		    if (sample.contentEquals(test)) {
+			isVorbis = true
 			break
+		    }
 		}
-		if (step != 7)
+		if (!isVorbis)
 		    return false
 
 		val vendorLength = readOggInt(it)
