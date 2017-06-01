@@ -98,16 +98,16 @@ class Metadata(private val path: String) {
 		    val buf = ByteArray(length)
 		    if (it.read(buf) != length)
 			return false
-		    val str = String(buf)
+		    val str = buf.toString(Charset.forName("UTF-8"))
 		    val eq = str.indexOf('=')
 		    if (eq == -1)
 			continue
 		    val key = str.substring(0, eq)
-		    val `val` = str.substring(eq + 1)
+		    val value = str.substring(eq + 1)
 		    if (key.equals("TITLE", ignoreCase = true))
-			title = `val`
+			title = value
 		    if (key.equals("ARTIST", ignoreCase = true))
-			artist = `val`
+			artist = value
 		}
 
 		run {
