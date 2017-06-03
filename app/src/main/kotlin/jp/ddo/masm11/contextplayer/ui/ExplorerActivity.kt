@@ -180,9 +180,9 @@ class ExplorerActivity : AppCompatActivity() {
     }
 
     private inner class BackgroundRetriever(private val adapter: FileAdapter) : Runnable {
-        private val list: LinkedList<FileItem> = LinkedList<FileItem>()
-	private val mutex: Lock = ReentrantLock()
-	private val cond: Condition = mutex.newCondition()
+        private val list = mutableListOf<FileItem>()
+	private val mutex = ReentrantLock()
+	private val cond = mutex.newCondition()
 
         override fun run() {
             try {
@@ -193,7 +193,7 @@ class ExplorerActivity : AppCompatActivity() {
 		    try {
 			while (list.isEmpty())
                             cond.await()
-			item = list.removeFirst()
+			item = list.removeAt(0)
 		    } finally {
 			mutex.unlock()
 		    }
@@ -203,10 +203,9 @@ class ExplorerActivity : AppCompatActivity() {
                 }
             } catch (e: InterruptedException) {
             }
-
         }
 
-        fun setNewItems(newList: ArrayList<FileItem>) {
+        fun setNewItems(newList: List<FileItem>) {
 	    mutex.lock()
 	    try {
 		list.clear()
