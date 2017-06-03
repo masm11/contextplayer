@@ -445,7 +445,7 @@ class PlayerService : Service() {
         var pos = pos
         Log.d("path=%s", path)
         Log.d("pos=%d", pos)
-        val tested = HashSet<String>()
+        var tested = emptySet<String>()
         while (true) {
             Log.d("iter")
             try {
@@ -455,7 +455,7 @@ class PlayerService : Service() {
                     Log.d("No audio file.")
                     return null
                 }
-                tested.add(path)
+                tested = tested + path
 
                 Log.d("try create mediaplayer.")
                 val player = MediaPlayer.create(this, Uri.parse("file://" + path), null, audioAttributes, audioSessionId)
