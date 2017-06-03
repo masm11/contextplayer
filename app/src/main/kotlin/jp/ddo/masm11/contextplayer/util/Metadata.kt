@@ -398,22 +398,24 @@ class Metadata(private val path: String) {
     }
 
     private fun tryExtractOther(): Boolean {
-	synchronized(retr, {
-	    try {
-		retr.setDataSource(path)
-		title = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
-		artist = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
+	mutex.lock()
+	try {
+	    retr.setDataSource(path)
+	    title = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
+	    artist = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
 
-		return true
-	    } catch (e: Exception) {
-		Log.i("exception", e)
-		return false
-	    }
-	})
+	    return true
+	} catch (e: Exception) {
+	    Log.i("exception", e)
+	    return false
+	} finally {
+	    mutex.unlock()
+	}
     }
 
     companion object {
         private val retr = MediaMetadataRetriever()
+	private val mutex = ReentrantLock()
 
 	private val BYTE_ARRAY_TT2 = "TT2".toByteArray()
 	private val BYTE_ARRAY_TIT2 = "TIT2".toByteArray()
