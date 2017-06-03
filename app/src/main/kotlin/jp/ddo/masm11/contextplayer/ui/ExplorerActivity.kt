@@ -339,11 +339,7 @@ class ExplorerActivity : AppCompatActivity() {
 
     private fun renewAdapter(newDir: File) {
         val files = listFiles(newDir, false)
-        val items = ArrayList<FileItem>()
-        for (i in files.indices) {
-            Log.d("%s", files[i].toString())
-            items.add(FileItem(files[i]))
-        }
+        val items = MutableList<FileItem>(files.size, { i -> FileItem(files[i]) })
 
         Log.d("newDir=%s", newDir.toString())
         Log.d("rootDir=%s", rootDir.toString())
