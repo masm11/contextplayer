@@ -66,16 +66,11 @@ class WidgetProvider : AppWidgetProvider() {
     companion object {
         fun updateAppWidget(context: Context, appWidgetIds: IntArray?,
                             icon: Int, contextName: String?) {
-            var appWidgetIds = appWidgetIds
             val appWidgetManager = AppWidgetManager.getInstance(context)
+            val ids = appWidgetIds ?: appWidgetManager.getAppWidgetIds(ComponentName(context, WidgetProvider::class.java))
 
-            if (appWidgetIds == null)
-                appWidgetIds = appWidgetManager.getAppWidgetIds(ComponentName(context, WidgetProvider::class.java))
-
-	    if (appWidgetIds != null) {
-		for (i in appWidgetIds.indices) {
-		    val appWidgetId = appWidgetIds[i]
-
+	    if (ids != null) {
+		for (appWidgetId in ids) {
 		    Log.d("packageName=" + context.packageName)
 
 		    val rv = RemoteViews(context.packageName, R.layout.appwidget)
