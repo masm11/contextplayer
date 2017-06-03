@@ -255,8 +255,6 @@ class ContextActivity : AppCompatActivity() {
                 ctxt.save()
 
                 val item = Item(ctxt.id!!, newName, ctxt.topDir, null)
-
-                val adapter = context_list.adapter as ArrayAdapter<Item>
                 adapter.add(item)
             }
             builder.show()
