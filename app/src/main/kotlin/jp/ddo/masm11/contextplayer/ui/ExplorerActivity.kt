@@ -325,11 +325,9 @@ class ExplorerActivity : AppCompatActivity() {
         topDir = newDir
 
         // topDir からの相対で curDir を表示
-        val topPath = topDir.toString()
-        val curPath = curDir.toString()
         path.rootDir = rootDir.toString()
-        path.topDir = topPath
-        path.path = curPath + "/"
+        path.topDir = topDir.toString()
+        path.path = curDir.toString() + "/"
 
         svc?.setTopDir(newDir.absolutePath)
 
@@ -359,11 +357,9 @@ class ExplorerActivity : AppCompatActivity() {
         list.adapter = adapter
 
         // topDir からの相対で newDir を表示
-        val topPath = topDir.toString()
-        val newPath = newDir.toString()
         path.rootDir = rootDir.toString()
-        path.path = newPath + "/"
-        path.topDir = topPath
+        path.path = newDir.toString() + "/"
+        path.topDir = topDir.toString()
 
         curDir = newDir
     }
