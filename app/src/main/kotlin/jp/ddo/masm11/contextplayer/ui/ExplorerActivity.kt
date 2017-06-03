@@ -138,11 +138,7 @@ class ExplorerActivity : AppCompatActivity() {
     }
 
     private class FileAdapter(context: Context, items: ArrayList<FileItem>) : ArrayAdapter<FileItem>(context, R.layout.list_explorer, items) {
-        private val inflater: LayoutInflater
-
-        init {
-            inflater = LayoutInflater.from(context)
-        }
+        private val inflater: LayoutInflater = LayoutInflater.from(context)
 
         override fun hasStableIds(): Boolean {
             return true
