@@ -195,7 +195,7 @@ class ExplorerActivity : AppCompatActivity() {
 		    }
 
                     item.retrieveMetadata()
-                    handler!!.post { adapter.notifyDataSetChanged() }
+                    handler.post { adapter.notifyDataSetChanged() }
                 }
             } catch (e: InterruptedException) {
             }
@@ -217,11 +217,11 @@ class ExplorerActivity : AppCompatActivity() {
                 Environment.DIRECTORY_MUSIC)    // これより上には戻れない
     private var topDir: File = File(".")
     private var curDir: File = File(".")
-    private var adapter: FileAdapter? = null
-    private var ctxt: PlayContext? = null
-    private var bretr: BackgroundRetriever? = null
+    private lateinit var adapter: FileAdapter
+    private lateinit var ctxt: PlayContext
+    private lateinit var bretr: BackgroundRetriever
     private var thread: Thread? = null
-    private var handler: Handler? = null
+    private lateinit var handler: Handler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -236,21 +236,18 @@ class ExplorerActivity : AppCompatActivity() {
         adapter = FileAdapter(this, ArrayList<FileItem>())
 
         val ctxtId = Config.context_id
-        var c = PlayContext.find(ctxtId)
-        if (c == null)
-            c = PlayContext()
-	ctxt = c
+        ctxt = PlayContext.find(ctxtId) ?: PlayContext()
 
-        bretr = BackgroundRetriever(adapter!!)
+        bretr = BackgroundRetriever(adapter)
 	val t = Thread(bretr)
         thread = t
         t.priority = Thread.MIN_PRIORITY
         t.start()
 
-        var dir = File(c.topDir)
+        var dir = File(ctxt.topDir)
         topDir = dir
-	val path = c.path
-        if (path != null && path.startsWith(c.topDir)) {
+	val path = ctxt.path
+        if (path != null && path.startsWith(ctxt.topDir)) {
             val slash = path.lastIndexOf('/')
             if (slash != -1)
                 dir = File(path.substring(0, slash))
@@ -336,13 +333,10 @@ class ExplorerActivity : AppCompatActivity() {
 
         svc?.setTopDir(newDir.absolutePath)
 
-	val c = ctxt
-	if (c != null) {
-	    c.topDir = newDir.absolutePath
-	    c.path = null
-	    c.pos = 0
-	    c.save()
-	}
+	ctxt.topDir = newDir.absolutePath
+	ctxt.path = null
+	ctxt.pos = 0
+	ctxt.save()
     }
 
     private fun renewAdapter(newDir: File) {
@@ -357,10 +351,10 @@ class ExplorerActivity : AppCompatActivity() {
         Log.d("rootDir=%s", rootDir.toString())
         items.add(0, FileItem(File(newDir, ".")))
 
-        adapter!!.clear()
-        adapter!!.addAll(items)
+        adapter.clear()
+        adapter.addAll(items)
 
-        bretr!!.setNewItems(items)
+        bretr.setNewItems(items)
 
         list.adapter = adapter
 
