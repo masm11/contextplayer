@@ -1,5 +1,5 @@
 /* Context Player - Audio Player with Contexts
-    Copyright (C) 2016 Yuuki Harano
+    Copyright (C) 2016, 2017 Yuuki Harano
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
