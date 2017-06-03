@@ -44,12 +44,12 @@ import kotlinx.android.synthetic.main.activity_context.*
 import kotlinx.android.synthetic.main.list_context.view.*
 
 import java.io.File
-import java.util.LinkedList
 
 import jp.ddo.masm11.contextplayer.R
 import jp.ddo.masm11.contextplayer.service.PlayerService
 import jp.ddo.masm11.contextplayer.db.PlayContext
 import jp.ddo.masm11.contextplayer.db.Config
+import jp.ddo.masm11.contextplayer.util.emptyMutableListOf
 
 class ContextActivity : AppCompatActivity() {
     private inner class PlayerServiceConnection : ServiceConnection {
@@ -117,7 +117,7 @@ class ContextActivity : AppCompatActivity() {
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
         setSupportActionBar(frag.toolbar)
 
-        items = LinkedList<Item>()
+        items = emptyMutableListOf<Item>()
         for (ctxt in PlayContext.all()) {
             val item = Item(ctxt.id!!, ctxt.name, ctxt.topDir, ctxt.path)
             items.add(item)

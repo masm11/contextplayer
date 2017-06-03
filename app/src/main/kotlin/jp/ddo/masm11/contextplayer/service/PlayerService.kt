@@ -37,15 +37,13 @@ import android.appwidget.AppWidgetManager
 import android.widget.RemoteViews
 
 import java.io.File
-import java.util.ArrayList
-import java.util.Collections
-import java.util.HashSet
-import java.util.WeakHashMap
 import java.util.Locale
 
 import jp.ddo.masm11.contextplayer.R
 import jp.ddo.masm11.contextplayer.ui.MainActivity
 import jp.ddo.masm11.contextplayer.ui.ExplorerActivity
+import jp.ddo.masm11.contextplayer.util.WeakSet
+import jp.ddo.masm11.contextplayer.util.MutableWeakSet
 import jp.ddo.masm11.contextplayer.receiver.HeadsetReceiver
 import jp.ddo.masm11.contextplayer.db.PlayContext
 import jp.ddo.masm11.contextplayer.db.Config
@@ -101,8 +99,7 @@ class PlayerService : Service() {
     }
 
     override fun onCreate() {
-        statusChangedListeners = Collections.newSetFromMap(
-                WeakHashMap<OnStatusChangedListener, Boolean>())
+        statusChangedListeners = MutableWeakSet<OnStatusChangedListener>()
 
         headsetReceiver = HeadsetReceiver()
         registerReceiver(headsetReceiver, IntentFilter(AudioManager.ACTION_HEADSET_PLUG))
