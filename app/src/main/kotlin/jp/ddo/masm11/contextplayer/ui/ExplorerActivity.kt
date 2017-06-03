@@ -43,7 +43,6 @@ import kotlinx.android.synthetic.main.list_explorer.view.*
 import java.io.File
 import java.io.FileFilter
 import java.util.ArrayList
-import java.util.LinkedList
 import java.util.Arrays
 import java.util.Collections
 import java.util.Comparator
@@ -426,7 +425,7 @@ class ExplorerActivity : AppCompatActivity() {
 	    if (files == null)
 		return emptyArray<File>()
 
-            var comparator: Comparator<File> = Comparator { o1, o2 ->
+            var comparator = Comparator<File> { o1, o2 ->
                 val name1 = o1.name.toLowerCase(Locale.getDefault())
                 val name2 = o2.name.toLowerCase(Locale.getDefault())
                 // まず、大文字小文字を無視して比較
