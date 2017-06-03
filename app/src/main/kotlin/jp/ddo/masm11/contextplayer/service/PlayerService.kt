@@ -440,9 +440,9 @@ class PlayerService : Service() {
 
     }
 
-    private fun createMediaPlayer(path: String?, pos: Int, back: Boolean): CreatedMediaPlayer? {
-        var path = path
-        var pos = pos
+    private fun createMediaPlayer(startPath: String?, startPos: Int, back: Boolean): CreatedMediaPlayer? {
+        var path = startPath
+        var pos = startPos
         Log.d("path=%s", path)
         Log.d("pos=%d", pos)
         var tested = emptySet<String>()
@@ -564,12 +564,11 @@ class PlayerService : Service() {
     private fun selectNext(nextOf: String?): String? {
 	if (nextOf == null)
 	    return null;
-        var nextOf = nextOf
         Log.d("nextOf=%s", nextOf)
         var found: String? = null
         if (nextOf.startsWith(topDir)) {
-            nextOf = nextOf.substring(topDir.length + 1)    // +1: for '/'
-            val parts = nextOf.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            //                           +1: for '/'   ↓
+            val parts = nextOf.substring(topDir.length + 1).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             found = lookForFile(File(topDir), parts, 0, false)
         }
         if (found == null)
@@ -581,12 +580,11 @@ class PlayerService : Service() {
     private fun selectPrev(prevOf: String?): String? {
 	if (prevOf == null)
 	    return null;
-        var prevOf = prevOf
         Log.d("prevOf=%s", prevOf)
         var found: String? = null
         if (prevOf.startsWith(topDir)) {
-            prevOf = prevOf.substring(topDir.length + 1)    // +1: for '/'
-            val parts = prevOf.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            //                            +1: for '/'  ↓
+            val parts = prevOf.substring(topDir.length + 1).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             found = lookForFile(File(topDir), parts, 0, true)
         }
         if (found == null)
