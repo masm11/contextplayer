@@ -94,7 +94,7 @@ class PlayerService : Service() {
     private var volumeDuck: Int = 0
 
     fun setOnStatusChangedListener(listener: OnStatusChangedListener) {
-        Log.d("listener=%s", listener.toString())
+        Log.d("listener=${listener}")
         statusChangedListeners.add(listener)
     }
 
@@ -123,7 +123,7 @@ class PlayerService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
-        Log.d("action=%s", action)
+        Log.d("action=${action}")
         when (action) {
             ACTION_A2DP_DISCONNECTED -> pause()
             ACTION_HEADSET_UNPLUGGED -> pause()
@@ -191,7 +191,7 @@ class PlayerService : Service() {
      *        → topDir 内で最初に再生できる曲を再生する。
      */
     private fun play(path: String?) {
-        Log.i("path=%s", path)
+        Log.i("path=${path}")
 
         Log.d("release nextPlayer")
         releaseNextPlayer()
@@ -199,7 +199,7 @@ class PlayerService : Service() {
         if (path != null) {
             // path が指定された。
             // その path から開始し、再生できる曲を曲先頭から再生する。
-            Log.d("path=%s", path)
+            Log.d("path=${path}")
 
             Log.d("release curPlayer")
             releaseCurPlayer()
@@ -213,8 +213,8 @@ class PlayerService : Service() {
             Log.d("createMediaPlayer OK.")
             curPlayer = ret.mediaPlayer
             playingPath = ret.path
-            Log.d("curPlayer=%s", curPlayer!!.toString())
-            Log.d("playingPath=%s", playingPath)
+            Log.d("curPlayer=${curPlayer}")
+            Log.d("playingPath=${playingPath}")
         } else if (curPlayer != null) {
             // path が指定されてない && 再生途中だった
             // 再生再開
@@ -222,7 +222,7 @@ class PlayerService : Service() {
         } else if (playingPath != null) {
             // path が指定されてない && 再生途中でない && context に playingPath がある
             // その path から開始し、再生できる曲を曲先頭から再生する。
-            Log.d("playingPath=%s", playingPath)
+            Log.d("playingPath=${playingPath}")
 
             Log.d("release nextPlayer")
             releaseCurPlayer()
@@ -236,8 +236,8 @@ class PlayerService : Service() {
             Log.d("creating mediaplayer OK.")
             curPlayer = ret.mediaPlayer
             playingPath = ret.path
-            Log.d("curPlayer=%s", curPlayer!!.toString())
-            Log.d("playingPath=%s", playingPath)
+            Log.d("curPlayer=${curPlayer}")
+            Log.d("playingPath=${playingPath}")
         } else {
             // 何もない
             // topDir 内から再生できる曲を探し、曲先頭から再生する。
@@ -255,8 +255,8 @@ class PlayerService : Service() {
             Log.d("creating mediaplayer OK.")
             curPlayer = ret.mediaPlayer
             playingPath = ret.path
-            Log.d("curPlayer=%s", curPlayer!!.toString())
-            Log.d("playingPath=%s", playingPath)
+            Log.d("curPlayer=${curPlayer}")
+            Log.d("playingPath=${playingPath}")
         }
 
         Log.d("starting.")
@@ -328,7 +328,7 @@ class PlayerService : Service() {
     }
 
     private fun seek(pos: Int) {
-        Log.d("pos=%d.", pos)
+        Log.d("pos=${pos}")
         if (pos != -1 && curPlayer != null)
             curPlayer!!.seekTo(pos)
     }
@@ -370,10 +370,10 @@ class PlayerService : Service() {
 		 * prepared から pause() は正しくないみたい。
 		 */
                 if (curPlayer!!.isPlaying) {
-                    Log.d("pause %s", curPlayer!!.toString())
+                    Log.d("pause ${curPlayer}")
                     curPlayer!!.pause()
                 } else
-                    Log.d("already paused %s", curPlayer!!.toString())
+                    Log.d("already paused ${curPlayer}")
             }
 
             updateAppWidget()
@@ -398,7 +398,7 @@ class PlayerService : Service() {
     }
 
     private fun handleAudioFocusChangeEvent(focusChange: Int) {
-        Log.d("focusChange=%d.", focusChange)
+        Log.d("focusChange=${focusChange}")
         when (focusChange) {
             AudioManager.AUDIOFOCUS_GAIN -> {
                 volumeDuck = 100
@@ -426,8 +426,8 @@ class PlayerService : Service() {
         nextPlayer = ret.mediaPlayer
         nextPath = ret.path
         setMediaPlayerVolume()
-        Log.d("nextPlayer=%s", nextPlayer!!.toString())
-        Log.d("nextPath=%s", nextPath)
+        Log.d("nextPlayer=${nextPlayer}")
+        Log.d("nextPath=${nextPath}")
         try {
             Log.d("setting it as nextmediaplayer.")
             curPlayer!!.setNextMediaPlayer(nextPlayer)
@@ -440,13 +440,13 @@ class PlayerService : Service() {
     private fun createMediaPlayer(startPath: String?, startPos: Int, back: Boolean): CreatedMediaPlayer? {
         var path = startPath
         var pos = startPos
-        Log.d("path=%s", path)
-        Log.d("pos=%d", pos)
+        Log.d("path=${path}")
+        Log.d("pos=${pos}")
         var tested = emptySet<String>()
         while (true) {
             Log.d("iter")
             try {
-                Log.d("path=%s", path)
+                Log.d("path=${path}")
                 if (path == null || tested.contains(path)) {
                     // 再生できるものがない…
                     Log.d("No audio file.")
@@ -455,25 +455,25 @@ class PlayerService : Service() {
                 tested = tested + path
 
                 Log.d("try create mediaplayer.")
-                val player = MediaPlayer.create(this, Uri.parse("file://" + path), null, audioAttributes, audioSessionId)
+                val player = MediaPlayer.create(this, Uri.parse("file://${path}"), null, audioAttributes, audioSessionId)
                 if (player == null) {
-                    Log.w("MediaPlayer.create() failed: %s", path)
+                    Log.w("MediaPlayer.create() failed: ${path}")
                     path = if (back) selectPrev(path) else selectNext(path)
                     pos = 0    // お目当てのファイルが見つからなかった。次のファイルの先頭からとする。
                     continue
                 }
                 Log.d("create mediaplayer ok.")
                 if (pos > 0) {    // 0 の場合に seekTo() すると、曲の頭が切れるみたい?
-                    Log.d("seek to %d.", pos)
+                    Log.d("seek to ${pos}")
                     player.seekTo(pos)
                 }
                 player.setOnCompletionListener { mp ->
                     Log.d("shifting")
                     playingPath = nextPath
                     curPlayer = nextPlayer
-                    Log.d("now playingPath=%s", playingPath)
-                    Log.d("now curPlayer=%s", if (curPlayer == null) "null" else curPlayer!!.toString())
-                    Log.d("releasing %s", mp.toString())
+                    Log.d("now playingPath=${playingPath}")
+                    Log.d("now curPlayer=${curPlayer}")
+                    Log.d("releasing ${mp}")
                     mp.release()
                     Log.d("clearing nextPath/nextPlayer")
                     nextPath = null
@@ -488,7 +488,7 @@ class PlayerService : Service() {
                         stopPlay()
                 }
                 player.setOnErrorListener(MediaPlayer.OnErrorListener { _, what, extra ->
-                    Log.d("error reported. %d, %d.", what, extra)
+                    Log.d("error reported. ${what}, ${extra}.")
 
                     // 両方 release して新たに作り直す。
                     releaseNextPlayer()
@@ -518,7 +518,7 @@ class PlayerService : Service() {
                     true
                 })
 
-                Log.d("done. player=%s, path=%s", player.toString(), path)
+                Log.d("done. player=${player}, path=${path}")
                 return CreatedMediaPlayer(player, path)
             } catch (e: Exception) {
                 Log.e("exception", e)
@@ -561,7 +561,7 @@ class PlayerService : Service() {
     private fun selectNext(nextOf: String?): String? {
 	if (nextOf == null)
 	    return null;
-        Log.d("nextOf=%s", nextOf)
+        Log.d("nextOf=${nextOf}")
         var found: String? = null
         if (nextOf.startsWith(topDir)) {
             //                           +1: for '/'   ↓
@@ -570,14 +570,14 @@ class PlayerService : Service() {
         }
         if (found == null)
             found = lookForFile(File(topDir), null, 0, false)
-        Log.d("found=%s", found)
+        Log.d("found=${found}")
         return found
     }
 
     private fun selectPrev(prevOf: String?): String? {
 	if (prevOf == null)
 	    return null;
-        Log.d("prevOf=%s", prevOf)
+        Log.d("prevOf=${prevOf}")
         var found: String? = null
         if (prevOf.startsWith(topDir)) {
             //                            +1: for '/'  ↓
@@ -586,7 +586,7 @@ class PlayerService : Service() {
         }
         if (found == null)
             found = lookForFile(File(topDir), null, 0, true)
-        Log.d("found=%s", found)
+        Log.d("found=${found}")
         return found
     }
 
@@ -670,7 +670,7 @@ class PlayerService : Service() {
      *    topDir を設定し、enqueueNext() し直す。
      */
     private fun setTopDir(path: String) {
-        Log.d("path=%s", path)
+        Log.d("path=${path}")
         topDir = path
         // 「次の曲」が変わる可能性があるので、enqueue しなおす。
         if (curPlayer != null) {
@@ -684,13 +684,13 @@ class PlayerService : Service() {
      * context を読み出し、再生を再開する。
      */
     private fun switchContext() {
-        Log.d("curPlayer=%s", if (curPlayer == null) "null" else curPlayer!!.toString())
+        Log.d("curPlayer=${curPlayer}")
         stopPlay()    // saveContext() を含む。
 
         Log.d("load context.")
         loadContext()
 
-        Log.d("curPlayer=%s", if (curPlayer == null) "null" else curPlayer!!.toString())
+        Log.d("curPlayer=${curPlayer}")
         if (curPlayer != null) {
             Log.d("starting")
             startPlay()
@@ -703,7 +703,7 @@ class PlayerService : Service() {
     }
 
     private fun setForeground(on: Boolean) {
-        Log.d("on=%b", on)
+        Log.d("on=${on}")
         if (on) {
             val ctxt = PlayContext.find(contextId)
             var contextName = "noname"
@@ -727,15 +727,15 @@ class PlayerService : Service() {
     }
 
     private fun saveContext() {
-        Log.d("contextId=%d", contextId)
+        Log.d("contextId=${contextId}")
         val ctxt = PlayContext.find(contextId)
         if (ctxt != null && curPlayer != null) {
-            Log.d("Id=%d", ctxt.id)
+            Log.d("Id=${ctxt.id}")
             ctxt.path = playingPath
-            Log.d("path=%s", ctxt.path)
+            Log.d("path=${ctxt.path}")
             val stamp = curPlayer!!.timestamp
             ctxt.pos = stamp.anchorMediaTimeUs / 1000    // us -> ms
-            Log.d("pos=%d", ctxt.pos)
+            Log.d("pos=${ctxt.pos}")
             Log.d("ctxt saving...")
             ctxt.save()
         }
@@ -754,13 +754,13 @@ class PlayerService : Service() {
 
         Log.d("getting context_id")
         contextId = Config.context_id
-        Log.d("contextId=%d.", contextId)
+        Log.d("contextId=${contextId}")
         val ctxt = PlayContext.find(contextId)
         if (ctxt != null) {
             playingPath = ctxt.path
             topDir = ctxt.topDir
-            Log.d("playingPath=%s", playingPath)
-            Log.d("topDir=%s", topDir)
+            Log.d("playingPath=${playingPath}")
+            Log.d("topDir=${topDir}")
 
             if (playingPath != null) {
                 Log.d("creating mediaplayer.")
@@ -772,8 +772,8 @@ class PlayerService : Service() {
                 Log.d("creating mediaplayer. ok.")
                 curPlayer = ret.mediaPlayer
                 playingPath = ret.path
-                Log.d("curPlayer=%s", curPlayer!!.toString())
-                Log.d("playingPath=%s", playingPath)
+                Log.d("curPlayer=${curPlayer}")
+                Log.d("playingPath=${playingPath}")
                 setMediaPlayerVolume()
             } else {
                 // 作られたばかりの context の場合。
@@ -786,8 +786,8 @@ class PlayerService : Service() {
                 Log.d("creating mediaplayer. ok.")
                 curPlayer = ret.mediaPlayer
                 playingPath = ret.path
-                Log.d("curPlayer=%s", curPlayer!!.toString())
-                Log.d("playingPath=%s", playingPath)
+                Log.d("curPlayer=${curPlayer}")
+                Log.d("playingPath=${playingPath}")
                 setMediaPlayerVolume()
             }
         }
@@ -828,7 +828,7 @@ class PlayerService : Service() {
     private fun broadcastStatus() {
         val status = buildCurrentStatus()
         for (listener in statusChangedListeners) {
-            // Log.d("listener=%s", listener);
+            // Log.d("listener=${listener}")
             listener.onStatusChanged(status)
         }
     }

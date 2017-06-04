@@ -33,14 +33,14 @@ class BluetoothReceiver : BroadcastReceiver() {
         Log.d("")
         if (intent != null) {
             val action = intent.action
-            Log.d("action=%s", action ?: "null")
+            Log.d("action=${action}")
             if (action != null && action == BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED) {
                 val state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1)
                 val prevstate = intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)
-                Log.d("state=%d", state)
-                Log.d("prevstate=%d", prevstate)
+                Log.d("state=${state}")
+                Log.d("prevstate=${prevstate}")
                 val parcelable = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
-                Log.d("device=%s", parcelable?.toString() ?: "null")
+                Log.d("device=${parcelable}")
                 if (state == BluetoothProfile.STATE_DISCONNECTED && prevstate != BluetoothProfile.STATE_DISCONNECTED) {
                     Log.d("a2dp disconnected.")
                     val i = Intent(context, PlayerService::class.java)

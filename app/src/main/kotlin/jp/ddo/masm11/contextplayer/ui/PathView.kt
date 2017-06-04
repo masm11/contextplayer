@@ -45,9 +45,9 @@ class PathView(context: Context, attrs: AttributeSet) : TextView(context, attrs)
         var top = topDir
         var cur = path ?: top
         if (!root.endsWith("/"))
-            root = root + "/"
+            root = "${root}/"
         if (!top.endsWith("/"))
-            top = top + "/"
+            top = "${top}/"
         if (cur.startsWith(root) && top.startsWith(root)) {
             val rootLen = root.length
             cur = cur.substring(rootLen)

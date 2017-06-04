@@ -84,7 +84,7 @@ class ExplorerActivity : AppCompatActivity() {
 
         init {
             if (!file.isDirectory) {
-                Log.d("uri=%s", file.toURI().toASCIIString())
+                Log.d("uri=${file.toURI().toASCIIString()}")
 
                 val absPath = file.absolutePath
                 val extPos = absPath.lastIndexOf('.')
@@ -94,9 +94,9 @@ class ExplorerActivity : AppCompatActivity() {
                     if (ext.contains("/"))
                         ext = ""
                 }
-                Log.d("ext=%s", ext)
+                Log.d("ext=${ext}")
                 mimeType = mimeTypeMap.getMimeTypeFromExtension(ext)
-                Log.d("mimeType=%s", mimeType)
+                Log.d("mimeType=${mimeType}")
                 if (mimeType == null) {
                     ext = ext.toLowerCase()
                     mimeType = mimeTypeMap.getMimeTypeFromExtension(ext)
@@ -164,7 +164,7 @@ class ExplorerActivity : AppCompatActivity() {
                 view.for_file.visibility = View.VISIBLE
                 view.for_dir.visibility = View.GONE
             } else {
-                view.dirname.text = item.filename + "/"
+                view.dirname.text = "${item.filename}/"
 
                 view.for_file.visibility = View.GONE
                 view.for_dir.visibility = View.VISIBLE
@@ -261,7 +261,7 @@ class ExplorerActivity : AppCompatActivity() {
         list.setOnItemClickListener { parent, _, position, _ ->
 	    val listView = parent as ListView
 	    val item = listView.getItemAtPosition(position) as FileItem
-	    Log.d("clicked=%s", item.filename)
+	    Log.d("clicked=${item.filename}")
 
 	    if (item.isDir) {
 		if (item.filename != ".")
@@ -273,7 +273,7 @@ class ExplorerActivity : AppCompatActivity() {
         list.setOnItemLongClickListener { parent, _, position, _ ->
 	    val listView = parent as ListView
 	    val item = listView.getItemAtPosition(position) as FileItem
-	    Log.d("longclicked=%s", item.filename)
+	    Log.d("longclicked=${item.filename}")
 
 	    var ret = false
 	    if (item.isDir) {
@@ -326,7 +326,7 @@ class ExplorerActivity : AppCompatActivity() {
         // topDir からの相対で curDir を表示
         path.rootDir = rootDir.toString()
         path.topDir = topDir.toString()
-        path.path = curDir.toString() + "/"
+        path.path = "${curDir.toString()}/"
 
         svc?.setTopDir(newDir.absolutePath)
 
@@ -340,8 +340,8 @@ class ExplorerActivity : AppCompatActivity() {
         val files = listFiles(newDir, false)
         val items = MutableList<FileItem>(files.size, { i -> FileItem(files[i]) })
 
-        Log.d("newDir=%s", newDir.toString())
-        Log.d("rootDir=%s", rootDir.toString())
+        Log.d("newDir=${newDir}")
+        Log.d("rootDir=${rootDir}")
         items.add(0, FileItem(File(newDir, ".")))
 
         adapter.clear()
@@ -353,7 +353,7 @@ class ExplorerActivity : AppCompatActivity() {
 
         // topDir からの相対で newDir を表示
         path.rootDir = rootDir.toString()
-        path.path = newDir.toString() + "/"
+        path.path = "${newDir.toString()}/"
         path.topDir = topDir.toString()
 
         curDir = newDir

@@ -141,17 +141,17 @@ class Metadata(private val path: String) {
 		val minorVer = it.read()
 		if (minorVer == -1)
 		    return false
-		Log.d("major/minorVer: %d, %d.", majorVer, minorVer)
+		Log.d("major/minorVer: ${majorVer}, ${minorVer}.")
 
 		val flags = it.read()
 		if (flags == -1)
 		    return false
-		Log.d("flags=%d", flags)
+		Log.d("flags=${flags}")
 
 		val size = readSyncsafeInt(it)
 		if (size == null)
 		    return false
-		Log.d("size=%d\n", size)
+		Log.d("size=${size}")
 
 		// 拡張ヘッダがあるなら読み捨てる。
 		if (flags and (1 shl 6) != 0) {
@@ -184,7 +184,7 @@ class Metadata(private val path: String) {
 			if (!isValidFrameIdChar(frameId[3]))
 			    break
 		    }
-		    Log.d("frameId: %d, %d, %d, %d.", frameId[0], frameId[1], frameId[2], frameId[3])
+		    Log.d("frameId: ${frameId[0]}, ${frameId[1]}, ${frameId[2]}, ${frameId[3]}")
 
 		    val sz: Int?
 		    when (majorVer) {
@@ -197,7 +197,7 @@ class Metadata(private val path: String) {
 		    }
 		    if (sz == null)
 		        return false
-		    Log.d("sz=%d.", sz)
+		    Log.d("sz=${sz}.")
 
 		    // flag を読み捨てる。
 		    if (majorVer >= 3) {
@@ -226,7 +226,7 @@ class Metadata(private val path: String) {
 			val sb = StringBuilder()
 			for (b in data)
 			    sb.append(String.format(" %02x", b))
-			Log.d("data:%s", sb.toString())
+			Log.d("data:${sb}")
 
 			when (data[0].toInt()) {
 			    0 -> {    // ISO-8859-1
@@ -276,8 +276,8 @@ class Metadata(private val path: String) {
 			if (start < 0 || encoding == null)
 			    continue
 
-			Log.d("encoding=%s", encoding)
-			Log.d("start=%d", start)
+			Log.d("encoding=${encoding}")
+			Log.d("start=${start}")
 
 			// バイト列のバイト数。
 			// terminator(0x00) は必須ではないが、あればそこまで。
@@ -299,11 +299,11 @@ class Metadata(private val path: String) {
 				len += 2
 			    }
 			}
-			Log.d("len=%d", len)
+			Log.d("len=${len}")
 
 			try {
 			    val str = String(data, start, len, Charset.forName(encoding))
-			    Log.d("str=%s", str)
+			    Log.d("str=${str}")
 			    if (isTitle)
 				title = str
 			    if (isArtist)

@@ -32,14 +32,14 @@ class HeadsetReceiver : BroadcastReceiver() {
         Log.d("")
         if (intent != null) {
             val action = intent.action
-            Log.d("action=%s", action)
+            Log.d("action=${action}")
             if (action == AudioManager.ACTION_HEADSET_PLUG) {
                 val state = intent.getIntExtra("state", -1)
                 val name = intent.getStringExtra("name")
                 val microphone = intent.getIntExtra("microphone", -1)
-                Log.d("state=%d", state)
-                Log.d("name=%s", name)
-                Log.d("microphone=%d", microphone)
+                Log.d("state=${state}")
+                Log.d("name=${name}")
+                Log.d("microphone=${microphone}")
                 /* PlayerService を起動すると、必ず飛んでくる。
 		 * もしかして現在の状態の通知のつもりか?
 		 */

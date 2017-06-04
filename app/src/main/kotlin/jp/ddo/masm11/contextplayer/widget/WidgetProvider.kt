@@ -34,9 +34,9 @@ import jp.ddo.masm11.logger.Log
 class WidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         Log.d("begin.")
-        Log.d("appWidgetId.length=" + appWidgetIds.size)
+        Log.d("appWidgetId.length=${appWidgetIds.size}")
         for (i in appWidgetIds.indices)
-            Log.d("appWidgetId=" + appWidgetIds[i])
+            Log.d("appWidgetId=${appWidgetIds[i]}")
 
         updateAppWidget(context, appWidgetIds, 0, null)
 
@@ -48,14 +48,14 @@ class WidgetProvider : AppWidgetProvider() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d("intent=" + intent.toString())
+        Log.d("intent=${intent}")
         val action = intent.action
-        Log.d("action=" + (action ?: "null"))
+        Log.d("action=${action}")
         val bundle = intent.extras
         if (bundle != null) {
             for (key in bundle.keySet()) {
-                val `val` = bundle.get(key)
-                Log.d("key=" + key + ", val=" + (`val` ?: "null"))
+                val value = bundle.get(key)
+                Log.d("key=${key}, value=${value}")
             }
         } else
             Log.d("extras=none")
@@ -71,7 +71,7 @@ class WidgetProvider : AppWidgetProvider() {
 
 	    if (ids != null) {
 		for (appWidgetId in ids) {
-		    Log.d("packageName=" + context.packageName)
+		    Log.d("packageName=${context.packageName}")
 
 		    val rv = RemoteViews(context.packageName, R.layout.appwidget)
 

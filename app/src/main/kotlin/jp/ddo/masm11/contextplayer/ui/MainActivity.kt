@@ -63,8 +63,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         private val listener = object : PlayerService.OnStatusChangedListener {
 	    override fun onStatusChanged(status: PlayerService.CurrentStatus) {
 		/*
-		Log.d("path=%s, topDir=%s, position=%d.",
-		status.path, status.topDir, status.position);
+		Log.d("path=${status.path}, topDir=${status.topDir}, position=${status.position}.")
 		*/
 		updateTrackInfo(status)
 	    }
@@ -107,7 +106,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
         setSupportActionBar(frag.toolbar)
 
-        Log.d("rootDir=%s", rootDir.absolutePath)
+        Log.d("rootDir=${rootDir.absolutePath}")
 
         if (PlayContext.all().size == 0) {
             val ctxt = PlayContext()
