@@ -20,9 +20,8 @@ import android.media.MediaMetadataRetriever
 
 import java.io.FileInputStream
 import java.io.BufferedInputStream
-import java.io.IOException
 import java.io.UnsupportedEncodingException
-import java.nio.charset.Charset;
+import java.nio.charset.Charset
 import java.util.concurrent.locks.ReentrantLock
 
 import jp.ddo.masm11.logger.Log
@@ -239,11 +238,11 @@ class Metadata(private val path: String) {
 				    data.size < 3 -> {
 					start = -1
 				    }
-				    data[1] == 0xfe.toByte() && data[2] == 0xff.toByte() -> {
+				    data[1] == BYTE_FE && data[2] == BYTE_FF -> {
 					encoding = "UTF-16BE"
 					start = 3
 				    }
-				    data[1] == 0xff.toByte() && data[2] == 0xfe.toByte() -> {
+				    data[1] == BYTE_FF && data[2] == BYTE_FE -> {
 					encoding = "UTF-16LE"
 					start = 3
 				    }
@@ -294,7 +293,7 @@ class Metadata(private val path: String) {
 			    while (true) {
 				if (start + len + 1 >= data.size)
 				    break
-				if (data[start + len] == 0.toByte() && data[start + len + 1] == 0.toByte())
+				if (data[start + len] == BYTE_00 && data[start + len + 1] == BYTE_00)
 				    break
 				len += 2
 			    }
@@ -318,16 +317,16 @@ class Metadata(private val path: String) {
 		Log.d("done.")
 		return true
 	    }
-	} catch (e: IOException) {
-	    Log.e("ioexception", e)
+	} catch (e: Exception) {
+	    Log.e("exception", e)
 	    return false
 	}
     }
 
     private fun isValidFrameIdChar(b: Byte): Boolean {
-        if (b >= 'A'.toByte() && b <= 'Z'.toByte())
+        if (b >= BYTE_A && b <= BYTE_Z)
             return true
-        if (b >= '0'.toByte() && b <= '9'.toByte())
+        if (b >= BYTE_0 && b <= BYTE_9)
             return true
         return false
     }
@@ -417,9 +416,18 @@ class Metadata(private val path: String) {
         private val retr = MediaMetadataRetriever()
 	private val mutex = ReentrantLock()
 
-	private val BYTE_ARRAY_TT2 = "TT2".toByteArray()
-	private val BYTE_ARRAY_TIT2 = "TIT2".toByteArray()
-	private val BYTE_ARRAY_TP1 = "TP1".toByteArray()
-	private val BYTE_ARRAY_TPE1 = "TPE1".toByteArray()
+	private final val BYTE_ARRAY_TT2 = "TT2".toByteArray()
+	private final val BYTE_ARRAY_TIT2 = "TIT2".toByteArray()
+	private final val BYTE_ARRAY_TP1 = "TP1".toByteArray()
+	private final val BYTE_ARRAY_TPE1 = "TPE1".toByteArray()
+
+	private final val BYTE_00 = 0x00.toByte()
+	private final val BYTE_FF = 0xff.toByte()
+	private final val BYTE_FE = 0xfe.toByte()
+
+	private final val BYTE_A = 'A'.toByte()
+	private final val BYTE_Z = 'Z'.toByte()
+	private final val BYTE_0 = '0'.toByte()
+	private final val BYTE_9 = '9'.toByte()
     }
 }
