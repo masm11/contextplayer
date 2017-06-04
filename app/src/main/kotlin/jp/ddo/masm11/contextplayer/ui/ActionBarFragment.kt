@@ -99,6 +99,7 @@ class ActionBarFragment : Fragment() {
                 val webView = inflater.inflate(R.layout.about_dialog, null) as WebView
                 val settings = webView.settings
                 settings.javaScriptEnabled = true
+		settings.textZoom = 50
                 webView.addJavascriptInterface(WebAppInterface(context), "android")
                 webView.loadUrl(resources.getString(R.string.about_url))
 
