@@ -55,15 +55,9 @@ class ActionBarFragment : Fragment() {
         val appVersion: String
             @JavascriptInterface
             get() {
-                try {
-                    val pm = context.packageManager
-                    val pi = pm.getPackageInfo("jp.ddo.masm11.contextplayer", 0)
-                    return pi.versionName
-                } catch (e: PackageManager.NameNotFoundException) {
-                    Log.e("namenotfoundexception", e)
-                }
-
-                return "???"
+                val pm = context.packageManager
+                val pi = pm.getPackageInfo("jp.ddo.masm11.contextplayer", 0)
+                return pi.versionName
             }
     }
 
