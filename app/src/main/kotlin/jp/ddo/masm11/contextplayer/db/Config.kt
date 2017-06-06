@@ -58,6 +58,7 @@ class Config: Model() {
 		config.save()
 	    }
 
+/*
 	var volume: Int
 	    get() {
 		val config: Config? = findByKey("volume")
@@ -74,6 +75,7 @@ class Config: Model() {
 		config.value = value.toString()
 		config.save()
 	    }
+*/
 
 	fun findByKey(key: String): Config? {
 	    return Select()

@@ -36,6 +36,9 @@ class PlayContext: Model() {
     @Column(name = "pos")
     var pos: Long = 0		// msec
     
+    @Column(name = "volume")
+    var volume: Int = 100
+
     companion object {
 	fun find(id: Long): PlayContext? {
 	    return Select()

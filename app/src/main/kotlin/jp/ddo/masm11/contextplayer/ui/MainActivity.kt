@@ -58,7 +58,6 @@ import jp.ddo.masm11.contextplayer.db.Config
 import jp.ddo.masm11.logger.Log
 
 class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
-
     private inner class PlayerServiceConnection : ServiceConnection {
         private val listener = object : PlayerService.OnStatusChangedListener {
 	    override fun onStatusChanged(status: PlayerService.CurrentStatus) {
@@ -96,6 +95,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     private var curPos: Int = 0    // msec
     private var maxPos: Int = 0    // msec
     private var seeking: Boolean = false
+    private var vol: Int = 100
     private var needSwitchContext: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -142,14 +142,14 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             }
         })
 
-        volume.max = 50
-        volume.progress = Config.volume - 50
+        volume.max = 100 - VOLUME_BASE
+        volume.progress = vol - VOLUME_BASE
         volume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(volume: SeekBar, progress: Int, fromUser: Boolean) {
                 if (svc != null)
-                    svc!!.setVolume(50 + progress)
+                    svc!!.setVolume(VOLUME_BASE + progress)
 
-                Config.volume = 50 + progress
+                vol = VOLUME_BASE + progress
             }
 
             override fun onStartTrackingTouch(volume: SeekBar) {
@@ -281,9 +281,15 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             val curTime = String.format(Locale.US, "%d:%02d", sec / 60, sec % 60)
             playing_curtime.text = curTime
         }
+
+	if (vol != status.volume) {
+	    vol = status.volume
+	    volume.progress = vol - VOLUME_BASE
+	}
     }
 
     companion object {
         private val REQ_PERMISSION_ON_CREATE = 1
+	private val VOLUME_BASE = 50
     }
 }

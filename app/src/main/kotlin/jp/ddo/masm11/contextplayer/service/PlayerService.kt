@@ -58,16 +58,18 @@ class PlayerService : Service() {
             val path: String?,
             val topDir: String,
             val position: Int,
-            val duration: Int)
+            val duration: Int,
+	    val volume: Int)
     
     private fun buildCurrentStatus(): CurrentStatus {
 	val player: MediaPlayer? = curPlayer
 	return CurrentStatus(
-		this@PlayerService.contextId,
+		contextId,
 		playingPath,
-		this@PlayerService.topDir,
-		position = if (player == null) 0 else player.currentPosition,
-		duration = if (player == null) 0 else player.duration)
+		topDir,
+		if (player == null) 0 else player.currentPosition,
+		if (player == null) 0 else player.duration,
+		volume)
     }
     
     class CreatedMediaPlayer (val mediaPlayer: MediaPlayer, val path: String)
@@ -115,7 +117,6 @@ class PlayerService : Service() {
 
         handler = Handler()
 
-        volume = Config.volume
         volumeDuck = 100
 
         loadContext()
@@ -736,6 +737,8 @@ class PlayerService : Service() {
             val stamp = curPlayer!!.timestamp
             ctxt.pos = stamp.anchorMediaTimeUs / 1000    // us -> ms
             Log.d("pos=${ctxt.pos}")
+	    ctxt.volume = volume
+	    Log.d("volume=${volume}")
             Log.d("ctxt saving...")
             ctxt.save()
         }
@@ -759,6 +762,7 @@ class PlayerService : Service() {
         if (ctxt != null) {
             playingPath = ctxt.path
             topDir = ctxt.topDir
+	    volume = ctxt.volume
             Log.d("playingPath=${playingPath}")
             Log.d("topDir=${topDir}")
 

@@ -16,8 +16,8 @@
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
       
       <meta-data android:name="AA_DB_NAME" android:value="ContextPlayer.db"/>
-      <meta-data android:name="AA_DB_VERSION" android:value="2"/>
-      <meta-data android:name="AA_MODELS" android:value="jp.ddo.masm11.contextplayer.PlayContext, jp.ddo.masm11.contextplayer.Config"/>
+      <meta-data android:name="AA_DB_VERSION" android:value="3"/>
+      <meta-data android:name="AA_MODELS" android:value="jp.ddo.masm11.contextplayer.db.PlayContext, jp.ddo.masm11.contextplayer.db.Config"/>
       
         <activity android:name=".ui.MainActivity">
             <intent-filter>

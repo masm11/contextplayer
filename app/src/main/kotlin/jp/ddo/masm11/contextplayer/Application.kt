@@ -23,6 +23,7 @@ import jp.ddo.masm11.logger.Log
 
 class Application : com.activeandroid.app.Application() {
     override fun onCreate() {
+	com.activeandroid.ActiveAndroid.setLoggingEnabled(true)
         super.onCreate()
 
         Fabric.with(this, Crashlytics())
