@@ -20,8 +20,8 @@ android {
         applicationId "jp.ddo.masm11.contextplayer"
         minSdkVersion 24
         targetSdkVersion 24
-        versionCode 30200
-        versionName "3.2.0"
+        versionCode 30300
+        versionName "3.3.0"
     }
     lintOptions {
 	checkAllWarnings true
