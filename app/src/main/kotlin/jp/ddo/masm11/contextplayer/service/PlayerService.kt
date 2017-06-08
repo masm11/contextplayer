@@ -35,6 +35,9 @@ import android.os.Binder
 import android.os.Handler
 import android.appwidget.AppWidgetManager
 import android.widget.RemoteViews
+import android.bluetooth.BluetoothProfile
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothHeadset
 
 import java.io.File
 import java.util.Locale
@@ -94,6 +97,10 @@ class PlayerService : Service() {
     private lateinit var headsetReceiver: BroadcastReceiver
     private var volume: Int = 0
     private var volumeDuck: Int = 0
+    private var volumeOnOff: Int = 0
+    private lateinit var bluetoothAdapter: BluetoothAdapter
+    private var bluetoothHeadset: BluetoothHeadset? = null
+    private lateinit var headsetMonitor: Thread
 
     fun setOnStatusChangedListener(listener: OnStatusChangedListener) {
         Log.d("listener=${listener}")
@@ -105,6 +112,53 @@ class PlayerService : Service() {
 
         headsetReceiver = HeadsetReceiver()
         registerReceiver(headsetReceiver, IntentFilter(AudioManager.ACTION_HEADSET_PLUG))
+
+	bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+	bluetoothAdapter.getProfileProxy(this, object: BluetoothProfile.ServiceListener {
+	    override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
+		if (profile == BluetoothProfile.HEADSET) {
+		    Log.i("Connected to bluetooth headset proxy.")
+		    bluetoothHeadset = proxy as BluetoothHeadset
+		}
+	    }
+	    override fun onServiceDisconnected(profile: Int) {
+		if (profile == BluetoothProfile.HEADSET) {
+		    Log.i("Disconnected from bluetooth headset proxy.")
+		    bluetoothHeadset = null
+		}
+	    }
+	}, BluetoothProfile.HEADSET)
+
+	/* bluetooth headset への接続が切れたら、再生を停止する。
+	* intent だとかなり遅延することがあるので、
+	* 自前で BluetoothHeadset class で接続状況を監視する。
+	* log がかなりうざい…
+	*/
+	val code = Runnable {
+	    var connected = false
+            try {
+                while (true) {
+		    val headset = bluetoothHeadset
+		    var newConnected = false
+		    if (headset != null) {
+			val devices = headset.getConnectedDevices()
+			if (devices.size >= 1)
+			    newConnected = true
+		    }
+		    if (connected != newConnected) {
+			Log.d("bluetooth headset: ${connected} -> ${newConnected}")
+			connected = newConnected
+			if (!connected)
+			    handler.post { pause() }
+		    }
+                    Thread.sleep(500)
+                }
+            } catch (e: InterruptedException) {
+                Log.d("interrupted.", e)
+            }
+	}
+	headsetMonitor = Thread(code)
+	headsetMonitor.start()
 
         audioAttributes = AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_MEDIA)
@@ -341,6 +395,10 @@ class PlayerService : Service() {
             Log.d("request audio focus.")
             audioManager.requestAudioFocus(audioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
 
+            Log.d("volume on.")
+	    volumeOnOff = 100
+            setMediaPlayerVolume()
+
             try {
                 Log.d("starting.")
                 curPlayer!!.start()
@@ -365,6 +423,10 @@ class PlayerService : Service() {
 
             Log.d("set to non-foreground")
             setForeground(false)
+
+            Log.d("volume off.")
+	    volumeOnOff = 0
+            setMediaPlayerVolume()
 
             if (curPlayer != null) {
                 /* paused から pause() は問題ないが、
@@ -391,7 +453,7 @@ class PlayerService : Service() {
     }
 
     private fun setMediaPlayerVolume() {
-        val vol = (volume * volumeDuck).toFloat() / 100.0f / 100.0f
+        val vol = (volume * volumeDuck * volumeOnOff).toFloat() / 100.0f / 100.0f / 100.0f
         if (curPlayer != null)
             curPlayer!!.setVolume(vol, vol)
         if (nextPlayer != null)
@@ -849,6 +911,13 @@ class PlayerService : Service() {
         stopPlay()
         Log.d("release curPlayer.")
         releaseCurPlayer()
+
+	headsetMonitor.interrupt()
+	headsetMonitor.join()
+
+	if (bluetoothHeadset != null) {
+	    bluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothHeadset)
+	}
 
         unregisterReceiver(headsetReceiver)
     }

@@ -22,6 +22,7 @@ import android.content.Context
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothA2dp
+import android.bluetooth.BluetoothHeadset
 import android.os.Parcelable
 
 import jp.ddo.masm11.contextplayer.service.PlayerService
@@ -34,13 +35,23 @@ class BluetoothReceiver : BroadcastReceiver() {
         if (intent != null) {
             val action = intent.action
             Log.d("action=${action}")
+	    if (action != null && action == BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED) {
+		val state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1)
+		val prevstate = intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)
+                val device = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
+                Log.d("headset: ${device}: ${prevstate} -> ${state}")
+	    }
+	    if (action != null && action == BluetoothA2dp.ACTION_PLAYING_STATE_CHANGED) {
+		val state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1)
+		val prevstate = intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)
+                val device = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
+                Log.d("playing_state: ${device}: ${prevstate} -> ${state}")
+	    }
             if (action != null && action == BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED) {
                 val state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1)
                 val prevstate = intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)
-                Log.d("state=${state}")
-                Log.d("prevstate=${prevstate}")
-                val parcelable = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
-                Log.d("device=${parcelable}")
+                val device = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
+                Log.d("a2dp: ${device}: ${prevstate} -> ${state}")
                 if (state == BluetoothProfile.STATE_DISCONNECTED && prevstate != BluetoothProfile.STATE_DISCONNECTED) {
                     Log.d("a2dp disconnected.")
                     val i = Intent(context, PlayerService::class.java)
