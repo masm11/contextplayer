@@ -31,6 +31,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.LayoutInflater
 import android.view.KeyEvent
+import android.view.ViewConfiguration
 import android.webkit.MimeTypeMap
 import android.content.Intent
 import android.content.ServiceConnection
@@ -284,28 +285,54 @@ class ExplorerActivity : AppCompatActivity() {
 
     /* 参考:
      *   http://stackoverflow.com/questions/12950215/onkeydown-and-onkeylongpress
+     *
+     * もうひとつ:
+     *   Android N から onKeyLongPress が効かないので、自前で timeout を設けて処理する。
+     *   https://issuetracker.google.com/issues/37106088
      */
+    val backHandler = Handler()
+    val backButtonRunnable = object : Runnable {
+	override fun run() {
+            backKeyShortPress = false
+	    Log.d("finishing...")
+            finish()
+	}
+    }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+	Log.d("keyCode=${keyCode}, action=${event.action}")
         if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_DOWN) {
+	    Log.d("start tracking.")
             event.startTracking()
-            if (event.repeatCount == 0)
+	    Log.d("repeat count=${event.repeatCount}.")
+            if (event.repeatCount == 0) {
                 backKeyShortPress = true
+		Log.d("longpress timeout=${ViewConfiguration.getLongPressTimeout().toLong()}.")
+		backHandler.postDelayed(backButtonRunnable, ViewConfiguration.getLongPressTimeout().toLong())
+	    }
             return true
         }
         return super.onKeyDown(keyCode, event)
     }
 
+/*
     override fun onKeyLongPress(keyCode: Int, event: KeyEvent): Boolean {
+	Log.d("keyCode=${keyCode}")
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             backKeyShortPress = false
+	    Log.d("finishing...")
             finish()
             return true
         }
         return super.onKeyLongPress(keyCode, event)
     }
+*/
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+	Log.d("keyCode=${keyCode}")
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+	    backHandler.removeCallbacks(backButtonRunnable)
+	    Log.d("backKeyShortPress=${backKeyShortPress}")
             if (backKeyShortPress) {
                 if (curDir == rootDir || curDir.absolutePath == "/")
                     finish()
