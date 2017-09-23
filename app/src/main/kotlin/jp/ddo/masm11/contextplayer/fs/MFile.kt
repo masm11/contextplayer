@@ -27,15 +27,36 @@ import android.content.Context
 class MFile(val path: String) {
     constructor(file: File) : this(file.toString())
 
-    val mapping: HashMap<String, String> = HashMap()
+    companion object {
+	val mapping: HashMap<String, String> = HashMap()
+	fun initMapping() {
+	    if (mapping.size == 0) {
+		/* 他のディレクトリに大量のファイルがあると、無駄に処理を食ってしまうので、
+		* Music ディレクトリだけ扱う。
+		*/
+
+		mapping.put("primary", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).canonicalPath)
+
+		/* 機種によって違うだろうけど、まずは私の機種に対応。
+		* /storage/<uuid>/Music を使う。
+		*/
+		val dirs = File("/storage").listFiles()
+		if (dirs != null) {
+		    for (dir in dirs) {
+			val name = dir.name
+			if (!name.matches("[0-9a-fA-F\\-]+-[0-9a-fA-F\\-]+".toRegex()))
+		            continue
+			mapping.put(name, "/storage/${name}/Music")
+		    }
+		}
+	    }
+	}
+    }
+
     init {
 	if (!path.startsWith("//"))
 	    throw RuntimeException("path not start with //: ${path}")
-	/* 他のディレクトリに大量のファイルがあると、無駄に処理を食ってしまうので、
-	* Music ディレクトリだけ扱う。
-	*/
-	mapping.put("primary", "/storage/emulated/0/Music")
-	mapping.put("9016-4EF8", "/storage/9016-4EF8/Music")
+	initMapping()
     }
     
     override fun equals(other: Any?): Boolean {
