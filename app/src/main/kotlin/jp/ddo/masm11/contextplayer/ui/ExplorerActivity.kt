@@ -21,7 +21,6 @@ import android.app.Service
 import android.app.FragmentManager
 import android.os.Bundle
 import android.os.Handler
-import android.os.Environment
 import android.os.IBinder
 import android.widget.ArrayAdapter
 import android.widget.ListView
@@ -40,8 +39,6 @@ import android.content.ComponentName
 import kotlinx.android.synthetic.main.activity_explorer.*
 import kotlinx.android.synthetic.main.list_explorer.view.*
 
-import java.io.File
-import java.io.FileFilter
 import java.util.ArrayList
 import java.util.Arrays
 import java.util.Collections
@@ -55,6 +52,8 @@ import jp.ddo.masm11.contextplayer.R
 import jp.ddo.masm11.contextplayer.db.PlayContext
 import jp.ddo.masm11.contextplayer.db.Config
 import jp.ddo.masm11.contextplayer.util.Metadata
+import jp.ddo.masm11.contextplayer.util.Test
+import jp.ddo.masm11.contextplayer.fs.MFile
 import jp.ddo.masm11.contextplayer.service.PlayerService
 
 import jp.ddo.masm11.logger.Log
@@ -74,7 +73,7 @@ class ExplorerActivity : AppCompatActivity() {
         }
     }
 
-    private class FileItem(val file: File) {
+    private class FileItem(val file: MFile) {
         var title: String? = null
             private set
         var artist: String? = null
@@ -84,7 +83,8 @@ class ExplorerActivity : AppCompatActivity() {
 
         init {
             if (!file.isDirectory) {
-                Log.d("uri=${file.toURI().toASCIIString()}")
+                // Log.d("uri=${file.toURI().toASCIIString()}")
+                Log.d("uri=${file}")
 
                 val absPath = file.absolutePath
                 val extPos = absPath.lastIndexOf('.')
@@ -212,10 +212,9 @@ class ExplorerActivity : AppCompatActivity() {
         }
     }
 
-    private val rootDir: File = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_MUSIC)    // これより上には戻れない
-    private var topDir: File = File(".")
-    private var curDir: File = File(".")
+    private val rootDir: MFile = MFile("/")  // Test.getRootDir(null)    // これより上には戻れない
+    private var topDir: MFile = MFile(".")
+    private var curDir: MFile = MFile(".")
     private lateinit var adapter: FileAdapter
     private lateinit var ctxt: PlayContext
     private lateinit var bretr: BackgroundRetriever
@@ -243,18 +242,18 @@ class ExplorerActivity : AppCompatActivity() {
         t.priority = Thread.MIN_PRIORITY
         t.start()
 
-        var dir = File(ctxt.topDir)
+        var dir = MFile(ctxt.topDir)
         topDir = dir
 	val path = ctxt.path
         if (path != null && path.startsWith(ctxt.topDir)) {
             val slash = path.lastIndexOf('/')
             if (slash != -1)
-                dir = File(path.substring(0, slash))
+                dir = MFile(path.substring(0, slash))
         }
         if (savedInstanceState != null) {
             val str = savedInstanceState.getString(STATE_CUR_DIR)
             if (str != null)
-                dir = File(str)
+                dir = MFile(str)
         }
         renewAdapter(dir)
 
@@ -320,7 +319,7 @@ class ExplorerActivity : AppCompatActivity() {
         return super.onKeyUp(keyCode, event)
     }
 
-    private fun setTopDir(newDir: File) {
+    private fun setTopDir(newDir: MFile) {
         topDir = newDir
 
         // topDir からの相対で curDir を表示
@@ -336,13 +335,14 @@ class ExplorerActivity : AppCompatActivity() {
 	ctxt.save()
     }
 
-    private fun renewAdapter(newDir: File) {
+    private fun renewAdapter(newDir: MFile) {
         val files = listFiles(newDir, false)
         val items = MutableList<FileItem>(files.size, { i -> FileItem(files[i]) })
 
         Log.d("newDir=${newDir}")
         Log.d("rootDir=${rootDir}")
-        items.add(0, FileItem(File(newDir, ".")))
+        // items.add(0, FileItem(MFile(newDir, ".")))  // 何だっけ…
+        items.add(0, FileItem(newDir))
 
         adapter.clear()
         adapter.addAll(items)
@@ -359,7 +359,7 @@ class ExplorerActivity : AppCompatActivity() {
         curDir = newDir
     }
 
-    private fun play(file: File) {
+    private fun play(file: MFile) {
         svc?.play(file.absolutePath)
     }
 
@@ -420,12 +420,16 @@ class ExplorerActivity : AppCompatActivity() {
 	 * '.' で始まるものは含まない。
 	 * ソートされている。
 	 */
-        fun listFiles(dir: File, reverse: Boolean): Array<File> {
-            val files = dir.listFiles { pathname -> !pathname.name.startsWith(".") }
+        fun listFiles(dir: MFile, reverse: Boolean): Array<MFile> {
+	    Log.d("listFiles: dir: ${dir}")
+            // val files = dir.listFiles { pathname -> !pathname.name.startsWith(".") }
+            val files = dir.listFiles()
+	    Log.d("listFiles: files: ${files}")
 	    if (files == null)
-		return emptyArray<File>()
+		return emptyArray<MFile>()
+	    Log.d("listFiles: files: not empty.")
 
-            var comparator = Comparator<File> { o1, o2 ->
+            var comparator = Comparator<MFile> { o1, o2 ->
                 val name1 = o1.name.toLowerCase(Locale.getDefault())
                 val name2 = o2.name.toLowerCase(Locale.getDefault())
                 // まず、大文字小文字を無視して比較

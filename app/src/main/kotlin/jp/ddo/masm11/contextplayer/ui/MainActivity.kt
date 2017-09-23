@@ -25,7 +25,6 @@ import android.app.AlertDialog
 import android.app.FragmentManager
 import android.os.IBinder
 import android.os.Bundle
-import android.os.Environment
 import android.view.View
 import android.view.Menu
 import android.view.MenuItem
@@ -52,6 +51,7 @@ import java.util.Locale
 import jp.ddo.masm11.contextplayer.R
 import jp.ddo.masm11.contextplayer.service.PlayerService
 import jp.ddo.masm11.contextplayer.util.Metadata
+import jp.ddo.masm11.contextplayer.util.Test
 import jp.ddo.masm11.contextplayer.db.PlayContext
 import jp.ddo.masm11.contextplayer.db.Config
 
@@ -88,8 +88,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
     private var svc: PlayerService.PlayerServiceBinder? = null
     private var conn: ServiceConnection? = null
-    private val rootDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_MUSIC)
+    private val rootDir = Test.getRootDir(null)
     private var curPath: String? = null
     private var curTopDir: String? = null
     private var curPos: Int = 0    // msec
@@ -102,6 +101,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+	Test.getRootDir(this)
         val fragMan = getFragmentManager()
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
         setSupportActionBar(frag.toolbar)

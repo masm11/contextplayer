@@ -18,7 +18,6 @@ package jp.ddo.masm11.contextplayer.ui
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Environment
 import android.os.IBinder
 import android.os.Parcelable
 import android.content.Intent
@@ -82,8 +81,7 @@ class ContextActivity : AppCompatActivity() {
 
     private var conn: PlayerServiceConnection? = null
     private var svc: PlayerService.PlayerServiceBinder? = null
-    private val rootDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_MUSIC)
+    private val rootDir = MFile("//")
     private lateinit var items: MutableList<Item>
     private lateinit var adapter: ItemAdapter
 
