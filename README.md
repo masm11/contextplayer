@@ -1,6 +1,6 @@
 # コンテキストプレイヤー
 
-For english, see [README_en.md](README_en.md).
+For English, see [README_en.md](README_en.md).
 
 ## 特徴
 
@@ -23,12 +23,12 @@ Android スマホ用の音楽再生プレイヤーです。
 ## インストール
 
 今のところ、Google Play には上げていませんので、Android Studio 等で
-インストールしてください。
+ビルドし、インストールしてください。
 
 以下の権限を使用します。
 - android.permission.READ_EXTERNAL_STORAGE
 
-  内部ストレージにアクセスするため。
+  内部ストレージ及び外付け SD カードにアクセスするため。
 
 - android.permission.BLUETOOTH
 
@@ -46,6 +46,8 @@ Android スマホ用の音楽再生プレイヤーです。
 - Xperia X Performance (au SOV33)
 - Android 7.0
 
+Android 7.0 以上でないと動かないはずです。
+
 ## コンテキストとは
 
 以下の情報を保持します。
@@ -54,6 +56,7 @@ Android スマホ用の音楽再生プレイヤーです。
   - 再生するフォルダ階層のトップ
   - 再生中のファイル名
   - 再生中の位置
+  - ボリューム
 
 ## 使い方
 
@@ -66,7 +69,7 @@ Android スマホ用の音楽再生プレイヤーです。
 - Explorer 画面
 
   ディレクトリをロングタップすると、そのディレクトリを「再生するフォルダ
-  階層のトップ」と設定します。
+  階層のトップ」として設定します。
 
   back キーをロングタップするとメイン画面に戻ります。
 
@@ -95,17 +98,19 @@ path でソートして、その順に再生します。
 
 - Bluetooth ヘッドセット
 
-  OFF すると再生が止まります。直後に一瞬本体から音が鳴ることがあるようですが。
+  OFF すると再生が止まります。
 
 - 曲ファイルを置く場所
 
-  よく知りませんが、たぶん機種ごとに音楽ファイルを置く場所が決まっていて、
-  以下の API で取得できるようになっています。
-  ```
-    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
-  ```
+  内蔵ストレージ内に置くなら、機種ごとに音楽ファイルが決まっていますので、
+  そこに置いて下さい。
   例えば私の環境では `/storage/emulated/0/Music` のようです。
-  このアプリはそこしか参照しませんので、その中に置いて下さい。
+
+  また、外付け SD カードの場合、外付け SD カードがどこに mount されるかが
+  機種により異なります。私の機種では `/storage/<UUID>` に mount されます。
+  `/storage/<UUID>` には対応しているので、`/storage/<UUID>/Music` にも置けます。
+  他の機種の場合、`/storage/<UUID>` に mount されるなら使えますが、そうでない場合は
+  外付け SD カードは使えません。
 
 ## 機能追加及びバグについて
 
