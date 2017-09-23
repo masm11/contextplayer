@@ -31,8 +31,11 @@ class MFile(val path: String) {
     init {
 	if (!path.startsWith("//"))
 	    throw RuntimeException("path not start with //: ${path}")
-	mapping.put("primary", "/storage/emulated/0")
-	mapping.put("9016-4EF8", "/storage/9016-4EF8")
+	/* 他のディレクトリに大量のファイルがあると、無駄に処理を食ってしまうので、
+	* Music ディレクトリだけ扱う。
+	*/
+	mapping.put("primary", "/storage/emulated/0/Music")
+	mapping.put("9016-4EF8", "/storage/9016-4EF8/Music")
     }
     
     override fun equals(other: Any?): Boolean {

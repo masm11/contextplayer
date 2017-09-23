@@ -627,9 +627,14 @@ class PlayerService : Service() {
         Log.d("nextOf=${nextOf}")
         var found: String? = null
         if (nextOf.startsWith(topDir)) {
-            //                           +1: for '/'   ↓
-            val parts = nextOf.substring(topDir.length + 1).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            found = lookForFile(MFile(topDir), parts, 0, false)
+	    if (topDir != "//") {
+		//                           +1: for '/'   ↓
+		val parts = nextOf.substring(topDir.length + 1).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+		found = lookForFile(MFile(topDir), parts, 0, false)
+	    } else {
+		val parts = nextOf.substring(2).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+		found = lookForFile(MFile(topDir), parts, 0, false)
+	    }
         }
         if (found == null)
             found = lookForFile(MFile(topDir), null, 0, false)
@@ -643,9 +648,14 @@ class PlayerService : Service() {
         Log.d("prevOf=${prevOf}")
         var found: String? = null
         if (prevOf.startsWith(topDir)) {
-            //                            +1: for '/'  ↓
-            val parts = prevOf.substring(topDir.length + 1).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            found = lookForFile(MFile(topDir), parts, 0, true)
+	    if (topDir != "//") {
+		//                            +1: for '/'  ↓
+		val parts = prevOf.substring(topDir.length + 1).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+		found = lookForFile(MFile(topDir), parts, 0, true)
+	    } else {
+		val parts = prevOf.substring(2).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+		found = lookForFile(MFile(topDir), parts, 0, true)
+	    }
         }
         if (found == null)
             found = lookForFile(MFile(topDir), null, 0, true)
