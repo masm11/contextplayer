@@ -429,8 +429,7 @@ class ExplorerActivity : AppCompatActivity() {
 	 */
         fun listFiles(dir: MFile, reverse: Boolean): Array<MFile> {
 	    Log.d("listFiles: dir: ${dir}")
-            // val files = dir.listFiles { pathname -> !pathname.name.startsWith(".") }
-            val files = dir.listFiles()
+            val files = dir.listFiles { f -> !f.name.startsWith(".") }
 	    Log.d("listFiles: files: ${files}")
 	    if (files == null)
 		return emptyArray<MFile>()

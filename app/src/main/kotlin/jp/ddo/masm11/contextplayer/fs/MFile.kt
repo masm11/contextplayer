@@ -87,13 +87,15 @@ class MFile(val path: String) {
 	}
     }
 
-    fun listFiles(): Array<MFile>? {
+    fun listFiles(filter: ((MFile) -> Boolean)? = null): Array<MFile>? {
 	Log.d("path=\"${path}\"")
 	if (path == "//") {
 	    Log.d("is root.");
 	    return mapping.keys.map<String, MFile>{ s ->
 		Log.d("s=\"${s}\"");
 		MFile("//" + s)
+	    }.filter{ f ->
+	        if (filter != null) filter(f) else true
 	    }.toTypedArray()
 	} else {
 	    val files = file.listFiles()
@@ -105,6 +107,8 @@ class MFile(val path: String) {
 		Log.d("f=\"${f}\"");
 		Log.d("new=\"${path + "/" + f.name}\"");
 		MFile(path + "/" + f.name)
+	    }.filter{ f ->
+	        if (filter != null) filter(f) else true
 	    }.toTypedArray()
 	}
     }
