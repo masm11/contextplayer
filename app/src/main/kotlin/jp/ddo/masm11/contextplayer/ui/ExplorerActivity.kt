@@ -324,7 +324,10 @@ class ExplorerActivity : AppCompatActivity() {
         // topDir からの相対で curDir を表示
         path.rootDir = rootDir.toString()
         path.topDir = topDir.toString()
-        path.path = "${curDir.toString()}/"
+	var cur: String = "//"
+	if (curDir.toString() != "//")
+	    cur = curDir.toString() + "/"
+        path.path = cur
 
         svc?.setTopDir(newDir.absolutePath)
 
@@ -354,7 +357,10 @@ class ExplorerActivity : AppCompatActivity() {
 
         // topDir からの相対で newDir を表示
         path.rootDir = rootDir.toString()
-        path.path = "${newDir.toString()}/"
+	var cur: String = "//"
+	if (newDir.toString() != "//")
+	    cur = newDir.toString() + "/"
+        path.path = cur
         path.topDir = topDir.toString()
 
         curDir = newDir
