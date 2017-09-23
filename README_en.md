@@ -4,11 +4,11 @@
 
 This app is an audio player for Android smartphones.
 
-There are many player apps with "Playlists", but most of those can't restore
+There are many player apps with "Playlists", but most of them can't restore
 the paused position.
 
-Also, I use folder structure as playlists, and I want for players to play
-in order of path. But there are few such ones.
+Also, I use folder structure as playlists, and I want for player apps to play
+in order of path. But there are few such apps.
 
 There is such a player, which is named "Music Folder Player" (de.zorillasoft.musicfolderplayer),
 but it can't play files in subdirectories recursively.
@@ -18,13 +18,13 @@ Although, only those are important, so other features are not implemented.
 
 ## Installation
 
-I don't use Google Play now, so install this app with Android Studio.
+I don't use Google Play now, so build and install this app with Android Studio by yourself.
 
 It uses these permissions:
 
 - android.permission.READ_EXTERNAL_STORAGE
 
-  to access external storage.
+  to access internal and secondary storages.
 
 - android.permission.BLUETOOTH
 
@@ -43,6 +43,8 @@ Environments I use:
 - Xperia X Performance (au SOV33, Japan)
 - Android 7.0
 
+Android 7.0 or later is required.
+
 ## Contexts
 
 The following information is saved as a context.
@@ -51,10 +53,11 @@ The following information is saved as a context.
   - top folder to play
   - playing filename
   - position in the playing filename
+  - volume
 
 ## Usage
 
-Some points which you may not understand by seeing are here:
+Here are some points which you may not understand at a glance.
 
 - Main screen
 
@@ -80,28 +83,29 @@ Some points which you may not understand by seeing are here:
 The app lists up all the files under the top folder recursively, and
 play them in the order of the path.
 
-There are exceptions:
+There are some exceptions:
 - Files and directories whose name starts with `.` are ignored.
 - Case insensitive.
 
-The app plays files if it can play, even if the type of a file is not shown
+The app plays files if it can play them, even if the type of a file is not shown
 in Explorer.
 
 ## Miscellaneous
 
 - Bluetooth headsets
 
-  When you turn of the bluetooth headset, the app stop playing.
+  When you turn off the bluetooth headset, the app stop playing.
 
-- Music file places
+- Where you should place music files
 
-  I don't know well but the directory to place the audio files is fixed
-  per phone model, and apps can get it with this API.
-  ```
-    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
-  ```
-  For example, it is `/storage/emulated/0/Music` in my case.
-  The app finds files in it, so you need to place audio files in it.
+  If you want to use the internal storage, place them in the model-specific
+  directory, e.g. `/storage/emulated/0/Music`.
+
+  If you want to use the secondary storage, what directory the secondary
+  storage is mounted is model-specific. It is `/storage/<UUID>` for me.
+  The app supports `/storage/<UUID>`, so I can place music files in
+  `/storage/<UUID>/Music`. For other models, if it mounts secondary storage
+  on `/storage/<UUID>`, then you can use it, otherwise you can't.
 
 ## New features and bugs
 
