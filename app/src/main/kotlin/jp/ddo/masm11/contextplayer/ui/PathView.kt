@@ -24,12 +24,12 @@ import android.text.style.BackgroundColorSpan
 import android.util.AttributeSet
 
 class PathView(context: Context, attrs: AttributeSet) : TextView(context, attrs) {
-    var rootDir: String = "/"
+    var rootDir: String = "//"
         set(rootDir) {
 	    field = rootDir
 	    updateText()
 	}
-    var topDir: String = "/"
+    var topDir: String = "//"
 	set(topDir) {
 	    field = topDir
 	    updateText()
@@ -48,6 +48,7 @@ class PathView(context: Context, attrs: AttributeSet) : TextView(context, attrs)
             root = "${root}/"
         if (!top.endsWith("/"))
             top = "${top}/"
+/*
         if (cur.startsWith(root) && top.startsWith(root)) {
             val rootLen = root.length
             cur = cur.substring(rootLen)
@@ -57,6 +58,7 @@ class PathView(context: Context, attrs: AttributeSet) : TextView(context, attrs)
             if (top.length == 0)
                 top = "./"
         }
+*/
 
         if (cur.startsWith(top)) {
             val ss = SpannableString(cur)

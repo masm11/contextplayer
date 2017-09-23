@@ -44,14 +44,13 @@ import android.Manifest
 
 import kotlinx.android.synthetic.main.activity_main.*
 
-import java.io.File
 import java.io.IOException
 import java.util.Locale
 
 import jp.ddo.masm11.contextplayer.R
 import jp.ddo.masm11.contextplayer.service.PlayerService
 import jp.ddo.masm11.contextplayer.util.Metadata
-import jp.ddo.masm11.contextplayer.util.Test
+import jp.ddo.masm11.contextplayer.fs.MFile
 import jp.ddo.masm11.contextplayer.db.PlayContext
 import jp.ddo.masm11.contextplayer.db.Config
 
@@ -88,7 +87,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
     private var svc: PlayerService.PlayerServiceBinder? = null
     private var conn: ServiceConnection? = null
-    private val rootDir = Test.getRootDir(null)
+    private val rootDir = MFile("//")
     private var curPath: String? = null
     private var curTopDir: String? = null
     private var curPos: Int = 0    // msec
@@ -101,7 +100,6 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-	Test.getRootDir(this)
         val fragMan = getFragmentManager()
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
         setSupportActionBar(frag.toolbar)
@@ -179,7 +177,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             }
         } else {
             // permission がある
-            rootDir.mkdirs()
+            // rootDir.mkdirs()
         }
 
         val intent = getIntent()
@@ -203,8 +201,9 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         if (requestCode == REQ_PERMISSION_ON_CREATE) {
             if (grantResults[0] != PackageManager.PERMISSION_GRANTED)
                 finish()
-            else
-                rootDir.mkdirs()
+            else {
+                // rootDir.mkdirs()
+	    }
         }
     }
 
@@ -240,7 +239,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             playing_filename.rootDir = rootDir.absolutePath
             playing_filename.path = curPath
 
-            val meta = Metadata(curPath!!)
+            val meta = Metadata(MFile(curPath!!).file.absolutePath)
             var title: String? = null
             var artist: String? = null
             if (meta.extract()) {

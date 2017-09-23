@@ -39,7 +39,6 @@ import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothHeadset
 
-import java.io.File
 import java.util.Locale
 
 import jp.ddo.masm11.contextplayer.R
@@ -47,6 +46,7 @@ import jp.ddo.masm11.contextplayer.ui.MainActivity
 import jp.ddo.masm11.contextplayer.ui.ExplorerActivity
 import jp.ddo.masm11.contextplayer.util.WeakSet
 import jp.ddo.masm11.contextplayer.util.MutableWeakSet
+import jp.ddo.masm11.contextplayer.fs.MFile
 import jp.ddo.masm11.contextplayer.receiver.HeadsetReceiver
 import jp.ddo.masm11.contextplayer.db.PlayContext
 import jp.ddo.masm11.contextplayer.db.Config
@@ -518,7 +518,7 @@ class PlayerService : Service() {
                 tested = tested + path
 
                 Log.d("try create mediaplayer.")
-                val player = MediaPlayer.create(this, Uri.parse("file://${path}"), null, audioAttributes, audioSessionId)
+                val player = MediaPlayer.create(this, Uri.parse("file://${MFile(path).file.absolutePath}"), null, audioAttributes, audioSessionId)
                 if (player == null) {
                     Log.w("MediaPlayer.create() failed: ${path}")
                     path = if (back) selectPrev(path) else selectNext(path)
@@ -629,10 +629,10 @@ class PlayerService : Service() {
         if (nextOf.startsWith(topDir)) {
             //                           +1: for '/'   ↓
             val parts = nextOf.substring(topDir.length + 1).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            found = lookForFile(File(topDir), parts, 0, false)
+            found = lookForFile(MFile(topDir), parts, 0, false)
         }
         if (found == null)
-            found = lookForFile(File(topDir), null, 0, false)
+            found = lookForFile(MFile(topDir), null, 0, false)
         Log.d("found=${found}")
         return found
     }
@@ -645,10 +645,10 @@ class PlayerService : Service() {
         if (prevOf.startsWith(topDir)) {
             //                            +1: for '/'  ↓
             val parts = prevOf.substring(topDir.length + 1).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            found = lookForFile(File(topDir), parts, 0, true)
+            found = lookForFile(MFile(topDir), parts, 0, true)
         }
         if (found == null)
-            found = lookForFile(File(topDir), null, 0, true)
+            found = lookForFile(MFile(topDir), null, 0, true)
         Log.d("found=${found}")
         return found
     }
@@ -664,7 +664,7 @@ class PlayerService : Service() {
      * lookForFile() の役割は、dir 内 subdir も含めて、nextOf の次のファイルを探すこと。
      * parts == null の場合、nextOf の path tree から外れた場所を探している。
      */
-    private fun lookForFile(dir: File, parts: Array<String>?, parts_idx: Int, backward: Boolean): String? {
+    private fun lookForFile(dir: MFile, parts: Array<String>?, parts_idx: Int, backward: Boolean): String? {
         var cur: String? = null
         if (parts != null) {
             if (parts_idx < parts.size)

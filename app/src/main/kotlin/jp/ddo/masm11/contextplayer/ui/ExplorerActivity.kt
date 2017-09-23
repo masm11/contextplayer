@@ -52,7 +52,6 @@ import jp.ddo.masm11.contextplayer.R
 import jp.ddo.masm11.contextplayer.db.PlayContext
 import jp.ddo.masm11.contextplayer.db.Config
 import jp.ddo.masm11.contextplayer.util.Metadata
-import jp.ddo.masm11.contextplayer.util.Test
 import jp.ddo.masm11.contextplayer.fs.MFile
 import jp.ddo.masm11.contextplayer.service.PlayerService
 
@@ -110,7 +109,7 @@ class ExplorerActivity : AppCompatActivity() {
 
         fun retrieveMetadata() {
             if (isAudioType(mimeType)) {
-                val meta = Metadata(file.absolutePath)
+                val meta = Metadata(file.file.absolutePath)
                 if (meta.extract()) {
                     title = meta.title
                     artist = meta.artist
@@ -212,9 +211,9 @@ class ExplorerActivity : AppCompatActivity() {
         }
     }
 
-    private val rootDir: MFile = MFile("/")  // Test.getRootDir(null)    // これより上には戻れない
-    private var topDir: MFile = MFile(".")
-    private var curDir: MFile = MFile(".")
+    private val rootDir: MFile = MFile("//")
+    private var topDir: MFile = MFile("//")
+    private var curDir: MFile = MFile("//")
     private lateinit var adapter: FileAdapter
     private lateinit var ctxt: PlayContext
     private lateinit var bretr: BackgroundRetriever
@@ -341,8 +340,10 @@ class ExplorerActivity : AppCompatActivity() {
 
         Log.d("newDir=${newDir}")
         Log.d("rootDir=${rootDir}")
-        // items.add(0, FileItem(MFile(newDir, ".")))  // 何だっけ…
-        items.add(0, FileItem(newDir))
+	if (newDir.absolutePath != "//")
+            items.add(0, FileItem(MFile(newDir.absolutePath + "/.")))  // リストの一番上に "." を表示
+	else
+            items.add(0, FileItem(MFile(newDir.absolutePath + ".")))
 
         adapter.clear()
         adapter.addAll(items)

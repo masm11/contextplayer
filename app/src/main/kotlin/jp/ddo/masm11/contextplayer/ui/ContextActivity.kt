@@ -42,13 +42,12 @@ import android.text.InputType
 import kotlinx.android.synthetic.main.activity_context.*
 import kotlinx.android.synthetic.main.list_context.view.*
 
-import java.io.File
-
 import jp.ddo.masm11.contextplayer.R
 import jp.ddo.masm11.contextplayer.service.PlayerService
 import jp.ddo.masm11.contextplayer.db.PlayContext
 import jp.ddo.masm11.contextplayer.db.Config
 import jp.ddo.masm11.contextplayer.util.emptyMutableListOf
+import jp.ddo.masm11.contextplayer.fs.MFile
 
 class ContextActivity : AppCompatActivity() {
     private inner class PlayerServiceConnection : ServiceConnection {

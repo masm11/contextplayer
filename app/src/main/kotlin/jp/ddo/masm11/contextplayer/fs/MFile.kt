@@ -29,18 +29,28 @@ class MFile(val path: String) {
 
     val mapping: HashMap<String, String> = HashMap()
     init {
+	if (!path.startsWith("//"))
+	    throw RuntimeException("path not start with //: ${path}")
 	mapping.put("primary", "/storage/emulated/0")
 	mapping.put("9016-4EF8", "/storage/9016-4EF8")
     }
     
+    override fun equals(other: Any?): Boolean {
+	if (other == null)
+	    return false
+	if (other !is MFile)
+	    return false
+	return path == other.path
+    }
+
     val isDirectory: Boolean
     get() {
-	return File(path).isDirectory
+	return file.isDirectory
     }
 
     val absolutePath: String
     get() {
-	return File(path).absolutePath
+	return path
     }
     
     val name: String
@@ -50,37 +60,47 @@ class MFile(val path: String) {
     }
 
     override fun toString(): String {
-	return path;
-    }
-
-    fun parentMFile(): MFile {
-	if (path == "//")
-	    return this
-	else {
-	    val i = path.lastIndexOf('/')
-	    if (i < 2)
-	        return MFile("//")
-	    else
-	        return MFile(path.substring(0, i))
-	}
+	return absolutePath;
     }
 
     val file: File
     get() {
-	// fixme:
-	return File(path)
+	Log.d("path=\"${path}\"")
+	if (path == "//")
+	    return File("/")
+	val i = path.indexOf('/', 2)
+	if (i == -1) {
+	    val storageId = path.substring(2)
+	    val f = mapping.get(storageId)
+	    if (f != null)
+	        return File(f)
+	    return File("/")
+	} else {
+	    val storageId = path.substring(2, i)
+	    val f = mapping.get(storageId)
+	    if (f != null)
+	        return File(f, path.substring(i + 1))
+	    return File("/")
+	}
     }
 
     fun listFiles(): Array<MFile>? {
+	Log.d("path=\"${path}\"")
 	if (path == "//") {
+	    Log.d("is root.");
 	    return mapping.keys.map<String, MFile>{ s ->
-		MFile(s)
+		Log.d("s=\"${s}\"");
+		MFile("//" + s)
 	    }.toTypedArray()
 	} else {
 	    val files = file.listFiles()
-	    if (files == null)
+	    if (files == null) {
+		Log.d("files is null.");
 	        return null
+	    }
 	    return files.map<File, MFile>{ f -> 
+		Log.d("f=\"${f}\"");
+		Log.d("new=\"${path + "/" + f.name}\"");
 		MFile(path + "/" + f.name)
 	    }.toTypedArray()
 	}
@@ -91,7 +111,9 @@ class MFile(val path: String) {
 	if (path == "//")
 	    return this
 	val i = path.lastIndexOf('/')
-	return MFile(path.substring(0, i))
+	if (i >= 2)
+	    return MFile(path.substring(0, i))
+	return MFile("//")
     }
 
     fun compareTo(file: MFile): Int {
