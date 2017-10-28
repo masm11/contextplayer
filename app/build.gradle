@@ -14,14 +14,14 @@ apply plugin: 'io.fabric'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "26.0.1"
+    buildToolsVersion "26.0.2"
 
     defaultConfig {
         applicationId "jp.ddo.masm11.contextplayer"
         minSdkVersion 24
         targetSdkVersion 24
-        versionCode 40001
-        versionName "4.0.1"
+        versionCode 40003
+        versionName "4.0.3"
     }
     lintOptions {
 	checkAllWarnings true
@@ -35,12 +35,12 @@ repositories {
 }
 
 dependencies {
-    compile project(':logger')
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.4.0'
-    compile 'com.michaelpardo:activeandroid:3.1.0-SNAPSHOT'
-    compile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
+    implementation project(':logger')
+    testImplementation 'junit:junit:4.12'
+    implementation 'com.android.support:appcompat-v7:23.4.0'
+    implementation 'com.michaelpardo:activeandroid:3.1.0-SNAPSHOT'
+    implementation('com.crashlytics.sdk.android:crashlytics:2.7.1@aar') {
         transitive = true;
     }
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
 }
