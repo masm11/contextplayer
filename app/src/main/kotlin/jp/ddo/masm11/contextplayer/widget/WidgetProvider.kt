@@ -28,6 +28,8 @@ import android.os.Bundle
 import jp.ddo.masm11.contextplayer.R
 import jp.ddo.masm11.contextplayer.ui.ContextActivity
 import jp.ddo.masm11.contextplayer.service.PlayerService
+import jp.ddo.masm11.contextplayer.db.PlayContext
+import jp.ddo.masm11.contextplayer.db.Config
 
 import jp.ddo.masm11.logger.Log
 
@@ -38,11 +40,13 @@ class WidgetProvider : AppWidgetProvider() {
         for (i in appWidgetIds.indices)
             Log.d("appWidgetId=${appWidgetIds[i]}")
 
-        updateAppWidget(context, appWidgetIds, 0, null)
+        val contextId = Config.context_id
+        val ctxt = PlayContext.find(contextId)
+        var contextName: String? = null
+        if (ctxt != null)
+            contextName = ctxt.name
 
-        val intent = Intent(context, PlayerService::class.java)
-        intent.action = PlayerService.ACTION_UPDATE_APPWIDGET
-        context.startService(intent)
+        updateAppWidget(context, appWidgetIds, 0, contextName)
 
         Log.d("end.")
     }
@@ -81,7 +85,7 @@ class WidgetProvider : AppWidgetProvider() {
 
 		    intent = Intent(context, PlayerService::class.java)
 		    intent.action = PlayerService.ACTION_TOGGLE
-		    pendingIntent = PendingIntent.getService(context, 0, intent, 0)
+		    pendingIntent = PendingIntent.getForegroundService(context, 0, intent, 0)
 		    rv.setOnClickPendingIntent(R.id.widget_button, pendingIntent)
 
 		    if (icon != 0)
