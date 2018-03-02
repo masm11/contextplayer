@@ -33,6 +33,7 @@
     
     <!-- PlayerService.java -->
     <string name="playing">Playing %1$s&#8230;</string>
+    <string name="notification">Playing</string>
 
     <!-- ActionBarFragment.java -->
     <string name="about_url">file:///android_asset/about_this_app.html</string>

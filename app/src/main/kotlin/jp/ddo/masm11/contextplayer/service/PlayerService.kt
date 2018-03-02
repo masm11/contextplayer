@@ -19,6 +19,8 @@ package jp.ddo.masm11.contextplayer.service
 import android.support.v7.app.NotificationCompat
 import android.app.Service
 import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.TaskStackBuilder
 import android.media.MediaPlayer
@@ -101,6 +103,7 @@ class PlayerService : Service() {
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private var bluetoothHeadset: BluetoothHeadset? = null
     private lateinit var headsetMonitor: Thread
+    private lateinit var notificationManager: NotificationManager
 
     fun setOnStatusChangedListener(listener: OnStatusChangedListener) {
         Log.d("listener=${listener}")
@@ -108,6 +111,10 @@ class PlayerService : Service() {
     }
 
     override fun onCreate() {
+	notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+	val channel = NotificationChannel("notify_channel_1", getString(R.string.notification), NotificationManager.IMPORTANCE_LOW)
+	notificationManager.createNotificationChannel(channel)
+
         statusChangedListeners = MutableWeakSet<OnStatusChangedListener>()
 
         headsetReceiver = HeadsetReceiver()
@@ -782,10 +789,11 @@ class PlayerService : Service() {
             var contextName = "noname"
             if (ctxt != null)
                 contextName = ctxt.name
-            val builder = NotificationCompat.Builder(this)
+            val builder = Notification.Builder(this)
             builder.setContentTitle(resources.getString(R.string.app_name))
             builder.setContentText(resources.getString(R.string.playing, contextName))
             builder.setSmallIcon(R.drawable.notification)
+	    builder.setChannelId("notify_channel_1")
             val intent = Intent(this, MainActivity::class.java)
             val tsBuilder = TaskStackBuilder.create(this)
             tsBuilder.addParentStack(MainActivity::class.java)

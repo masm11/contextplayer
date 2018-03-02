@@ -32,6 +32,7 @@
     
     <!-- PlayerService.java -->
     <string name="playing">%1$sを再生中&#8230;</string>
+    <string name="notification">再生中</string>
 
     <!-- ActionBarFragment.java -->
     <string name="about_url">file:///android_asset/about_this_app_ja.html</string>
