@@ -146,9 +146,6 @@ class ContextActivity : AppCompatActivity() {
 
                         1    // delete
                         -> deleteContext(item)
-
-                        2    // create icon
-                        -> createIcon(item)
                     }
                 }
                 builder.show()
@@ -202,36 +199,6 @@ class ContextActivity : AppCompatActivity() {
                     }
                     builder.show()
                 }
-            }
-
-            private fun createIcon(item: Item) {
-                val editText = EditText(this@ContextActivity)
-                editText.inputType = InputType.TYPE_CLASS_TEXT
-                editText.setText(item.name)
-                val builder = AlertDialog.Builder(this@ContextActivity)
-                builder.setTitle(R.string.edit_the_icon_label)
-                builder.setView(editText)
-                builder.setNegativeButton(android.R.string.cancel) { _, _ ->
-                    // NOP.
-                }
-                builder.setPositiveButton(android.R.string.ok) { _, _ ->
-                    val label = editText.text.toString()
-                    val id = item.id
-
-                    val icon = Intent.ShortcutIconResource.fromContext(this@ContextActivity, R.drawable.launcher)
-
-                    val intent = Intent(Intent.ACTION_MAIN)
-                    intent.setClassName(this@ContextActivity, MainActivity::class.java.name)
-                    intent.putExtra("jp.ddo.masm11.contextplayer.CONTEXT_ID", id)
-
-                    val inst = Intent("com.android.launcher.action.INSTALL_SHORTCUT")
-                    inst.putExtra(Intent.EXTRA_SHORTCUT_INTENT, intent)
-                    inst.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, icon)
-                    inst.putExtra(Intent.EXTRA_SHORTCUT_NAME, label)
-
-                    sendBroadcast(inst)
-                }
-                builder.show()
             }
         })
 
