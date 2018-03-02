@@ -27,6 +27,7 @@ import android.media.MediaPlayer
 import android.media.MediaTimestamp
 import android.media.AudioAttributes
 import android.media.AudioManager
+import android.media.AudioFocusRequest
 import android.net.Uri
 import android.content.Intent
 import android.content.IntentFilter
@@ -93,6 +94,7 @@ class PlayerService : Service() {
     private lateinit var audioAttributes: AudioAttributes
     private var audioSessionId: Int = 0
     private lateinit var audioFocusChangeListener: AudioManager.OnAudioFocusChangeListener
+    private lateinit var audioFocusRequest: AudioFocusRequest
     private var broadcaster: Thread? = null
     private lateinit var handler: Handler
     private lateinit var statusChangedListeners: MutableSet<OnStatusChangedListener>
@@ -174,7 +176,12 @@ class PlayerService : Service() {
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         audioSessionId = audioManager.generateAudioSessionId()
 
-        audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange -> handleAudioFocusChangeEvent(focusChange) }
+        val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange -> handleAudioFocusChangeEvent(focusChange) }
+
+	val builder = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+	builder.setOnAudioFocusChangeListener(audioFocusChangeListener)
+	builder.setAudioAttributes(audioAttributes)
+	audioFocusRequest = builder.build()
 
         handler = Handler()
 
@@ -400,7 +407,7 @@ class PlayerService : Service() {
     private fun startPlay() {
         if (curPlayer != null) {
             Log.d("request audio focus.")
-            audioManager.requestAudioFocus(audioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
+            audioManager.requestAudioFocus(audioFocusRequest)
 
             Log.d("volume on.")
 	    volumeOnOff = 100
@@ -449,7 +456,7 @@ class PlayerService : Service() {
             updateAppWidget()
 
             Log.d("abandon audio focus.")
-            audioManager.abandonAudioFocus(audioFocusChangeListener)
+            audioManager.abandonAudioFocusRequest(audioFocusRequest)
 
             Log.d("save context")
             saveContext()
