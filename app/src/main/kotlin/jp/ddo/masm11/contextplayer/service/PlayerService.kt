@@ -801,8 +801,8 @@ class PlayerService : Service() {
             if (ctxt != null)
                 contextName = ctxt.name
             val builder = Notification.Builder(this, "notify_channel_1")
-            builder.setContentTitle(resources.getString(R.string.app_name))
-            builder.setContentText(resources.getString(R.string.playing, contextName))
+            builder.setStyle(Notification.BigTextStyle()
+		    .bigText(resources.getString(R.string.playing, contextName)))
             builder.setSmallIcon(R.drawable.notification)
             val intent = Intent(this, MainActivity::class.java)
             val tsBuilder = TaskStackBuilder.create(this)
