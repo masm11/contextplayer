@@ -28,6 +28,7 @@ import android.os.Bundle
 import jp.ddo.masm11.contextplayer.R
 import jp.ddo.masm11.contextplayer.ui.ContextActivity
 import jp.ddo.masm11.contextplayer.service.PlayerService
+import jp.ddo.masm11.contextplayer.db.AppDatabase
 import jp.ddo.masm11.contextplayer.db.PlayContext
 import jp.ddo.masm11.contextplayer.db.Config
 
@@ -40,8 +41,10 @@ class WidgetProvider : AppWidgetProvider() {
         for (i in appWidgetIds.indices)
             Log.d("appWidgetId=${appWidgetIds[i]}")
 
-        val contextId = Config.context_id
-        val ctxt = PlayContext.find(contextId)
+	val db = AppDatabase.getDB()
+
+        val contextId = db.configDao().getContextId()
+        val ctxt = db.playContextDao().find(contextId)
         var contextName: String? = null
         if (ctxt != null)
             contextName = ctxt.name

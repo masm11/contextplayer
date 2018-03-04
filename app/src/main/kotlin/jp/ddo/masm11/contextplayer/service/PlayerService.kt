@@ -51,6 +51,7 @@ import jp.ddo.masm11.contextplayer.util.WeakSet
 import jp.ddo.masm11.contextplayer.util.MutableWeakSet
 import jp.ddo.masm11.contextplayer.fs.MFile
 import jp.ddo.masm11.contextplayer.receiver.HeadsetReceiver
+import jp.ddo.masm11.contextplayer.db.AppDatabase
 import jp.ddo.masm11.contextplayer.db.PlayContext
 import jp.ddo.masm11.contextplayer.db.Config
 import jp.ddo.masm11.contextplayer.widget.WidgetProvider
@@ -84,6 +85,7 @@ class PlayerService : Service() {
         fun onStatusChanged(status: CurrentStatus)
     }
     
+    private lateinit var db: AppDatabase
     private var topDir: String = "/"
     private var playingPath: String? = null
     private var nextPath: String? = null
@@ -113,6 +115,8 @@ class PlayerService : Service() {
     }
 
     override fun onCreate() {
+	db = AppDatabase.getDB()
+	
 	notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 	val channel = NotificationChannel("notify_channel_1", getString(R.string.notification), NotificationManager.IMPORTANCE_LOW)
 	notificationManager.createNotificationChannel(channel)
@@ -792,7 +796,7 @@ class PlayerService : Service() {
     private fun setForeground(on: Boolean) {
         Log.d("on=${on}")
         if (on) {
-            val ctxt = PlayContext.find(contextId)
+            val ctxt = db.playContextDao().find(contextId)
             var contextName = "noname"
             if (ctxt != null)
                 contextName = ctxt.name
@@ -815,7 +819,7 @@ class PlayerService : Service() {
 
     private fun saveContext() {
         Log.d("contextId=${contextId}")
-        val ctxt = PlayContext.find(contextId)
+        val ctxt = db.playContextDao().find(contextId)
         if (ctxt != null && curPlayer != null) {
             Log.d("Id=${ctxt.id}")
             ctxt.path = playingPath
@@ -826,7 +830,7 @@ class PlayerService : Service() {
 	    ctxt.volume = volume
 	    Log.d("volume=${volume}")
             Log.d("ctxt saving...")
-            ctxt.save()
+            db.playContextDao().update(ctxt)
         }
     }
 
@@ -842,9 +846,9 @@ class PlayerService : Service() {
         setForeground(false)
 
         Log.d("getting context_id")
-        contextId = Config.context_id
+        contextId = db.configDao().getContextId()
         Log.d("contextId=${contextId}")
-        val ctxt = PlayContext.find(contextId)
+        val ctxt = db.playContextDao().find(contextId)
         if (ctxt != null) {
             playingPath = ctxt.path
             topDir = ctxt.topDir
@@ -947,7 +951,7 @@ class PlayerService : Service() {
     }
 
     private fun updateAppWidget() {
-        val ctxt = PlayContext.find(contextId)
+        val ctxt = db.playContextDao().find(contextId)
         var contextName: String? = null
         if (ctxt != null)
             contextName = ctxt.name

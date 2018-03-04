@@ -51,6 +51,7 @@ import jp.ddo.masm11.contextplayer.R
 import jp.ddo.masm11.contextplayer.service.PlayerService
 import jp.ddo.masm11.contextplayer.util.Metadata
 import jp.ddo.masm11.contextplayer.fs.MFile
+import jp.ddo.masm11.contextplayer.db.AppDatabase
 import jp.ddo.masm11.contextplayer.db.PlayContext
 import jp.ddo.masm11.contextplayer.db.Config
 
@@ -85,6 +86,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         }
     }
 
+    private lateinit var db: AppDatabase
     private var svc: PlayerService.PlayerServiceBinder? = null
     private var conn: ServiceConnection? = null
     private val rootDir = MFile("//")
@@ -100,17 +102,19 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+	db = AppDatabase.getDB()
+
         val fragMan = getFragmentManager()
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
         setSupportActionBar(frag.toolbar)
 
         Log.d("rootDir=${rootDir.absolutePath}")
-
-        if (PlayContext.all().size == 0) {
+	
+        if (db.playContextDao().getAll().size == 0) {
             val ctxt = PlayContext()
             ctxt.name = resources.getString(R.string.default_context)
             ctxt.topDir = rootDir.absolutePath
-            ctxt.save()
+            db.playContextDao().insert(ctxt)
         }
 
         context_name.setOnClickListener {
@@ -187,7 +191,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
                 val id = intent.getLongExtra("jp.ddo.masm11.contextplayer.CONTEXT_ID", -1)
 
                 if (id != -1L) {
-                    Config.context_id = id
+                    db.configDao().setContextId(id)
 
                     needSwitchContext = true
                 }
@@ -219,7 +223,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     }
 
     override fun onResume() {
-        val ctxt = PlayContext.find(Config.context_id)
+        val ctxt = db.playContextDao().find(db.configDao().getContextId())
         if (ctxt != null)
             context_name.text = ctxt.name
 

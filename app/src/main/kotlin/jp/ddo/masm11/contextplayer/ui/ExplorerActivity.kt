@@ -50,6 +50,7 @@ import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 
 import jp.ddo.masm11.contextplayer.R
+import jp.ddo.masm11.contextplayer.db.AppDatabase
 import jp.ddo.masm11.contextplayer.db.PlayContext
 import jp.ddo.masm11.contextplayer.db.Config
 import jp.ddo.masm11.contextplayer.util.Metadata
@@ -211,7 +212,8 @@ class ExplorerActivity : AppCompatActivity() {
 	    }
         }
     }
-
+    
+    private lateinit var db: AppDatabase
     private val rootDir: MFile = MFile("//")
     private var topDir: MFile = MFile("//")
     private var curDir: MFile = MFile("//")
@@ -224,7 +226,9 @@ class ExplorerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_explorer)
-
+	
+	db = AppDatabase.getDB()
+	
         val fragMan = getFragmentManager()
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
         setSupportActionBar(frag.toolbar)
@@ -233,9 +237,14 @@ class ExplorerActivity : AppCompatActivity() {
 
         adapter = FileAdapter(this, ArrayList<FileItem>())
 
-        val ctxtId = Config.context_id
-        ctxt = PlayContext.find(ctxtId) ?: PlayContext()
-
+        val ctxtId = db.configDao().getContextId()
+	var c = db.playContextDao().find(ctxtId)
+	if (c == null) {
+	    c = PlayContext()
+	    db.playContextDao().insert(c)
+	}
+        ctxt = c
+	
         bretr = BackgroundRetriever(adapter)
 	val t = Thread(bretr)
         thread = t
@@ -361,7 +370,7 @@ class ExplorerActivity : AppCompatActivity() {
 	ctxt.topDir = newDir.absolutePath
 	ctxt.path = null
 	ctxt.pos = 0
-	ctxt.save()
+	db.playContextDao().update(ctxt)
     }
 
     private fun renewAdapter(newDir: MFile) {

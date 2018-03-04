@@ -44,6 +44,7 @@ import kotlinx.android.synthetic.main.list_context.view.*
 
 import jp.ddo.masm11.contextplayer.R
 import jp.ddo.masm11.contextplayer.service.PlayerService
+import jp.ddo.masm11.contextplayer.db.AppDatabase
 import jp.ddo.masm11.contextplayer.db.PlayContext
 import jp.ddo.masm11.contextplayer.db.Config
 import jp.ddo.masm11.contextplayer.util.emptyMutableListOf
@@ -78,6 +79,7 @@ class ContextActivity : AppCompatActivity() {
         }
     }
 
+    private lateinit var db: AppDatabase
     private var conn: PlayerServiceConnection? = null
     private var svc: PlayerService.PlayerServiceBinder? = null
     private val rootDir = MFile("//")
@@ -109,13 +111,15 @@ class ContextActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_context)
-
+	
+	db = AppDatabase.getDB()
+	
         val fragMan = getFragmentManager()
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
         setSupportActionBar(frag.toolbar)
 
         items = emptyMutableListOf<Item>()
-        for (ctxt in PlayContext.all()) {
+        for (ctxt in db.playContextDao().getAll()) {
             val item = Item(ctxt.id!!, ctxt.name, ctxt.topDir, ctxt.path)
             items.add(item)
         }
@@ -128,7 +132,7 @@ class ContextActivity : AppCompatActivity() {
             val listView = parent as ListView
             val item = listView.getItemAtPosition(position) as Item
 	    
-            Config.context_id = item.id
+            db.configDao().setContextId(item.id)
 	    
             svc?.switchContext()
         }
@@ -165,12 +169,12 @@ class ContextActivity : AppCompatActivity() {
                 }
                 builder.setPositiveButton(android.R.string.ok) { _, _ ->
                     val newName = editText.text.toString()
-                    val ctxt = PlayContext.find(item.id)
+                    val ctxt = db.playContextDao().find(item.id)
 		    if (ctxt != null) {
 			ctxt.name = newName
-			ctxt.save()
+			db.playContextDao().update(ctxt)
 		    }
-
+		    
                     item.name = newName
                     adapter.notifyDataSetChanged()
                 }
@@ -185,9 +189,9 @@ class ContextActivity : AppCompatActivity() {
                         // NOP.
                     }
                     builder.setPositiveButton(android.R.string.ok) { _, _ ->
-                        val ctxt = PlayContext.find(item.id)
+                        val ctxt = db.playContextDao().find(item.id)
 			if (ctxt != null)
-                            ctxt.delete()
+                            db.playContextDao().delete(ctxt)
                         adapter.remove(item)
                     }
                     builder.show()
@@ -216,7 +220,7 @@ class ContextActivity : AppCompatActivity() {
                 val ctxt = PlayContext()
                 ctxt.name = newName
                 ctxt.topDir = rootDir.absolutePath
-                ctxt.save()
+		db.playContextDao().insert(ctxt)
 
                 val item = Item(ctxt.id!!, newName, ctxt.topDir, null)
                 adapter.add(item)

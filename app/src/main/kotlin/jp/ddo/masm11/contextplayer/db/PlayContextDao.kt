@@ -16,28 +16,26 @@
 */
 package jp.ddo.masm11.contextplayer.db
 
-import java.util.UUID
+import android.arch.persistence.room.Dao
+import android.arch.persistence.room.Query
+import android.arch.persistence.room.Insert
+import android.arch.persistence.room.Update
+import android.arch.persistence.room.Delete
 
-import android.support.annotation.NonNull
-import android.arch.persistence.room.Entity
-import android.arch.persistence.room.PrimaryKey
-import android.arch.persistence.room.ColumnInfo
-import android.arch.persistence.room.Index
-
-@Entity(indices = [ Index("key", unique = true) ])
-class Config {
-    constructor() {
-	val uuid = UUID.randomUUID()
-	val hi = uuid.getMostSignificantBits()
-	val lo = uuid.getLeastSignificantBits()
-	id = hi xor lo
-    }
+@Dao
+abstract class PlayContextDao {
+    @Query("SELECT * FROM PlayContext ORDER BY id")
+    abstract fun getAll(): List<PlayContext>
     
-    @PrimaryKey
-    var id: Long
+    @Insert
+    abstract fun insert(ctxt: PlayContext)
     
-    @NonNull
-    var key: String = ""
+    @Update
+    abstract fun update(ctxt: PlayContext)
     
-    var value: String = ""
+    @Delete
+    abstract fun delete(ctxt: PlayContext)
+    
+    @Query("SELECT * FROM PlayContext WHERE id = :id")
+    abstract fun find(id: Long): PlayContext?
 }

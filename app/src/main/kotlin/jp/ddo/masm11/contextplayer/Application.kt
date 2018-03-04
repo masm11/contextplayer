@@ -16,17 +16,21 @@
 */
 package jp.ddo.masm11.contextplayer
 
+import android.arch.persistence.room.Room
+
 import com.crashlytics.android.Crashlytics
 import io.fabric.sdk.android.Fabric
 
 import jp.ddo.masm11.logger.Log
+import jp.ddo.masm11.contextplayer.db.AppDatabase
 
-class Application : com.activeandroid.app.Application() {
+class Application : android.app.Application() {
     override fun onCreate() {
-	com.activeandroid.ActiveAndroid.setLoggingEnabled(true)
         super.onCreate()
-
+	
         Fabric.with(this, Crashlytics())
         Log.init(getExternalFilesDir(null), BuildConfig.DEBUG)
+	
+	AppDatabase.app = this
     }
 }

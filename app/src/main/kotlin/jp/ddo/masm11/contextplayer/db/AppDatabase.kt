@@ -16,28 +16,30 @@
 */
 package jp.ddo.masm11.contextplayer.db
 
-import java.util.UUID
+import android.content.Context
+import android.arch.persistence.room.Database
+import android.arch.persistence.room.RoomDatabase
+import android.arch.persistence.room.Room
 
-import android.support.annotation.NonNull
-import android.arch.persistence.room.Entity
-import android.arch.persistence.room.PrimaryKey
-import android.arch.persistence.room.ColumnInfo
-import android.arch.persistence.room.Index
+@Database(entities = [ Config::class, PlayContext::class ], version = 1)
+abstract class AppDatabase: RoomDatabase() {
+    abstract fun configDao(): ConfigDao
+    abstract fun playContextDao(): PlayContextDao
 
-@Entity(indices = [ Index("key", unique = true) ])
-class Config {
-    constructor() {
-	val uuid = UUID.randomUUID()
-	val hi = uuid.getMostSignificantBits()
-	val lo = uuid.getLeastSignificantBits()
-	id = hi xor lo
+    companion object {
+	var app: Context? = null
+	    set(value) {
+		field = value
+	    }
+	
+	private var appdb: AppDatabase? = null
+	fun getDB(): AppDatabase {
+	    var db = appdb
+	    if (db == null) {
+	        db = Room.databaseBuilder(app!!, AppDatabase::class.java, "ContextPlayer.db").allowMainThreadQueries().build()
+		appdb = db
+	    }
+	    return db
+	}
     }
-    
-    @PrimaryKey
-    var id: Long
-    
-    @NonNull
-    var key: String = ""
-    
-    var value: String = ""
 }

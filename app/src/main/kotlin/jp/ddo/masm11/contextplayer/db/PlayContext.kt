@@ -16,45 +16,37 @@
 */
 package jp.ddo.masm11.contextplayer.db
 
-import com.activeandroid.Model
-import com.activeandroid.query.Select
-import com.activeandroid.annotation.Column
-import com.activeandroid.annotation.Table
+import java.util.UUID
 
-@Table(name = "PlayContexts")
-class PlayContext: Model() {
+import android.support.annotation.NonNull
+import android.arch.persistence.room.Entity
+import android.arch.persistence.room.PrimaryKey
+import android.arch.persistence.room.ColumnInfo
+import android.arch.persistence.room.Index
+
+@Entity
+class PlayContext {
+    constructor() {
+	val uuid = UUID.randomUUID()
+	val hi = uuid.getMostSignificantBits()
+	val lo = uuid.getLeastSignificantBits()
+	id = hi xor lo
+    }
     
-    @Column(name = "name", notNull = true)
+    @PrimaryKey
+    var id: Long
+    
+    @NonNull
     var name: String = ""
     
-    @Column(name = "topdir", notNull = true)
+    @NonNull
     var topDir: String = ""
     
-    @Column(name = "path")
     var path: String? = null
     
-    @Column(name = "pos")
     var pos: Long = 0		// msec
     
-    @Column(name = "volume")
     var volume: Int = 100
-
-    companion object {
-	fun find(id: Long): PlayContext? {
-	    return Select()
-		    .from(PlayContext::class.java)
-		    .where("id = ?", id)
-		    .executeSingle()
-	}
-
-	fun all(): List<PlayContext> {
-	    val ctxts = Select()
-		    .from(PlayContext::class.java)
-		    .orderBy("id")
-		    .execute<PlayContext>()
-	    return ctxts.toList()
-	}
-    }
     
     override fun toString(): String {
 	return name
