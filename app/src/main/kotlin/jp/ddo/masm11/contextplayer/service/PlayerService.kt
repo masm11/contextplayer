@@ -16,7 +16,6 @@
 */
 package jp.ddo.masm11.contextplayer.service
 
-import android.support.v7.app.NotificationCompat
 import android.app.Service
 import android.app.Notification
 import android.app.NotificationChannel
