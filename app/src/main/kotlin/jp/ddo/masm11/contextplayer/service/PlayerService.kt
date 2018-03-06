@@ -103,7 +103,7 @@ class PlayerService : Service() {
     private var volume: Int = 0
     private var volumeDuck: Int = 0
     private var volumeOnOff: Int = 0
-    private lateinit var bluetoothAdapter: BluetoothAdapter
+    private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothHeadset: BluetoothHeadset? = null
     private lateinit var headsetMonitor: Thread
     private lateinit var notificationManager: NotificationManager
@@ -125,21 +125,24 @@ class PlayerService : Service() {
         headsetReceiver = HeadsetReceiver()
         registerReceiver(headsetReceiver, IntentFilter(AudioManager.ACTION_HEADSET_PLUG))
 
-	bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-	bluetoothAdapter.getProfileProxy(this, object: BluetoothProfile.ServiceListener {
-	    override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
-		if (profile == BluetoothProfile.HEADSET) {
-		    Log.i("Connected to bluetooth headset proxy.")
-		    bluetoothHeadset = proxy as BluetoothHeadset
+	val ba = BluetoothAdapter.getDefaultAdapter()
+	bluetoothAdapter = ba
+	if (ba != null) {
+	    ba.getProfileProxy(this, object: BluetoothProfile.ServiceListener {
+		override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
+		    if (profile == BluetoothProfile.HEADSET) {
+			Log.i("Connected to bluetooth headset proxy.")
+			bluetoothHeadset = proxy as BluetoothHeadset
+		    }
 		}
-	    }
-	    override fun onServiceDisconnected(profile: Int) {
-		if (profile == BluetoothProfile.HEADSET) {
-		    Log.i("Disconnected from bluetooth headset proxy.")
-		    bluetoothHeadset = null
+		override fun onServiceDisconnected(profile: Int) {
+		    if (profile == BluetoothProfile.HEADSET) {
+			Log.i("Disconnected from bluetooth headset proxy.")
+			bluetoothHeadset = null
+		    }
 		}
-	    }
-	}, BluetoothProfile.HEADSET)
+	    }, BluetoothProfile.HEADSET)
+	}
 
 	/* bluetooth headset への接続が切れたら、再生を停止する。
 	* intent だとかなり遅延することがあるので、
@@ -943,7 +946,9 @@ class PlayerService : Service() {
 	headsetMonitor.join()
 
 	if (bluetoothHeadset != null) {
-	    bluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothHeadset)
+	    val ba = bluetoothAdapter
+	    if (ba != null)
+		ba.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothHeadset)
 	}
 
         unregisterReceiver(headsetReceiver)
