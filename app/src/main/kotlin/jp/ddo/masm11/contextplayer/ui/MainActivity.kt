@@ -237,13 +237,16 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     }
 
     private fun updateTrackInfo(status: PlayerService.CurrentStatus) {
-        if (curPath != status.path) {
-            curPath = status.path
-
+	var p = status.path
+	if (p == null)
+	    p = "//"
+        if (curPath != p) {
+            curPath = p
+	    
             playing_filename.rootDir = rootDir.absolutePath
-            playing_filename.path = curPath
+            playing_filename.path = p
 
-            val meta = Metadata(MFile(curPath!!).file.absolutePath)
+            val meta = Metadata(MFile(p).file.absolutePath)
             var title: String? = null
             var artist: String? = null
             if (meta.extract()) {
