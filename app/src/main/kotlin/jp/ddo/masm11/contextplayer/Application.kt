@@ -28,6 +28,8 @@ class Application : android.app.Application() {
     override fun onCreate() {
         super.onCreate()
 	
+	com.squareup.leakcanary.LeakCanary.install(this);
+	
         Fabric.with(this, Crashlytics())
         Log.init(getExternalFilesDir(null), BuildConfig.DEBUG)
 	
