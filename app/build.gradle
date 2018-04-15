@@ -21,8 +21,8 @@ android {
         applicationId "jp.ddo.masm11.contextplayer"
         minSdkVersion 26
         targetSdkVersion 26
-        versionCode 40204
-        versionName "4.2.4"
+        versionCode 40206
+        versionName "4.2.6"
 	javaCompileOptions {
 	    annotationProcessorOptions {
 	        arguments = ["room.schemaLocation":
