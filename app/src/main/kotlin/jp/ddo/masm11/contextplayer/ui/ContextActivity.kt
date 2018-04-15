@@ -120,7 +120,7 @@ class ContextActivity : AppCompatActivity() {
 
         items = emptyMutableListOf<Item>()
         for (ctxt in db.playContextDao().getAll()) {
-            val item = Item(ctxt.id!!, ctxt.name, ctxt.topDir, ctxt.path)
+            val item = Item(ctxt.id, ctxt.name, ctxt.topDir, ctxt.path)
             items.add(item)
         }
 
@@ -222,7 +222,7 @@ class ContextActivity : AppCompatActivity() {
                 ctxt.topDir = rootDir.absolutePath
 		db.playContextDao().insert(ctxt)
 
-                val item = Item(ctxt.id!!, newName, ctxt.topDir, null)
+                val item = Item(ctxt.id, newName, ctxt.topDir, null)
                 adapter.add(item)
             }
             builder.show()
