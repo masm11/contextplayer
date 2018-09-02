@@ -134,10 +134,6 @@ path でソートして、その順に再生します。
 
 GPLv3 です。COPYING3 を参照してください。
 
-このアプリは Activeandroid を使用しています。
-Activeandroid のライセンスは Apache License 2.0 です。
-LICENSE-2.0.txt を参照してください。
-
 ## 作者
 
 Yuuki Harano &lt;masm@masm11.ddo.jp&gt;

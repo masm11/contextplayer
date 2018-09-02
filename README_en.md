@@ -127,9 +127,6 @@ If you find bugs, I'll fix them. Probably.
 
 GPLv3. See COPYING3.
 
-This app uses Activeandroid, whose license is Apache License 2.0.
-See LICENSE-2.0.txt.
-
 ## Author
 
 Yuuki Harano &lt;masm@masm11.ddo.jp&gt;
