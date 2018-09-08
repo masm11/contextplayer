@@ -372,7 +372,7 @@ class Player : Runnable {
     private fun startPlay() {
         if (curPlayer != null) {
             Log.d("request audio focus.")
-            // audioManager.requestAudioFocus(audioFocusRequest)
+            callAudioFocusRequestListener(true)
 
             Log.d("volume on.")
 	    volumeOnOff = 100
@@ -421,7 +421,7 @@ class Player : Runnable {
             callUpdateAppWidgetListener()
 
             Log.d("abandon audio focus.")
-            // audioManager.abandonAudioFocusRequest(audioFocusRequest)
+            callAudioFocusRequestListener(false)
 
             Log.d("save context")
             callSaveContextListener()
@@ -721,18 +721,26 @@ class Player : Runnable {
 	    updateAppWidgetListener()
 	}
     }
+    
+    private fun callAudioFocusRequestListener(onoff: Boolean) {
+	mainHandler.post {
+	    audioFocusRequestListener(onoff)
+	}
+    }
 
     private lateinit var saveContextListener: () -> Unit
     private lateinit var setForegroundListener: (Boolean) -> Unit
     private lateinit var startBroadcastListener: (Boolean) -> Unit
     private lateinit var updateAppWidgetListener: () -> Unit
+    private lateinit var audioFocusRequestListener: (Boolean) -> Unit
     
     companion object {
 	fun create(ctxt: Context, attr: AudioAttributes, aid: Int,
 		   saveContextListener: () -> Unit,
 		   setForegroundListener: (Boolean) -> Unit,
 		   startBroadcastListener: (Boolean) -> Unit,
-		   updateAppWidgetListener: () -> Unit) : Player {
+		   updateAppWidgetListener: () -> Unit,
+		   audioFocusRequestListener: (Boolean) -> Unit) : Player {
 	    val p = Player()
 	    p.mainHandler = Handler()
 	    p.ctxt = ctxt
@@ -742,6 +750,7 @@ class Player : Runnable {
 	    p.setForegroundListener = setForegroundListener
 	    p.startBroadcastListener = startBroadcastListener
 	    p.updateAppWidgetListener = updateAppWidgetListener
+	    p.audioFocusRequestListener = audioFocusRequestListener
 	    p.thr = Thread(p)
 	    p.thr.start()
 	    while (p.handler == null)
