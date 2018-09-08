@@ -106,11 +106,6 @@ class Player : Runnable {
 		}
 		OP_SET_TOPDIR -> {
 		    topDir = msg.obj as String
-		    // 「次の曲」が変わる可能性があるので、enqueue しなおす。
-		    if (curPlayer != null) {
-			Log.d("enqueue next player.")
-			enqueueNext()
-		    }
 		}
 	    }
 	}
@@ -124,10 +119,10 @@ class Player : Runnable {
 	}
     }
     
-    fun play() {
+    fun play(path: String?) {
 	val h = handler
 	if (h != null) {
-	    val msg = Message.obtain(h, OP_PLAY)
+	    val msg = Message.obtain(h, OP_PLAY, path)
 	    h.sendMessage(msg)
 	}
     }
@@ -156,7 +151,7 @@ class Player : Runnable {
 	}
     }
     
-    fun seekTo(pos: Int) {
+    fun seek(pos: Int) {
 	val h = handler
 	if (h != null) {
 	    val msg = Message.obtain(h, OP_SEEK, pos, 0)
