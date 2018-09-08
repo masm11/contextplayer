@@ -42,7 +42,7 @@ class Player : Runnable {
     
     class CreatedMediaPlayer (val mediaPlayer: MediaPlayer, val path: String)
     
-    data class PlayArgs(val path: String?, val pos: Int)
+    data class PlayArgs(val path: String?, val pos: Int, val start: Boolean)
 
     private val OP_PLAY = 1
     private val OP_STOP = 2
@@ -95,6 +95,7 @@ class Player : Runnable {
 		    val args = msg.obj as PlayArgs
 		    val path = args.path
 		    val pos = args.pos
+		    val start = args.start
 		    Log.i("path=${path}")
 
 		    Log.d("release nextPlayer")
@@ -163,11 +164,13 @@ class Player : Runnable {
 			Log.d("playingPath=${playingPath}")
 		    }
 
-		    Log.d("starting.")
-		    setMediaPlayerVolume()
-		    startPlay()
-		    Log.d("enqueue next player.")
-		    enqueueNext()
+		    if (start) {
+			Log.d("starting.")
+			setMediaPlayerVolume()
+			startPlay()
+			Log.d("enqueue next player.")
+			enqueueNext()
+		    }
 		}
 		OP_STOP -> {
 		    /* 再生を一時停止する。
@@ -273,7 +276,7 @@ class Player : Runnable {
     fun play(path: String?) {
 	val h = handler
 	if (h != null) {
-	    val args = PlayArgs(path, 0)
+	    val args = PlayArgs(path, 0, true)
 	    val msg = Message.obtain(h, OP_PLAY, args)
 	    h.sendMessage(msg)
 	}
@@ -354,7 +357,7 @@ class Player : Runnable {
     fun setFile(path: String?, pos: Int) {
 	val h = handler
 	if (h != null) {
-	    val args = PlayArgs(path, pos)
+	    val args = PlayArgs(path, pos, false)
 	    val msg = Message.obtain(h, OP_PLAY, args)
 	    h.sendMessage(msg)
 	}
