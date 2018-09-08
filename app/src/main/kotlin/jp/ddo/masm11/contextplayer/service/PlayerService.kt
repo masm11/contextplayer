@@ -87,7 +87,6 @@ class PlayerService : Service() {
     private lateinit var db: AppDatabase
     private var topDir: String = "/"
     private var playingPath: String? = null
-    private var nextPath: String? = null
     private var contextId: Long = 0
     private lateinit var audioManager: AudioManager
     private lateinit var audioAttributes: AudioAttributes
@@ -369,6 +368,11 @@ class PlayerService : Service() {
 	    volume = ctxt.volume
             Log.d("playingPath=${playingPath}")
             Log.d("topDir=${topDir}")
+	    player.setTopDir(topDir)
+	    val path = playingPath
+	    if (path != null)
+		player.setFile(path)
+	    player.setVolume(volume)
 
 /*
             if (playingPath != null) {
