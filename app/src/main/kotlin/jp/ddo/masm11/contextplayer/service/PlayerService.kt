@@ -187,6 +187,8 @@ class PlayerService : Service() {
 	    -> updateAppWidget()
 	}, {
 	    onoff -> if (onoff) audioManager.requestAudioFocus(audioFocusRequest) else audioManager.abandonAudioFocusRequest(audioFocusRequest)
+	}, {
+	    -> broadcastStatus()
 	})
 
         val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange -> handleAudioFocusChangeEvent(focusChange) }

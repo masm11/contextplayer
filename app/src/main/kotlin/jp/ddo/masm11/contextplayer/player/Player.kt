@@ -171,6 +171,7 @@ class Player : Runnable {
 			Log.d("enqueue next player.")
 			enqueueNext()
 		    }
+		    callOneshotBroadcastListener()
 		}
 		OP_STOP -> {
 		    /* 再生を一時停止する。
@@ -731,12 +732,19 @@ class Player : Runnable {
 	    audioFocusRequestListener(onoff)
 	}
     }
-
+    
+    private fun callOneshotBroadcastListener() {
+	mainHandler.post {
+	    oneshotBroadcastListener()
+	}
+    }
+    
     private lateinit var saveContextListener: () -> Unit
     private lateinit var setForegroundListener: (Boolean) -> Unit
     private lateinit var startBroadcastListener: (Boolean) -> Unit
     private lateinit var updateAppWidgetListener: () -> Unit
     private lateinit var audioFocusRequestListener: (Boolean) -> Unit
+    private lateinit var oneshotBroadcastListener: () -> Unit
     
     companion object {
 	fun create(ctxt: Context, attr: AudioAttributes, aid: Int,
@@ -744,7 +752,8 @@ class Player : Runnable {
 		   setForegroundListener: (Boolean) -> Unit,
 		   startBroadcastListener: (Boolean) -> Unit,
 		   updateAppWidgetListener: () -> Unit,
-		   audioFocusRequestListener: (Boolean) -> Unit) : Player {
+		   audioFocusRequestListener: (Boolean) -> Unit,
+		   oneshotBroadcastListener: () -> Unit) : Player {
 	    val p = Player()
 	    p.mainHandler = Handler()
 	    p.ctxt = ctxt
@@ -755,6 +764,7 @@ class Player : Runnable {
 	    p.startBroadcastListener = startBroadcastListener
 	    p.updateAppWidgetListener = updateAppWidgetListener
 	    p.audioFocusRequestListener = audioFocusRequestListener
+	    p.oneshotBroadcastListener = oneshotBroadcastListener
 	    p.thr = Thread(p)
 	    p.thr.start()
 	    while (p.handler == null)
