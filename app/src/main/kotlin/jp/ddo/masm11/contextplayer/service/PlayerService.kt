@@ -405,12 +405,6 @@ class PlayerService : Service() {
         }
     }
 
-    private fun seek(pos: Int) {
-        Log.d("pos=${pos}")
-        if (pos != -1 && curPlayer != null)
-            curPlayer!!.seekTo(pos)
-    }
-
     // curPlayer がセットされた状態で呼ばれ、
     // 再生を start する。
     private fun startPlay() {
