@@ -72,6 +72,7 @@ class Player : Runnable {
     private var new_volume: Int = 0
     
     private var handler: Handler? = null
+    private lateinit var mainHandler: Handler
     
     inner class MyHandler: Handler() {
 	override fun handleMessage(msg: Message) {
@@ -385,22 +386,22 @@ class Player : Runnable {
             }
 
             Log.d("set to foreground")
-            // setForeground(true)
+            callSetForegroundListener(true)
 
-            // startBroadcast()
+            callStartBroadcastListener(true)
 
-            // updateAppWidget()
+            callUpdateAppWidgetListener()
 
-            // saveContext()
+            callSaveContextListener()
         }
     }
 
     private fun stopPlay() {
         try {
-            // stopBroadcast()
+            callStartBroadcastListener(false)
 
             Log.d("set to non-foreground")
-            // setForeground(false)
+            callSetForegroundListener(false)
 
             Log.d("volume off.")
 	    volumeOnOff = 0
@@ -417,13 +418,13 @@ class Player : Runnable {
                     Log.d("already paused ${curPlayer}")
             }
 
-            // updateAppWidget()
+            callUpdateAppWidgetListener()
 
             Log.d("abandon audio focus.")
             // audioManager.abandonAudioFocusRequest(audioFocusRequest)
 
             Log.d("save context")
-            // saveContext()
+            callSaveContextListener()
         } catch (e: Exception) {
             Log.e("exception", e)
         }
@@ -500,7 +501,7 @@ class Player : Runnable {
                     nextPath = null
                     nextPlayer = null
 
-                    // saveContext()
+                    callSaveContextListener()
 
                     if (curPlayer != null) {
                         Log.d("enqueue next mediaplayer.")
@@ -534,7 +535,7 @@ class Player : Runnable {
                     enqueueNext()
                     setMediaPlayerVolume()
 
-                    // saveContext()
+                    callSaveContextListener()
 
                     true
                 })
@@ -684,10 +685,10 @@ class Player : Runnable {
                 }
             }
         }
-
+	
         return null
     }
-
+    
     private fun comparePath(p1: String, p2: String): Int {
         val l1 = p1.toLowerCase(Locale.getDefault())
         val l2 = p2.toLowerCase(Locale.getDefault())
@@ -697,13 +698,51 @@ class Player : Runnable {
         return r
     }
     
+    private fun callSaveContextListener() {
+	mainHandler.post {
+	    saveContextListener()
+	}
+    }
+    
+    private fun callSetForegroundListener(onoff: Boolean) {
+	mainHandler.post {
+	    setForegroundListener(onoff)
+	}
+    }
+    
+    private fun callStartBroadcastListener(onoff: Boolean) {
+	mainHandler.post {
+	    startBroadcastListener(onoff)
+	}
+    }
+    
+    private fun callUpdateAppWidgetListener() {
+	mainHandler.post {
+	    updateAppWidgetListener()
+	}
+    }
+
+    private lateinit var saveContextListener: () -> Unit
+    private lateinit var setForegroundListener: (Boolean) -> Unit
+    private lateinit var startBroadcastListener: (Boolean) -> Unit
+    private lateinit var updateAppWidgetListener: () -> Unit
+    
     companion object {
-	fun create(ctxt: Context, attr: AudioAttributes, aid: Int) : Player {
+	fun create(ctxt: Context, attr: AudioAttributes, aid: Int,
+		   saveContextListener: () -> Unit,
+		   setForegroundListener: (Boolean) -> Unit,
+		   startBroadcastListener: (Boolean) -> Unit,
+		   updateAppWidgetListener: () -> Unit) : Player {
 	    val p = Player()
-	    p.thr = Thread(p)
+	    p.mainHandler = Handler()
 	    p.ctxt = ctxt
 	    p.attr = attr
 	    p.aid = aid
+	    p.saveContextListener = saveContextListener
+	    p.setForegroundListener = setForegroundListener
+	    p.startBroadcastListener = startBroadcastListener
+	    p.updateAppWidgetListener = updateAppWidgetListener
+	    p.thr = Thread(p)
 	    p.thr.start()
 	    while (p.handler == null)
 	        Thread.sleep(100)
