@@ -74,195 +74,216 @@ class Player : Runnable {
     private var handler: Handler? = null
     private lateinit var mainHandler: Handler
     
-    inner class MyHandler: Handler() {
-	override fun handleMessage(msg: Message) {
+    inner class HandlerCallback: Handler.Callback {
+	override fun handleMessage(msg: Message): Boolean {
 	    Log.d("handleMessage: ${msg.what}")
 	    
 	    when (msg.what) {
-		OP_PLAY -> {
-		    /* 再生を開始する。
-		    *  - path が指定されている場合:
-		    *    → その path から開始し、再生できる曲を曲先頭から再生する。
-		    *  - path が指定されていない場合:
-		    *    - curPlayer != null の場合:
-		    *      → curPlayer.play() する。
-		    *    - curPlayer == null の場合:
-		    *      - playingPath != null の場合:
-		    *        → その path から開始し、再生できる曲を曲先頭から再生する。
-		    *      - playingPath == null の場合:
-		    *        → topDir 内で最初に再生できる曲を再生する。
-		    */
-		    val args = msg.obj as PlayArgs
-		    val path = args.path
-		    val pos = args.pos
-		    val start = args.start
-		    Log.i("path=${path}")
-
-		    Log.d("release nextPlayer")
+		OP_PLAY ->		handle_play(msg)
+		OP_STOP ->		handle_stop(msg)
+		OP_SEEK ->		handle_seek(msg)
+		OP_SET_VOLUME ->	handle_set_volume(msg)
+		OP_SET_TOPDIR ->	handle_set_topdir(msg)
+		OP_PREV ->		handle_prev(msg)
+		OP_NEXT ->		handle_next(msg)
+		OP_TOGGLE ->		handle_toggle(msg)
+		OP_FINISH ->		handle_finish(msg)
+		else -> return false
+	    }
+	    return true
+	}
+	
+	private fun handle_play(msg: Message) {
+	    /* 再生を開始する。
+	    *  - path が指定されている場合:
+	    *    → その path から開始し、再生できる曲を曲先頭から再生する。
+	    *  - path が指定されていない場合:
+	    *    - curPlayer != null の場合:
+	    *      → curPlayer.play() する。
+	    *    - curPlayer == null の場合:
+	    *      - playingPath != null の場合:
+	    *        → その path から開始し、再生できる曲を曲先頭から再生する。
+	    *      - playingPath == null の場合:
+	    *        → topDir 内で最初に再生できる曲を再生する。
+	    */
+	    val args = msg.obj as PlayArgs
+	    val path = args.path
+	    val pos = args.pos
+	    val start = args.start
+	    Log.i("path=${path}")
+	    
+	    Log.d("release nextPlayer")
+	    releaseNextPlayer()
+	    
+	    if (path != null) {
+		// path が指定された。
+		// その path から開始し、再生できる曲を曲先頭から再生する。
+		Log.d("path=${path}")
+		
+		Log.d("release curPlayer")
+		releaseCurPlayer()
+		
+		Log.d("createMediaPlayer")
+		val ret = createMediaPlayer(path, pos, false)
+		if (ret == null) {
+		    Log.w("No audio file found.")
+		    return
+		}
+		Log.d("createMediaPlayer OK.")
+		curPlayer = ret.mediaPlayer
+		playingPath = ret.path
+		Log.d("curPlayer=${curPlayer}")
+		Log.d("playingPath=${playingPath}")
+	    } else if (curPlayer != null) {
+		// path が指定されてない && 再生途中だった
+		// 再生再開
+		Log.d("curPlayer exists. starting it.")
+	    } else if (playingPath != null) {
+		// path が指定されてない && 再生途中でない && context に playingPath がある
+		// その path から開始し、再生できる曲を曲先頭から再生する。
+		Log.d("playingPath=${playingPath}")
+		
+		Log.d("release nextPlayer")
+		releaseCurPlayer()
+		
+		Log.d("creating mediaplayer.")
+		val ret = createMediaPlayer(playingPath, pos, false)
+		if (ret == null) {
+		    Log.w("No audio file found.")
+		    return
+		}
+		Log.d("creating mediaplayer OK.")
+		curPlayer = ret.mediaPlayer
+		playingPath = ret.path
+		Log.d("curPlayer=${curPlayer}")
+		Log.d("playingPath=${playingPath}")
+	    } else {
+		// 何もない
+		// topDir 内から再生できる曲を探し、曲先頭から再生する。
+		Log.d("none.")
+		
+		Log.d("release curPlayer.")
+		releaseCurPlayer()
+		
+		Log.d("creating mediaplayer.")
+		val ret = createMediaPlayer("", 0, false)
+		if (ret == null) {
+		    Log.w("No audio file found.")
+		    return
+		}
+		Log.d("creating mediaplayer OK.")
+		curPlayer = ret.mediaPlayer
+		playingPath = ret.path
+		Log.d("curPlayer=${curPlayer}")
+		Log.d("playingPath=${playingPath}")
+	    }
+	    
+	    if (start) {
+		Log.d("starting.")
+		setMediaPlayerVolume()
+		startPlay()
+		Log.d("enqueue next player.")
+		enqueueNext()
+	    }
+	    callOneshotBroadcastListener()
+	}
+	
+	private fun handle_stop(msg: Message) {
+	    /* 再生を一時停止する。
+	    *  - curPlayer != null の場合
+	    *    → pause() し、context を保存する
+	    *  - curPlayer == null の場合
+	    *    → 何もしない
+	    */
+	    Log.d("")
+	    stopPlay()
+	}
+	
+	private fun handle_seek(msg: Message) {
+	    val plr = curPlayer
+	    Log.d("pos=${msg.arg1}")
+	    if (msg.arg1 != -1 && plr != null)
+		plr.seekTo(msg.arg1)
+	}
+	
+	private fun handle_set_volume(msg: Message) {
+	    volume = msg.arg1
+	    val vol = volume.toFloat() / 100.0f
+	    if (curPlayer != null)
+		curPlayer!!.setVolume(vol, vol)
+	    if (nextPlayer != null)
+		nextPlayer!!.setVolume(vol, vol)
+	}
+	
+	private fun handle_set_topdir(msg: Message) {
+	    topDir = msg.obj as String
+	    // 「次の曲」が変わる可能性があるので、enqueue しなおす。
+	    if (curPlayer != null) {
+		Log.d("enqueue next player.")
+		enqueueNext()
+	    }
+	}
+	
+	private fun handle_prev(msg: Message) {
+	    val player: MediaPlayer? = curPlayer
+	    if (player != null) {
+		val pos = player.currentPosition
+		if (pos >= 3 * 1000)
+		    player.seekTo(0)
+		else {
 		    releaseNextPlayer()
-
-		    if (path != null) {
-			// path が指定された。
-			// その path から開始し、再生できる曲を曲先頭から再生する。
-			Log.d("path=${path}")
-
-			Log.d("release curPlayer")
-			releaseCurPlayer()
-
-			Log.d("createMediaPlayer")
-			val ret = createMediaPlayer(path, pos, false)
-			if (ret == null) {
-			    Log.w("No audio file found.")
-			    return
-			}
-			Log.d("createMediaPlayer OK.")
-			curPlayer = ret.mediaPlayer
-			playingPath = ret.path
-			Log.d("curPlayer=${curPlayer}")
-			Log.d("playingPath=${playingPath}")
-		    } else if (curPlayer != null) {
-			// path が指定されてない && 再生途中だった
-			// 再生再開
-			Log.d("curPlayer exists. starting it.")
-		    } else if (playingPath != null) {
-			// path が指定されてない && 再生途中でない && context に playingPath がある
-			// その path から開始し、再生できる曲を曲先頭から再生する。
-			Log.d("playingPath=${playingPath}")
-
-			Log.d("release nextPlayer")
-			releaseCurPlayer()
-
-			Log.d("creating mediaplayer.")
-			val ret = createMediaPlayer(playingPath, pos, false)
-			if (ret == null) {
-			    Log.w("No audio file found.")
-			    return
-			}
-			Log.d("creating mediaplayer OK.")
-			curPlayer = ret.mediaPlayer
-			playingPath = ret.path
-			Log.d("curPlayer=${curPlayer}")
-			Log.d("playingPath=${playingPath}")
-		    } else {
-			// 何もない
-			// topDir 内から再生できる曲を探し、曲先頭から再生する。
-			Log.d("none.")
-
-			Log.d("release curPlayer.")
-			releaseCurPlayer()
-
-			Log.d("creating mediaplayer.")
-			val ret = createMediaPlayer("", 0, false)
-			if (ret == null) {
-			    Log.w("No audio file found.")
-			    return
-			}
-			Log.d("creating mediaplayer OK.")
-			curPlayer = ret.mediaPlayer
-			playingPath = ret.path
-			Log.d("curPlayer=${curPlayer}")
-			Log.d("playingPath=${playingPath}")
-		    }
-
-		    if (start) {
-			Log.d("starting.")
-			setMediaPlayerVolume()
-			startPlay()
-			Log.d("enqueue next player.")
-			enqueueNext()
-		    }
-		    callOneshotBroadcastListener()
-		}
-		OP_STOP -> {
-		    /* 再生を一時停止する。
-		    *  - curPlayer != null の場合
-		    *    → pause() し、context を保存する
-		    *  - curPlayer == null の場合
-		    *    → 何もしない
-		    */
-		    Log.d("")
-		    stopPlay()
-		}
-		OP_SEEK -> {
-		    val plr = curPlayer
-		    Log.d("pos=${msg.arg1}")
-		    if (msg.arg1 != -1 && plr != null)
-		        plr.seekTo(msg.arg1)
-		}
-		OP_SET_VOLUME -> {
-		    volume = msg.arg1
-		    val vol = volume.toFloat() / 100.0f
-		    if (curPlayer != null)
-			curPlayer!!.setVolume(vol, vol)
-		    if (nextPlayer != null)
-			nextPlayer!!.setVolume(vol, vol)
-		}
-		OP_SET_TOPDIR -> {
-		    topDir = msg.obj as String
-		    // 「次の曲」が変わる可能性があるので、enqueue しなおす。
-		    if (curPlayer != null) {
-			Log.d("enqueue next player.")
-			enqueueNext()
-		    }
-		}
-		OP_PREV -> {
-		    val player: MediaPlayer? = curPlayer
-		    if (player != null) {
-			val pos = player.currentPosition
-			if (pos >= 3 * 1000)
-			    player.seekTo(0)
-			else {
-			    releaseNextPlayer()
-			    releaseCurPlayer()
-
-			    val ret = createMediaPlayer(selectPrev(playingPath), 0, true)
-			    if (ret == null) {
-				Log.w("No audio file.")
-				stopPlay()
-			    } else {
-				val mp = ret.mediaPlayer
-				curPlayer = mp
-				playingPath = ret.path
-				setMediaPlayerVolume()
-				mp.start()
-				enqueueNext()
-			    }
-			}
-		    }
-		}
-		OP_NEXT -> {
-		    if (curPlayer != null) {
-			releaseCurPlayer()
-
-			playingPath = nextPath
-			curPlayer = nextPlayer
-			nextPath = null
-			nextPlayer = null
-
-			if (curPlayer != null) {
-			    curPlayer!!.start()
-			    enqueueNext()
-			}
-		    }
-		}
-		OP_TOGGLE -> {
-		    Log.d("")
-		    if (curPlayer != null && curPlayer!!.isPlaying)
+		    releaseCurPlayer()
+		    
+		    val ret = createMediaPlayer(selectPrev(playingPath), 0, true)
+		    if (ret == null) {
+			Log.w("No audio file.")
 			stopPlay()
-		    else
-			play(null)
-		}
-		OP_FINISH -> {
-		    Looper.myLooper().quitSafely()
+		    } else {
+			val mp = ret.mediaPlayer
+			curPlayer = mp
+			playingPath = ret.path
+			setMediaPlayerVolume()
+			mp.start()
+			enqueueNext()
+		    }
 		}
 	    }
+	}
+    
+	private fun handle_next(msg: Message) {
+	    if (curPlayer != null) {
+		releaseCurPlayer()
+		
+		playingPath = nextPath
+		curPlayer = nextPlayer
+		nextPath = null
+		nextPlayer = null
+		
+		if (curPlayer != null) {
+		    curPlayer!!.start()
+		    enqueueNext()
+		}
+	    }
+	}
+	
+	private fun handle_toggle(msg: Message) {
+	    Log.d("")
+	    if (curPlayer != null && curPlayer!!.isPlaying)
+		stopPlay()
+	    else
+		play(null)
+	}
+	
+	private fun handle_finish(msg: Message) {
+	    Looper.myLooper().quitSafely()
 	}
     }
     
     override fun run() {
 	Looper.prepare()
-	handler = MyHandler()
+	handler = Handler(HandlerCallback())
 	Looper.loop()
+	Log.d("thread exiting.")
     }
     
     fun finish() {
