@@ -69,7 +69,6 @@ class Player : Runnable {
     private var curPlayer: MediaPlayer? = null
     private var nextPlayer: MediaPlayer? = null
     private var volume: Int = 0
-    private var volumeOnOff: Int = 0
     
     private var handler: Handler? = null
     private lateinit var mainHandler: Handler
@@ -374,8 +373,6 @@ class Player : Runnable {
             Log.d("request audio focus.")
             callAudioFocusRequestListener(true)
 
-            Log.d("volume on.")
-	    volumeOnOff = 100
             // setMediaPlayerVolume()
 
             try {
@@ -403,8 +400,6 @@ class Player : Runnable {
             Log.d("set to non-foreground")
             callSetForegroundListener(false)
 
-            Log.d("volume off.")
-	    volumeOnOff = 0
             // setMediaPlayerVolume()
 
             if (curPlayer != null) {
