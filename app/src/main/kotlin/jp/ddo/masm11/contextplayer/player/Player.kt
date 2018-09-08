@@ -318,11 +318,11 @@ class Player : Runnable {
 	}
     }
     
-    val currentPosition : Int
+    val currentPosition : Long
     get() {
 	val plr = curPlayer
 	if (plr != null)
-	    return plr.currentPosition
+	    return plr.currentPosition.toLong()
 	return 0
     }
     
