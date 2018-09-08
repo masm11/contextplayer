@@ -78,17 +78,101 @@ class Player : Runnable {
 	    
 	    when (msg.what) {
 		OP_PLAY -> {
-		    if (curPlayer == null) {
-			val plr = MediaPlayer.create(ctxt, Uri.parse("file:///storage/7FFA-1D1A/Music/claris/best1/claris_best1_01.ogg"), null, attr, aid)
-			plr.start()
-			curPlayer = plr
+		    /* 再生を開始する。
+		    *  - path が指定されている場合:
+		    *    → その path から開始し、再生できる曲を曲先頭から再生する。
+		    *  - path が指定されていない場合:
+		    *    - curPlayer != null の場合:
+		    *      → curPlayer.play() する。
+		    *    - curPlayer == null の場合:
+		    *      - playingPath != null の場合:
+		    *        → その path から開始し、再生できる曲を曲先頭から再生する。
+		    *      - playingPath == null の場合:
+		    *        → topDir 内で最初に再生できる曲を再生する。
+		    */
+		    Log.i("path=${path}")
+
+		    Log.d("release nextPlayer")
+		    releaseNextPlayer()
+
+		    if (path != null) {
+			// path が指定された。
+			// その path から開始し、再生できる曲を曲先頭から再生する。
+			Log.d("path=${path}")
+
+			Log.d("release curPlayer")
+			releaseCurPlayer()
+
+			Log.d("createMediaPlayer")
+			val ret = createMediaPlayer(path, 0, false)
+			if (ret == null) {
+			    Log.w("No audio file found.")
+			    return
+			}
+			Log.d("createMediaPlayer OK.")
+			curPlayer = ret.mediaPlayer
+			playingPath = ret.path
+			Log.d("curPlayer=${curPlayer}")
+			Log.d("playingPath=${playingPath}")
+		    } else if (curPlayer != null) {
+			// path が指定されてない && 再生途中だった
+			// 再生再開
+			Log.d("curPlayer exists. starting it.")
+		    } else if (playingPath != null) {
+			// path が指定されてない && 再生途中でない && context に playingPath がある
+			// その path から開始し、再生できる曲を曲先頭から再生する。
+			Log.d("playingPath=${playingPath}")
+
+			Log.d("release nextPlayer")
+			releaseCurPlayer()
+
+			Log.d("creating mediaplayer.")
+			val ret = createMediaPlayer(playingPath, 0, false)
+			if (ret == null) {
+			    Log.w("No audio file found.")
+			    return
+			}
+			Log.d("creating mediaplayer OK.")
+			curPlayer = ret.mediaPlayer
+			playingPath = ret.path
+			Log.d("curPlayer=${curPlayer}")
+			Log.d("playingPath=${playingPath}")
+		    } else {
+			// 何もない
+			// topDir 内から再生できる曲を探し、曲先頭から再生する。
+			Log.d("none.")
+
+			Log.d("release curPlayer.")
+			releaseCurPlayer()
+
+			Log.d("creating mediaplayer.")
+			val ret = createMediaPlayer("", 0, false)
+			if (ret == null) {
+			    Log.w("No audio file found.")
+			    return
+			}
+			Log.d("creating mediaplayer OK.")
+			curPlayer = ret.mediaPlayer
+			playingPath = ret.path
+			Log.d("curPlayer=${curPlayer}")
+			Log.d("playingPath=${playingPath}")
 		    }
+
+		    Log.d("starting.")
+		    setMediaPlayerVolume()
+		    startPlay()
+		    Log.d("enqueue next player.")
+		    enqueueNext()
 		}
 		OP_STOP -> {
-		    val plr = curPlayer
-		    curPlayer = null
-		    if (plr != null)
-			plr.pause()
+		    /* 再生を一時停止する。
+		    *  - curPlayer != null の場合
+		    *    → pause() し、context を保存する
+		    *  - curPlayer == null の場合
+		    *    → 何もしない
+		    */
+		    Log.d("")
+		    stopPlay()
 		}
 		OP_SEEK -> {
 		    val plr = curPlayer
@@ -97,16 +181,65 @@ class Player : Runnable {
 		        plr.seekTo(msg.arg1)
 		}
 		OP_SET_VOLUME -> {
-		    val plr = curPlayer
-		    if (plr != null)
-			plr.setVolume(msg.arg1.toFloat() / 100.0f, msg.arg1.toFloat() / 100.0f)
 		    volume = msg.arg1
+		    val vol = volume.toFloat() / 100.0f
+		    if (curPlayer != null)
+			curPlayer!!.setVolume(vol, vol)
+		    if (nextPlayer != null)
+			nextPlayer!!.setVolume(vol, vol)
 		}
 		OP_SET_FILE -> {
 		    playingPath = msg.obj as String
 		}
 		OP_SET_TOPDIR -> {
 		    topDir = msg.obj as String
+		}
+		OP_PREV -> {
+		    val player: MediaPlayer? = curPlayer
+		    if (player != null) {
+			val pos = player.currentPosition
+			if (pos >= 3 * 1000)
+			    player.seekTo(0)
+			else {
+			    releaseNextPlayer()
+			    releaseCurPlayer()
+
+			    val ret = createMediaPlayer(selectPrev(playingPath), 0, true)
+			    if (ret == null) {
+				Log.w("No audio file.")
+				stopPlay()
+			    } else {
+				val mp = ret.mediaPlayer
+				curPlayer = mp
+				playingPath = ret.path
+				setMediaPlayerVolume()
+				mp.start()
+				enqueueNext()
+			    }
+			}
+		    }
+		}
+		OP_NEXT -> {
+		    if (curPlayer != null) {
+			releaseCurPlayer()
+
+			playingPath = nextPath
+			curPlayer = nextPlayer
+			nextPath = null
+			nextPlayer = null
+
+			if (curPlayer != null) {
+			    curPlayer!!.start()
+			    enqueueNext()
+			}
+		    }
+		}
+		OP_TOGGLE -> {
+		    Log.d("")
+		    if (curPlayer != null && curPlayer!!.isPlaying)
+			pause()
+		    else
+			play(null)
 		}
 	    }
 	}
@@ -206,6 +339,73 @@ class Player : Runnable {
 	    val msg = Message.obtain(h, OP_SET_TOPDIR, path)
 	    h.sendMessage(msg)
 	}
+    }
+
+    // curPlayer がセットされた状態で呼ばれ、
+    // 再生を start する。
+    private fun startPlay() {
+        if (curPlayer != null) {
+            Log.d("request audio focus.")
+            audioManager.requestAudioFocus(audioFocusRequest)
+
+            Log.d("volume on.")
+	    volumeOnOff = 100
+            setMediaPlayerVolume()
+
+            try {
+                Log.d("starting.")
+                curPlayer!!.start()
+            } catch (e: Exception) {
+                Log.e("exception", e)
+            }
+
+            Log.d("set to foreground")
+            setForeground(true)
+
+            startBroadcast()
+
+            updateAppWidget()
+
+            saveContext()
+        }
+    }
+
+    private fun stopPlay() {
+        try {
+            stopBroadcast()
+
+            Log.d("set to non-foreground")
+            setForeground(false)
+
+            Log.d("volume off.")
+	    volumeOnOff = 0
+            setMediaPlayerVolume()
+
+            if (curPlayer != null) {
+                /* paused から pause() は問題ないが、
+		 * prepared から pause() は正しくないみたい。
+		 */
+                if (curPlayer!!.isPlaying) {
+                    Log.d("pause ${curPlayer}")
+                    curPlayer!!.pause()
+                } else
+                    Log.d("already paused ${curPlayer}")
+            }
+
+            updateAppWidget()
+
+            Log.d("abandon audio focus.")
+            audioManager.abandonAudioFocusRequest(audioFocusRequest)
+
+            Log.d("save context")
+            saveContext()
+        } catch (e: Exception) {
+            Log.e("exception", e)
+        }
+
+    }
+
+    private fun setMediaPlayerVolume() {
     }
     
     companion object {
