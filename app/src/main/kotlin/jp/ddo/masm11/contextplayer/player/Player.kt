@@ -60,16 +60,16 @@ class Player : Runnable {
     private var aid: Int = 0
     
     private var topDir = "/"
-    private var playingPath: String? = null
+    var playingPath: String? = null
+    get() = field
+    private set(path) {
+	field = path
+    }
     private var nextPath: String? = null
     private var curPlayer: MediaPlayer? = null
     private var nextPlayer: MediaPlayer? = null
     private var volume: Int = 0
     private var volumeOnOff: Int = 0
-    
-    private var new_topDir = "/"
-    private var new_playingPath: String? = null
-    private var new_volume: Int = 0
     
     private var handler: Handler? = null
     private lateinit var mainHandler: Handler
