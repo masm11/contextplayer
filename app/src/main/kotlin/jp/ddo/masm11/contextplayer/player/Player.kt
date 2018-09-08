@@ -188,7 +188,7 @@ class Player : Runnable {
 	    callOneshotBroadcastListener()
 	}
 	
-	private fun handle_stop(msg: Message) {
+	private fun handle_stop(@Suppress("UNUSED_PARAMETER") msg: Message) {
 	    /* 再生を一時停止する。
 	    *  - curPlayer != null の場合
 	    *    → pause() し、context を保存する
@@ -224,7 +224,7 @@ class Player : Runnable {
 	    }
 	}
 	
-	private fun handle_prev(msg: Message) {
+	private fun handle_prev(@Suppress("UNUSED_PARAMETER") msg: Message) {
 	    val player: MediaPlayer? = curPlayer
 	    if (player != null) {
 		val pos = player.currentPosition
@@ -249,8 +249,8 @@ class Player : Runnable {
 		}
 	    }
 	}
-    
-	private fun handle_next(msg: Message) {
+	
+	private fun handle_next(@Suppress("UNUSED_PARAMETER") msg: Message) {
 	    if (curPlayer != null) {
 		releaseCurPlayer()
 		
@@ -266,7 +266,7 @@ class Player : Runnable {
 	    }
 	}
 	
-	private fun handle_toggle(msg: Message) {
+	private fun handle_toggle(@Suppress("UNUSED_PARAMETER") msg: Message) {
 	    Log.d("")
 	    if (curPlayer != null && curPlayer!!.isPlaying)
 		stopPlay()
@@ -274,7 +274,7 @@ class Player : Runnable {
 		play(null)
 	}
 	
-	private fun handle_finish(msg: Message) {
+	private fun handle_finish(@Suppress("UNUSED_PARAMETER") msg: Message) {
 	    Looper.myLooper().quitSafely()
 	}
     }
