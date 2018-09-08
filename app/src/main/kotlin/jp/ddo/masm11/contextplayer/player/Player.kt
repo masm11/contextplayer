@@ -42,11 +42,12 @@ class Player : Runnable {
     
     class CreatedMediaPlayer (val mediaPlayer: MediaPlayer, val path: String)
     
+    data class PlayArgs(val path: String?, val pos: Int)
+
     private val OP_PLAY = 1
     private val OP_STOP = 2
     private val OP_SEEK = 3
     private val OP_SET_VOLUME = 4
-    private val OP_SET_FILE = 5
     private val OP_SET_TOPDIR = 6
     private val OP_PREV = 7
     private val OP_NEXT = 8
@@ -91,7 +92,9 @@ class Player : Runnable {
 		    *      - playingPath == null の場合:
 		    *        → topDir 内で最初に再生できる曲を再生する。
 		    */
-		    val path = msg.obj as String?
+		    val args = msg.obj as PlayArgs
+		    val path = args.path
+		    val pos = args.pos
 		    Log.i("path=${path}")
 
 		    Log.d("release nextPlayer")
@@ -106,7 +109,7 @@ class Player : Runnable {
 			releaseCurPlayer()
 
 			Log.d("createMediaPlayer")
-			val ret = createMediaPlayer(path, 0, false)
+			val ret = createMediaPlayer(path, pos, false)
 			if (ret == null) {
 			    Log.w("No audio file found.")
 			    return
@@ -129,7 +132,7 @@ class Player : Runnable {
 			releaseCurPlayer()
 
 			Log.d("creating mediaplayer.")
-			val ret = createMediaPlayer(playingPath, 0, false)
+			val ret = createMediaPlayer(playingPath, pos, false)
 			if (ret == null) {
 			    Log.w("No audio file found.")
 			    return
@@ -189,9 +192,6 @@ class Player : Runnable {
 			curPlayer!!.setVolume(vol, vol)
 		    if (nextPlayer != null)
 			nextPlayer!!.setVolume(vol, vol)
-		}
-		OP_SET_FILE -> {
-		    playingPath = msg.obj as String
 		}
 		OP_SET_TOPDIR -> {
 		    topDir = msg.obj as String
@@ -273,7 +273,8 @@ class Player : Runnable {
     fun play(path: String?) {
 	val h = handler
 	if (h != null) {
-	    val msg = Message.obtain(h, OP_PLAY, path)
+	    val args = PlayArgs(path, 0)
+	    val msg = Message.obtain(h, OP_PLAY, args)
 	    h.sendMessage(msg)
 	}
     }
@@ -350,10 +351,11 @@ class Player : Runnable {
 	}
     }
     
-    fun setFile(path: String) {
+    fun setFile(path: String?, pos: Int) {
 	val h = handler
 	if (h != null) {
-	    val msg = Message.obtain(h, OP_SET_FILE, path)
+	    val args = PlayArgs(path, pos)
+	    val msg = Message.obtain(h, OP_PLAY, args)
 	    h.sendMessage(msg)
 	}
     }
