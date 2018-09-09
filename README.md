@@ -136,4 +136,4 @@ GPLv3 です。COPYING3 を参照してください。
 
 ## 作者
 
-Yuuki Harano &lt;masm@masm11.ddo.jp&gt;
+Yuuki Harano &lt;masm+github@masm11.me&gt;

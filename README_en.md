@@ -129,4 +129,4 @@ GPLv3. See COPYING3.
 
 ## Author
 
-Yuuki Harano &lt;masm@masm11.ddo.jp&gt;
+Yuuki Harano &lt;masm+github@masm11.me&gt;
