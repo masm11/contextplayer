@@ -91,7 +91,7 @@ class PlayerService : Service() {
     private lateinit var audioFocusRequest: AudioFocusRequest
     private var broadcaster: Thread? = null
     private lateinit var handler: Handler
-    private lateinit var statusChangedListeners: MutableSet<OnStatusChangedListener>
+    private lateinit var statusChangedListeners: MutableSet<(CurrentStatus) -> Unit>
     private lateinit var headsetReceiver: BroadcastReceiver
     private var volume: Int = 0
     private var volumeDuck: Int = 0
@@ -101,7 +101,7 @@ class PlayerService : Service() {
     private lateinit var notificationManager: NotificationManager
     private lateinit var player: Player
 
-    fun setOnStatusChangedListener(listener: OnStatusChangedListener) {
+    fun setOnStatusChangedListener(listener: (CurrentStatus) -> Unit) {
         Log.d("listener=${listener}")
         statusChangedListeners.add(listener)
     }
@@ -113,7 +113,7 @@ class PlayerService : Service() {
 	val channel = NotificationChannel("notify_channel_1", getString(R.string.notification), NotificationManager.IMPORTANCE_LOW)
 	notificationManager.createNotificationChannel(channel)
 
-        statusChangedListeners = MutableWeakSet<OnStatusChangedListener>()
+        statusChangedListeners = MutableWeakSet<(CurrentStatus) -> Unit>()
 
         headsetReceiver = HeadsetReceiver()
         registerReceiver(headsetReceiver, IntentFilter(AudioManager.ACTION_HEADSET_PLUG))
@@ -223,7 +223,7 @@ class PlayerService : Service() {
     }
 
     inner class PlayerServiceBinder : Binder() {
-        fun setOnStatusChangedListener(listener: OnStatusChangedListener) {
+        fun setOnStatusChangedListener(listener: (CurrentStatus) -> Unit) {
             this@PlayerService.setOnStatusChangedListener(listener)
         }
 
@@ -438,7 +438,7 @@ class PlayerService : Service() {
         val status = buildCurrentStatus()
         for (listener in statusChangedListeners) {
             // Log.d("listener=${listener}")
-            listener.onStatusChanged(status)
+            listener(status)
         }
     }
 
