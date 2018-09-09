@@ -51,6 +51,7 @@ import jp.ddo.masm11.contextplayer.R
 import jp.ddo.masm11.logger.Log
 
 class ActionBarFragment : Fragment() {
+/*
     private inner class WebAppInterface(private val context: Context) {
         val appVersion: String
             @JavascriptInterface
@@ -60,7 +61,7 @@ class ActionBarFragment : Fragment() {
                 return pi.versionName
             }
     }
-
+*/
     var toolbar: Toolbar? = null
         private set
 
@@ -68,7 +69,9 @@ class ActionBarFragment : Fragment() {
         Log.d("")
         super.onCreate(savedInstanceState)
 
-        setHasOptionsMenu(true)
+	// xml ファイルに attribute を書きたい…
+	if (context::class != AboutActivity::class)
+            setHasOptionsMenu(true)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -87,6 +90,9 @@ class ActionBarFragment : Fragment() {
         when (item.itemId) {
             R.id.action_about -> {
                 val context = context
+		val i = Intent(context, AboutActivity::class.java)
+		context.startActivity(i)
+/*
                 val builder = AlertDialog.Builder(context)
                 val inflater = activity.layoutInflater
 
@@ -103,6 +109,7 @@ class ActionBarFragment : Fragment() {
                     // NOP
                 }
                 builder.show()
+*/
                 return true
             }
 

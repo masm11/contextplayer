@@ -26,6 +26,8 @@
 	
         <activity android:name=".ui.ContextActivity"/>
 	
+        <activity android:name=".ui.AboutActivity"/>
+	
         <service android:name=".service.PlayerService"/>
 	
 	<receiver android:name=".widget.WidgetProvider">
