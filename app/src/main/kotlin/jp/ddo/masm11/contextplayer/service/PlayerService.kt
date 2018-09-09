@@ -301,12 +301,15 @@ class PlayerService : Service() {
      * context を読み出し、再生を再開する。
      */
     private fun switchContext() {
+        Log.d("save context.")
 	saveContext()
+        Log.d("player stopping.")
         player.stop()
 
         Log.d("load context.")
         loadContext()
 
+        Log.d("start playing.")
 	player.play(null)
     }
 
@@ -364,40 +367,9 @@ class PlayerService : Service() {
 	    player.setTopDir(topDir)
 	    player.setFile(path, ctxt.pos.toInt())
 	    setPlayerVolume()
-
-/*
-            if (playingPath != null) {
-                Log.d("creating mediaplayer.")
-                val ret = createMediaPlayer(playingPath, ctxt.pos.toInt(), false)
-                if (ret == null) {
-                    Log.w("No audio file found.")
-                    return
-                }
-                Log.d("creating mediaplayer. ok.")
-                curPlayer = ret.mediaPlayer
-                playingPath = ret.path
-                Log.d("curPlayer=${curPlayer}")
-                Log.d("playingPath=${playingPath}")
-                setPlayerVolume()
-            } else {
-                // 作られたばかりの context の場合。
-                Log.d("creating mediaplayer.")
-                val ret = createMediaPlayer("", 0, false)
-                if (ret == null) {
-                    Log.w("No audio file found.")
-                    return
-                }
-                Log.d("creating mediaplayer. ok.")
-                curPlayer = ret.mediaPlayer
-                playingPath = ret.path
-                Log.d("curPlayer=${curPlayer}")
-                Log.d("playingPath=${playingPath}")
-                setPlayerVolume()
-            }
-*/
         }
     }
-
+    
     private fun startBroadcast() {
         val code = Runnable {
             try {
@@ -415,7 +387,7 @@ class PlayerService : Service() {
         broadcaster = thr
         thr.start()
     }
-
+    
     private fun stopBroadcast() {
 	val thr = broadcaster
         if (thr != null) {
@@ -429,7 +401,7 @@ class PlayerService : Service() {
             broadcaster = null
         }
     }
-
+    
     private fun broadcastStatus() {
         val status = buildCurrentStatus()
         for (listener in statusChangedListeners) {
@@ -437,21 +409,17 @@ class PlayerService : Service() {
             listener(status)
         }
     }
-
+    
     private val currentStatus: CurrentStatus
         get() = buildCurrentStatus()
-
+    
     override fun onDestroy() {
         Log.d("save context")
         saveContext()
-
-        Log.d("release nextPlayer.")
+	
+        Log.d("stopping player.")
 	player.stop()
-        // releaseNextPlayer()
-        // stopPlay()
-        Log.d("release curPlayer.")
-        // releaseCurPlayer()
-
+	
 	headsetMonitor.interrupt()
 	headsetMonitor.join()
 
@@ -460,28 +428,28 @@ class PlayerService : Service() {
 	    if (ba != null)
 		ba.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothHeadset)
 	}
-
+	
         unregisterReceiver(headsetReceiver)
     }
-
+    
     private fun updateAppWidget() {
         val ctxt = db.playContextDao().find(contextId)
         var contextName: String? = null
         if (ctxt != null)
             contextName = ctxt.name
-
+	
         var icon = android.R.drawable.ic_media_play
         if (player.isPlaying)
             icon = android.R.drawable.ic_media_pause
-
+	
         WidgetProvider.updateAppWidget(this, null, icon, contextName)
     }
-
+    
     private fun setVolume(volume: Int) {
         this.volume = volume
         setPlayerVolume()
     }
-
+    
     companion object {
         val ACTION_A2DP_DISCONNECTED = "jp.ddo.masm11.contextplayer.A2DP_DISCONNECTED"
         val ACTION_HEADSET_UNPLUGGED = "jp.ddo.masm11.contextplayer.HEADSET_UNPLUGGED"
