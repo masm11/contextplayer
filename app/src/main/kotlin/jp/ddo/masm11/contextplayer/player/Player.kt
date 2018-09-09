@@ -16,21 +16,14 @@
 */
 package jp.ddo.masm11.contextplayer.player
 
-import android.app.PendingIntent
-import android.app.TaskStackBuilder
 import android.media.MediaPlayer
-import android.media.MediaTimestamp
 import android.media.AudioAttributes
-import android.media.AudioManager
-import android.media.AudioFocusRequest
 import android.net.Uri
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
 
-import jp.ddo.masm11.contextplayer.R
-import jp.ddo.masm11.contextplayer.ui.MainActivity
 import jp.ddo.masm11.contextplayer.ui.ExplorerActivity
 import jp.ddo.masm11.contextplayer.fs.MFile
 
