@@ -68,8 +68,9 @@ class ContextActivity : AppCompatActivity() {
         }
 
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            svc = service as PlayerService.PlayerServiceBinder
-            svc!!.setOnStatusChangedListener(listener)
+            val s = service as PlayerService.PlayerServiceBinder
+	    svc = s
+	    s.setOnStatusChangedListener(listener)
         }
 
         override fun onServiceDisconnected(name: ComponentName) {

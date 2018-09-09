@@ -31,6 +31,6 @@ class Application : android.app.Application() {
         Fabric.with(this, Crashlytics())
         Log.init(getExternalFilesDir(null), BuildConfig.DEBUG)
 	
-	AppDatabase.app = this
+	AppDatabase.setApplication(this)
     }
 }

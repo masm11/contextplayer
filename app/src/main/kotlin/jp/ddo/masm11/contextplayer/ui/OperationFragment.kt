@@ -83,12 +83,16 @@ class OperationFragment : Fragment() {
         context.startService(Intent(context, PlayerService::class.java))
 
         val intent = Intent(context, PlayerService::class.java)
-        conn = PlayerServiceConnection()
-        context.bindService(intent, conn!!, Service.BIND_AUTO_CREATE)
+	val c = PlayerServiceConnection()
+        conn = c
+        context.bindService(intent, c, Service.BIND_AUTO_CREATE)
     }
 
     override fun onStop() {
-        context.unbindService(conn!!)
+	val c = conn
+	if (c != null)
+	    context.unbindService(c)
+	conn = null
 
         super.onStop()
     }

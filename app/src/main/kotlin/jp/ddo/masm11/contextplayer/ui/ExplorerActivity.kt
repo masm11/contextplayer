@@ -145,7 +145,7 @@ class ExplorerActivity : AppCompatActivity() {
         }
 
         override fun getItemId(position: Int): Long {
-            val item = getItem(position)!!
+            val item = getItem(position)
             return item.hashCode().toLong()
         }
 
@@ -154,7 +154,7 @@ class ExplorerActivity : AppCompatActivity() {
             if (view == null)
                 view = inflater.inflate(R.layout.list_explorer, parent, false)!!
 
-            val item = getItem(position)!!
+            val item = getItem(position)
 
             if (!item.isDir) {
                 view.filename.text = item.filename

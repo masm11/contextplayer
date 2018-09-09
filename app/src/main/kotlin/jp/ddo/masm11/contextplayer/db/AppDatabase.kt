@@ -27,16 +27,16 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun playContextDao(): PlayContextDao
 
     companion object {
-	var app: Context? = null
-	    set(value) {
-		field = value
-	    }
+	private lateinit var app: Context
+	fun setApplication(app: Context) {
+	    this.app = app
+	}
 	
 	private var appdb: AppDatabase? = null
 	fun getDB(): AppDatabase {
 	    var db = appdb
 	    if (db == null) {
-	        db = Room.databaseBuilder(app!!, AppDatabase::class.java, "ContextPlayer.db").allowMainThreadQueries().build()
+	        db = Room.databaseBuilder(app, AppDatabase::class.java, "ContextPlayer.db").allowMainThreadQueries().build()
 		appdb = db
 	    }
 	    return db

@@ -63,14 +63,15 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         private val listener = { status: PlayerService.CurrentStatus -> updateTrackInfo(status) }
 
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            svc = service as PlayerService.PlayerServiceBinder
+            val s = service as PlayerService.PlayerServiceBinder
+	    svc = s
 
-            svc!!.setOnStatusChangedListener(listener)
-
-            updateTrackInfo(svc!!.currentStatus)
-
+	    s.setOnStatusChangedListener(listener)
+	    
+	    updateTrackInfo(s.currentStatus)
+	    
             if (needSwitchContext) {
-                svc!!.switchContext()
+		s.switchContext()
                 needSwitchContext = false
             }
         }
@@ -124,8 +125,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         playing_pos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    if (svc != null)
-                        svc!!.seek(progress)
+                    svc?.seek(progress)
                 }
             }
 
@@ -142,8 +142,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         volume.progress = vol - VOLUME_BASE
         volume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(volume: SeekBar, progress: Int, fromUser: Boolean) {
-                if (svc != null)
-                    svc!!.setVolume(VOLUME_BASE + progress)
+                svc?.setVolume(VOLUME_BASE + progress)
 
                 vol = VOLUME_BASE + progress
             }
@@ -259,7 +258,8 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
         if (curTopDir != status.topDir) {
             curTopDir = status.topDir
-            playing_filename.topDir = curTopDir!!
+	    val dir = curTopDir
+            playing_filename.topDir = if (dir != null) dir else "//"
         }
 
         if (maxPos != status.duration) {
