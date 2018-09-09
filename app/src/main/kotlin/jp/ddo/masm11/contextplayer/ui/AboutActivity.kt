@@ -17,44 +17,16 @@
 package jp.ddo.masm11.contextplayer.ui
 
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
-import android.view.View
-import android.view.Menu
-import android.view.MenuItem
-import android.view.MenuInflater
-import android.view.ViewGroup
-import android.view.LayoutInflater
-import android.net.Uri
-import android.widget.Button
-import android.widget.TextView
-import android.widget.SeekBar
-import android.webkit.WebView
 import android.webkit.WebSettings
 import android.webkit.JavascriptInterface
-import android.content.Intent
 import android.content.Context
-import android.content.ServiceConnection
-import android.content.ComponentName
-import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.content.pm.PackageInfo
 import android.os.Bundle
-import android.Manifest
 
 import kotlinx.android.synthetic.main.activity_about.*
 
-import java.io.IOException
-import java.util.Locale
-
 import jp.ddo.masm11.contextplayer.R
-import jp.ddo.masm11.contextplayer.service.PlayerService
-import jp.ddo.masm11.contextplayer.util.Metadata
-import jp.ddo.masm11.contextplayer.fs.MFile
-import jp.ddo.masm11.contextplayer.db.AppDatabase
-import jp.ddo.masm11.contextplayer.db.PlayContext
-import jp.ddo.masm11.contextplayer.db.Config
 
 import jp.ddo.masm11.logger.Log
 
