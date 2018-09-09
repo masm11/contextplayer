@@ -41,24 +41,10 @@ class PathView(context: Context, attrs: AttributeSet) : TextView(context, attrs)
 	}
 
     private fun updateText() {
-        var root = rootDir
         var top = topDir
         var cur = path ?: top
-        if (!root.endsWith("/"))
-            root = "${root}/"
         if (!top.endsWith("/"))
             top = "${top}/"
-/*
-        if (cur.startsWith(root) && top.startsWith(root)) {
-            val rootLen = root.length
-            cur = cur.substring(rootLen)
-            top = top.substring(rootLen)
-            if (cur.length == 0)
-                cur = "./"
-            if (top.length == 0)
-                top = "./"
-        }
-*/
 
         if (cur.startsWith(top)) {
             val ss = SpannableString(cur)
