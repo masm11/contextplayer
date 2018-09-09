@@ -41,9 +41,9 @@ It uses these permissions:
 Environments I use:
 
 - Xperia X Performance (au SOV33, Japan)
-- Android 7.0
+- Android 8.0
 
-Android 7.0 or later is required.
+Android 8.0 or later is required.
 
 ## Contexts
 
