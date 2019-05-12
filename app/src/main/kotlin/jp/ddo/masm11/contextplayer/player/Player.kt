@@ -340,25 +340,40 @@ class Player : Runnable {
     
     val currentPosition: Int
     get() {
-	val plr = curPlayer
-	if (plr != null)
-	    return plr.currentPosition
+	try {
+	    val plr = curPlayer
+	    if (plr != null)
+		return plr.currentPosition
+	    return 0
+	} catch (e: IllegalStateException) {
+            Log.e("exception", e)
+	}
 	return 0
     }
     
     val duration: Int
     get() {
-	val plr = curPlayer
-	if (plr != null)
-	    return plr.duration
+	try {
+	    val plr = curPlayer
+	    if (plr != null)
+		return plr.duration
+	    return 0
+	} catch (e: IllegalStateException) {
+            Log.e("exception", e)
+	}
 	return 0
     }
     
     val isPlaying: Boolean
     get() {
-	val plr = curPlayer
-	if (plr != null)
-	    return plr.isPlaying
+	try {
+	    val plr = curPlayer
+	    if (plr != null)
+		return plr.isPlaying
+	    return false
+	} catch (e: IllegalStateException) {
+	    Log.e("exception", e)
+	}
 	return false
     }
     
