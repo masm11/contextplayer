@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="jp.ddo.masm11.contextplayer">
+          package="me.masm11.contextplayer">
 
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.BLUETOOTH"/>
@@ -30,6 +30,7 @@
 	
         <service android:name=".service.PlayerService"/>
 	
+<!--
 	<receiver android:name=".widget.WidgetProvider">
 	  <intent-filter>
 	    <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
@@ -38,6 +39,7 @@
 	      android:name="android.appwidget.provider"
 	      android:resource="@xml/appwidget_info"/>
 	</receiver>
+-->
 
     </application>
 

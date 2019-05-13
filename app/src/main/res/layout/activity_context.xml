@@ -5,11 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="jp.ddo.masm11.contextplayer.ui.ContextActivity">
+    tools:context="me.masm11.contextplayer.ui.ContextActivity">
 
   <!-- action bar -->
   <fragment
-      class="jp.ddo.masm11.contextplayer.ui.ActionBarFragment"
+      class="me.masm11.contextplayer.ui.ActionBarFragment"
       android:id="@+id/actionbar_frag"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"/>
@@ -40,7 +40,7 @@
 	android:stateListAnimator="@anim/image_button"/>
     
     <fragment
-	class="jp.ddo.masm11.contextplayer.ui.OperationFragment"
+	class="me.masm11.contextplayer.ui.OperationFragment"
 	android:id="@+id/op_frag"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"/>
