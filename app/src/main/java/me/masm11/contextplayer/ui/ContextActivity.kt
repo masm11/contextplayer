@@ -117,9 +117,11 @@ class ContextActivity : AppCompatActivity() {
 	
 	db = AppDatabase.getDB()
 	
+/*
         val fragMan = getFragmentManager()
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
         setSupportActionBar(frag.toolbar)
+*/
 
         items = emptyMutableListOf<Item>()
         for (ctxt in db.playContextDao().getAll()) {

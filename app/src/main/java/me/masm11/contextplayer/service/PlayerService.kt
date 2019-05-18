@@ -379,9 +379,9 @@ class PlayerService : Service() {
             setForeground(true)
 
             startBroadcast()
-/*
 
-            callUpdateAppWidgetListener()
+            updateAppWidget()
+/*
 
             callSaveContextListener()
 */
@@ -409,9 +409,7 @@ class PlayerService : Service() {
                     Log.d("already paused ${plr}")
             }
 
-/*
-            callUpdateAppWidgetListener()
-*/
+            updateAppWidget()
 	    
             Log.d("abandon audio focus.")
 	    audioManager.abandonAudioFocusRequest(audioFocusRequest)
@@ -846,9 +844,7 @@ class PlayerService : Service() {
 		ToggleHandler().execute(intent)
 	    }
             ACTION_UPDATE_APPWIDGET -> {
-/*
 		updateAppWidget()
-*/
 	    }
 	    ACTION_CURRENT_STATUS -> {
 	    }
