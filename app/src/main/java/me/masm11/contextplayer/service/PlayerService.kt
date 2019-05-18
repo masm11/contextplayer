@@ -75,32 +75,15 @@ class PlayerService : Service() {
 	val EXTRA_START = "me.masm11.contextplayer.START"
 	val EXTRA_VOLUME = "me.masm11.contextplayer.VOLUME"
 	val EXTRA_TOPDIR = "me.masm11.contextplayer.TOPDIR"
-
     }
-
-    data class CurrentStatus(
-            val contextId: Long,
-            val path: String?,
-            val topDir: String,
-            val position: Int,
-            val duration: Int,
-	    val volume: Int)
     
-    private fun buildCurrentStatus(): CurrentStatus {
-	val player = curPlayer
-	var pos: Int = 0
-	var dur: Int = 0
-	if (player != null) {
-	    pos = player.currentPosition
-	    dur = player.duration
-	}
-	return CurrentStatus(
-		contextId,
-		playingPath,
-		topDir,
-		pos,
-		dur,
-		volume)
+    class CurrentStatus(svc: PlayerService) {
+        val contextId = svc.contextId
+        val path = svc.playingPath
+        val topDir = svc.topDir
+        val position = svc.curPlayer?.currentPosition ?: 0
+        val duration = svc.curPlayer?.duration ?: 0
+	val volume = svc.volume
     }
     
     private lateinit var db: AppDatabase
@@ -121,8 +104,7 @@ class PlayerService : Service() {
     private var bluetoothHeadset: BluetoothHeadset? = null
     private lateinit var headsetMonitor: Thread
     private lateinit var notificationManager: NotificationManager
-    // private lateinit var player: Player
-
+    
     fun setOnStatusChangedListener(listener: (CurrentStatus) -> Unit) {
         Log.d("listener=${listener}")
         statusChangedListeners.add(listener)
@@ -130,7 +112,6 @@ class PlayerService : Service() {
     
     private var curPlayer: MediaPlayer? = null
     private var nextPlayer: MediaPlayer? = null
-    // private var volume: Int = 0
     private var playingPath: String? = null
     private var nextPath: String? = null
     
@@ -245,9 +226,7 @@ class PlayerService : Service() {
 		Log.d("enqueue next player.")
 		enqueueNext()
 	    }
-/*
-	    callOneshotBroadcastListener()
-*/
+	    broadcastStatus()
 	}
     }
     private inner class StopHandler: IntentHandler() {
@@ -399,10 +378,10 @@ class PlayerService : Service() {
             }
 
             Log.d("set to foreground")
-/*
-            callSetForegroundListener(true)
+            setForeground(true)
 
-            callStartBroadcastListener(true)
+            startBroadcast()
+/*
 
             callUpdateAppWidgetListener()
 
@@ -413,14 +392,10 @@ class PlayerService : Service() {
 
     private fun stopPlay() {
         try {
-/*
-            callStartBroadcastListener(false)
-*/
+            stopBroadcast()
 
             Log.d("set to non-foreground")
-/*
-            callSetForegroundListener(false)
-*/
+            setForeground(false)
 
             setMediaPlayerVolume()
 
@@ -719,38 +694,6 @@ class PlayerService : Service() {
             r = p1.compareTo(p2)
         return r
     }
-    
-    
-    
-    /*
-    基本、IntentService として、
-    Service 外からのリクエストは Intent として受け付けて、
-    別スレッドで処理する。
-    これで、画面が一瞬フリーズするのは避けられるはず。
-    
-    IntentService での Intent の処理は直列に行われるので、
-    基本的には排他制御は不要。
-    
-    IntentService は、通常は、処理を終えたらすぐに終了する。
-    onStartCommand をオーバーライドして、再生開始の場合は終了しないようにする。
-    
-    再生中に勝手に落ちないようにするのは、普通に、消えない通知で。
-    
-    status の broadcast はどうする? 再生時刻とか。
-    
-    各種 listener は、どのスレッドで呼ばれる?
-    */
-    
-/*
-    inner class CurrentStatus {
-	val contextId: Long = 0
-	val path: String? = null
-	val topDir: String? = null
-	val duration: Int = 0
-	val position: Int = 0
-	val volume: Int = 0
-    }
-*/
     
     override fun onCreate() {
 	super.onCreate()
@@ -1076,7 +1019,7 @@ class PlayerService : Service() {
     }
     
     private fun broadcastStatus() {
-        val status = buildCurrentStatus()
+        val status = CurrentStatus(this)
         for (listener in statusChangedListeners) {
             // Log.d("listener=${listener}")
             listener(status)
@@ -1084,7 +1027,7 @@ class PlayerService : Service() {
     }
     
     private val currentStatus: CurrentStatus
-        get() = buildCurrentStatus()
+        get() = CurrentStatus(this)
     
     private fun updateAppWidget() {
         val ctxt = db.playContextDao().find(contextId)
