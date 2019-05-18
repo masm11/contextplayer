@@ -20,6 +20,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.LocalBroadcastManager
 import android.app.Service
 import android.app.AlertDialog
 import android.app.FragmentManager
@@ -34,10 +35,12 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.SeekBar
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.Context
 import android.content.ServiceConnection
 import android.content.ComponentName
 import android.content.DialogInterface
+import android.content.BroadcastReceiver
 import android.content.pm.PackageManager
 import android.content.pm.PackageInfo
 import android.Manifest
@@ -58,6 +61,18 @@ import me.masm11.contextplayer.db.Config
 import me.masm11.logger.Log
 
 class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
+    private inner class CurrentStatusBroadcastReceiver: BroadcastReceiver() {
+	override fun onReceive(context: Context, intent: Intent) {
+	    if (intent.action == PlayerService.ACTION_CURRENT_STATUS) {
+		updateTrackInfo(intent)
+		if (needSwitchContext) {
+		    // s.switchContext()
+                    needSwitchContext = false
+		}
+	    }
+	}
+    }
+
 /*
     private inner class PlayerServiceConnection : ServiceConnection {
 	// 参照を保持しておかないと、GC に回収されてしまう。
@@ -96,7 +111,9 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     private var seeking: Boolean = false
     private var vol: Int = 100
     private var needSwitchContext: Boolean = false
-
+    private lateinit var localBroadcastManager: LocalBroadcastManager
+    private lateinit var currentStatusBroadcastReceiver: BroadcastReceiver
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -146,7 +163,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
                 seeking = false
             }
         })
-
+	
         volume.max = 100 - VOLUME_BASE
         volume.progress = vol - VOLUME_BASE
         volume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -187,7 +204,12 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             // permission がある
             // rootDir.mkdirs()
         }
-
+	
+	localBroadcastManager = LocalBroadcastManager.getInstance(this)
+	currentStatusBroadcastReceiver = CurrentStatusBroadcastReceiver()
+	val intentFilter = IntentFilter(PlayerService.ACTION_CURRENT_STATUS)
+	localBroadcastManager.registerReceiver(currentStatusBroadcastReceiver, intentFilter)
+	
         val intent = getIntent()
         if (intent != null) {
             val action = intent.getAction()
@@ -232,20 +254,25 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         val ctxt = db.playContextDao().find(db.configDao().getContextId())
         if (ctxt != null)
             context_name.text = ctxt.name
-
+	
         super.onResume()
     }
-
+    
     override fun onStop() {
 /*
         unbindService(conn)
 */
-
+	
         super.onStop()
     }
-
-    private fun updateTrackInfo(status: PlayerService.CurrentStatus) {
-	var p = status.path
+    
+    override fun onDestroy() {
+	localBroadcastManager.unregisterReceiver(currentStatusBroadcastReceiver)
+	super.onDestroy()
+    }
+    
+    private fun updateTrackInfo(intent: Intent) {
+	var p = intent.getStringExtra(PlayerService.EXTRA_PATH)
 	if (p == null)
 	    p = "//"
         if (curPath != p) {
@@ -271,14 +298,14 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             playing_artist.text = artist
         }
 
-        if (curTopDir != status.topDir) {
-            curTopDir = status.topDir
+        if (curTopDir != intent.getStringExtra(PlayerService.EXTRA_TOPDIR)) {
+            curTopDir = intent.getStringExtra(PlayerService.EXTRA_TOPDIR)
 	    val dir = curTopDir
             playing_filename.topDir = if (dir != null) dir else "//"
         }
 
-        if (maxPos != status.duration) {
-            maxPos = status.duration
+        if (maxPos != intent.getIntExtra(PlayerService.EXTRA_DURATION, 0)) {
+            maxPos = intent.getIntExtra(PlayerService.EXTRA_DURATION, 0)
 
             playing_pos.max = maxPos
 
@@ -287,8 +314,8 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             playing_maxtime.text = maxTime
         }
 
-        if (curPos != status.position) {
-            curPos = status.position
+        if (curPos != intent.getIntExtra(PlayerService.EXTRA_POS, 0)) {
+            curPos = intent.getIntExtra(PlayerService.EXTRA_POS, 0)
 
             playing_pos.progress = curPos
 
@@ -297,8 +324,8 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             playing_curtime.text = curTime
         }
 
-	if (vol != status.volume) {
-	    vol = status.volume
+	if (vol != intent.getIntExtra(PlayerService.EXTRA_VOLUME, 0)) {
+	    vol = intent.getIntExtra(PlayerService.EXTRA_VOLUME, 0)
 	    volume.progress = vol - VOLUME_BASE
 	}
     }

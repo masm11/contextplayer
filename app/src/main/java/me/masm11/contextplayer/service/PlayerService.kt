@@ -38,6 +38,7 @@ import android.net.Uri
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothHeadset
+import android.support.v4.content.LocalBroadcastManager
 
 import java.util.Locale
 import java.util.concurrent.locks.ReentrantLock
@@ -69,12 +70,14 @@ class PlayerService : Service() {
 	val ACTION_SWITCH = "me.masm11.contextplayer.SWITCH"
 	val ACTION_SET_TOPDIR = "me.masm11.contextplayer.SET_TOPDIR"
 	val ACTION_SET_VOLUME = "me.masm11.contextplayer.SET_VOLUME"
-
+	
 	val EXTRA_PATH = "me.masm11.contextplayer.PATH"
 	val EXTRA_POS = "me.masm11.contextplayer.POS"
 	val EXTRA_START = "me.masm11.contextplayer.START"
 	val EXTRA_VOLUME = "me.masm11.contextplayer.VOLUME"
 	val EXTRA_TOPDIR = "me.masm11.contextplayer.TOPDIR"
+	val EXTRA_CONTEXT_ID = "me.masm11.contextplayer.CONTEXT_ID"
+	val EXTRA_DURATION = "me.masm11.contextplayer.DURATION"
     }
     
     class CurrentStatus(svc: PlayerService) {
@@ -104,6 +107,7 @@ class PlayerService : Service() {
     private var bluetoothHeadset: BluetoothHeadset? = null
     private lateinit var headsetMonitor: Thread
     private lateinit var notificationManager: NotificationManager
+    private lateinit var localBroadcastManager: LocalBroadcastManager
     
     fun setOnStatusChangedListener(listener: (CurrentStatus) -> Unit) {
         Log.d("listener=${listener}")
@@ -768,31 +772,18 @@ class PlayerService : Service() {
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                 .build()
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
-/*
-	player = Player.create(this, audioAttributes, audioManager.generateAudioSessionId(), {
-	    -> saveContext()
-	}, {
-	    onoff -> setForeground(onoff)
-	}, {
-	    onoff -> if (onoff) startBroadcast() else stopBroadcast()
-	}, {
-	    -> updateAppWidget()
-	}, {
-	    onoff -> if (onoff) audioManager.requestAudioFocus(audioFocusRequest) else audioManager.abandonAudioFocusRequest(audioFocusRequest)
-	}, {
-	    -> broadcastStatus()
-	})
-*/
-
+	
         val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange -> handleAudioFocusChangeEvent(focusChange) }
-
+	
 	val builder = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
 	builder.setOnAudioFocusChangeListener(audioFocusChangeListener)
 	builder.setAudioAttributes(audioAttributes)
 	audioFocusRequest = builder.build()
-
+	
+	localBroadcastManager = LocalBroadcastManager.getInstance(this)
+	
         handler = Handler()
-
+	
         volumeDuck = 100
 
         loadContext()
@@ -1016,10 +1007,21 @@ class PlayerService : Service() {
     
     private fun broadcastStatus() {
         val status = CurrentStatus(this)
+/*
         for (listener in statusChangedListeners) {
             // Log.d("listener=${listener}")
             listener(status)
         }
+*/
+	val intent = Intent(ACTION_CURRENT_STATUS)
+		.putExtra(EXTRA_CONTEXT_ID, contextId)
+		.putExtra(EXTRA_PATH, playingPath)
+		.putExtra(EXTRA_TOPDIR, topDir)
+		.putExtra(EXTRA_POS, curPlayer?.currentPosition ?: 0)
+		.putExtra(EXTRA_DURATION, curPlayer?.duration ?: 0)
+		.putExtra(EXTRA_VOLUME, volume)
+	
+	localBroadcastManager.sendBroadcast(intent)
     }
     
     private val currentStatus: CurrentStatus
