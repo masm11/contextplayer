@@ -71,6 +71,9 @@ class OperationFragment : Fragment() {
         }
 
         view.op_pause.setOnClickListener {
+            val intt = Intent(context, PlayerService::class.java)
+		    .setAction(PlayerService.ACTION_PAUSE)
+	    context.startService(intt)
 /*
             svc?.pause()
 */

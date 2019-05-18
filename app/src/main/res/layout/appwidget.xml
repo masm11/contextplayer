@@ -10,7 +10,10 @@
       android:layout_weight="1"
       android:layout_height="match_parent"
       android:background="@drawable/appwidget_text"
+/>
+<!--
       style="@style/Button2"/>
+-->
   
   <ImageButton
       android:id="@+id/widget_button"

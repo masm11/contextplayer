@@ -103,9 +103,11 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
 	db = AppDatabase.getDB()
 
+/*
         val fragMan = getFragmentManager()
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
         setSupportActionBar(frag.toolbar)
+*/
 
         Log.d("rootDir=${rootDir.absolutePath}")
 	
@@ -129,9 +131,10 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         playing_pos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-/*
-                    svc?.seek(progress)
-*/
+		    val intt = Intent(this@MainActivity, PlayerService::class.java)
+			    .setAction(PlayerService.ACTION_SEEK)
+			    .putExtra(PlayerService.EXTRA_POS, progress)
+		    this@MainActivity.startService(intt)
                 }
             }
 
