@@ -364,9 +364,7 @@ class PlayerService : Service() {
     private fun startPlay() {
         if (curPlayer != null) {
             Log.d("request audio focus.")
-/*
-            callAudioFocusRequestListener(true)
-*/
+	    audioManager.requestAudioFocus(audioFocusRequest)
 
             setMediaPlayerVolume()
 
@@ -413,10 +411,12 @@ class PlayerService : Service() {
 
 /*
             callUpdateAppWidgetListener()
-
+*/
+	    
             Log.d("abandon audio focus.")
-            callAudioFocusRequestListener(false)
-
+	    audioManager.abandonAudioFocusRequest(audioFocusRequest)
+	    
+/*
             Log.d("save context")
             callSaveContextListener()
 */
