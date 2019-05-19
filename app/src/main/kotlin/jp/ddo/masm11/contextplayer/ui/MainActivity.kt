@@ -59,8 +59,14 @@ import jp.ddo.masm11.logger.Log
 
 class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
     private inner class PlayerServiceConnection : ServiceConnection {
-	// 参照を保持しておかないと、GC に回収されてしまう。
-        private val listener = { status: PlayerService.CurrentStatus -> updateTrackInfo(status) }
+        private val listener = object : PlayerService.OnStatusChangedListener {
+	    override fun onStatusChanged(status: PlayerService.CurrentStatus) {
+		/*
+		Log.d("path=${status.path}, topDir=${status.topDir}, position=${status.position}.")
+		*/
+		updateTrackInfo(status)
+	    }
+        }
 
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
             val s = service as PlayerService.PlayerServiceBinder
