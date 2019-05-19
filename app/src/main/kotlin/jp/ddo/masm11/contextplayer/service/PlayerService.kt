@@ -160,7 +160,7 @@ class PlayerService : Service() {
 			Log.d("bluetooth headset: ${connected} -> ${newConnected}")
 			connected = newConnected
 			if (!connected)
-			    handler.post { saveContext(); player.stop() }
+			    handler.post { player.stop() }
 		    }
                     Thread.sleep(500)
                 }
@@ -207,18 +207,9 @@ class PlayerService : Service() {
         val action = intent?.action
         Log.d("action=${action}")
         when (action) {
-            ACTION_A2DP_DISCONNECTED -> {
-		saveContext()
-		player.stop()
-	    }
-            ACTION_HEADSET_UNPLUGGED -> {
-		saveContext()
-		player.stop()
-	    }
-            ACTION_TOGGLE -> {
-		saveContext()
-		player.toggle()
-	    }
+            ACTION_A2DP_DISCONNECTED -> player.stop()
+            ACTION_HEADSET_UNPLUGGED -> player.stop()
+            ACTION_TOGGLE -> player.toggle()
             ACTION_UPDATE_APPWIDGET -> updateAppWidget()
         }
         return Service.START_NOT_STICKY
@@ -241,7 +232,6 @@ class PlayerService : Service() {
         }
 
         fun pause() {
-	    saveContext()
             player.stop()
         }
 
@@ -282,10 +272,7 @@ class PlayerService : Service() {
                 volumeDuck = 100
                 setPlayerVolume()
             }
-            AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-		saveContext()
-		player.stop()
-	    }
+            AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> player.stop()
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
                 volumeDuck = 25
                 setPlayerVolume()
@@ -307,8 +294,7 @@ class PlayerService : Service() {
      * context を読み出し、再生を再開する。
      */
     private fun switchContext() {
-	saveContext()
-        player.stop()
+        player.stop()    // saveContext() を含む。
 
         Log.d("load context.")
         loadContext()
@@ -368,7 +354,8 @@ class PlayerService : Service() {
             Log.d("path=${path}")
             Log.d("topDir=${topDir}")
 	    player.setTopDir(topDir)
-	    player.setFile(path, ctxt.pos.toInt())
+	    if (path != null)
+		player.setFile(path)
 	    setPlayerVolume()
 
 /*
