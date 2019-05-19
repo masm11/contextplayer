@@ -179,15 +179,7 @@ class PlayerService : Service() {
                 .build()
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         audioSessionId = audioManager.generateAudioSessionId()
-	player = Player.create(this, audioAttributes, audioSessionId, {
-	    -> saveContext()
-	}, {
-	    onoff -> setForeground(onoff)
-	}, {
-	    onoff -> if (onoff) startBroadcast() else stopBroadcast()
-	}, {
-	    -> updateAppWidget()
-	})
+	player = Player.create(this, audioAttributes, audioSessionId)
 
         val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange -> handleAudioFocusChangeEvent(focusChange) }
 
@@ -300,6 +292,17 @@ class PlayerService : Service() {
         loadContext()
 
 	player.play(null)
+/*
+        if (curPlayer != null) {
+            Log.d("starting")
+            startPlay()
+
+            Log.d("set to foreground")
+            setForeground(true)
+            Log.d("enqueue next player.")
+            enqueueNext()
+        }
+*/
     }
 
     private fun setForeground(on: Boolean) {
@@ -343,6 +346,18 @@ class PlayerService : Service() {
     }
 
     private fun loadContext() {
+/*
+        Log.d("release nextPlayer.")
+        releaseNextPlayer()
+
+        stopPlay()
+
+        Log.d("release curPlayer.")
+        releaseCurPlayer()
+        Log.d("set to non-foreground.")
+        setForeground(false)
+*/
+
         Log.d("getting context_id")
         contextId = db.configDao().getContextId()
         Log.d("contextId=${contextId}")
