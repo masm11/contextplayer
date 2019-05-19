@@ -28,6 +28,7 @@ import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.AudioFocusRequest
 import android.net.Uri
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.BroadcastReceiver
@@ -141,9 +142,55 @@ class PlayerService : Service() {
 		ACTION_HEADSET_UNPLUGGED -> pause()
 		ACTION_TOGGLE -> toggle()
 		ACTION_UPDATE_APPWIDGET -> updateAppWidget()
+
+		ACTION_PLAY -> handlePlay(intent)
+		ACTION_PAUSE -> handlePause(intent)
+		ACTION_SET_TOPDIR -> handleSetTopDir(intent)
+		ACTION_SET_VOLUME -> handleSetVolume(intent)
+		ACTION_SWITCH_CONTEXT -> handleSwitchContext(intent)
+		ACTION_SEEK -> handleSeek(intent)
+		ACTION_PREV_TRACK -> handlePrevTrack(intent)
+		ACTION_NEXT_TRACK -> handleNextTrack(intent)
+
 	    }
 	}
 	
+        fun handleSeek(intent: Intent) {
+	    val pos = intent.getIntExtra(EXTRA_POS, 0)
+            seek(pos)
+        }
+
+        fun handlePlay(intent: Intent) {
+	    val path: String? = intent.getStringExtra(EXTRA_PATH)
+            play(path)
+        }
+
+        fun handlePause(intent: Intent) {
+            pause()
+        }
+
+        fun handlePrevTrack(intent: Intent) {
+            prevTrack()
+        }
+
+        fun handleNextTrack(intent: Intent) {
+            nextTrack()
+        }
+
+        fun handleSwitchContext(intent: Intent) {
+            switchContext()
+        }
+
+        fun handleSetTopDir(intent: Intent) {
+	    val topDir = intent.getStringExtra(EXTRA_TOPDIR)
+            setTopDir(topDir)
+        }
+
+        fun handleSetVolume(intent: Intent) {
+	    val volume = intent.getIntExtra(EXTRA_VOLUME, 0)
+            setVolume(volume)
+        }
+
     }
     
     private val intentHandler = IntentHandler()
@@ -257,38 +304,6 @@ class PlayerService : Service() {
 
         val currentStatus: CurrentStatus
             get() = this@PlayerService.currentStatus
-
-        fun seek(pos: Int) {
-            this@PlayerService.seek(pos)
-        }
-
-        fun play(path: String?) {
-            this@PlayerService.play(path)
-        }
-
-        fun pause() {
-            this@PlayerService.pause()
-        }
-
-        fun prevTrack() {
-            this@PlayerService.prevTrack()
-        }
-
-        fun nextTrack() {
-            this@PlayerService.nextTrack()
-        }
-
-        fun switchContext() {
-            this@PlayerService.switchContext()
-        }
-
-        fun setTopDir(topDir: String) {
-            this@PlayerService.setTopDir(topDir)
-        }
-
-        fun setVolume(volume: Int) {
-            this@PlayerService.setVolume(volume)
-        }
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -1022,5 +1037,71 @@ class PlayerService : Service() {
         val ACTION_HEADSET_UNPLUGGED = "me.masm11.contextplayer.HEADSET_UNPLUGGED"
         val ACTION_TOGGLE = "me.masm11.contextplayer.TOGGLE"
         val ACTION_UPDATE_APPWIDGET = "me.masm11.contextplayer.UPDATE_APP_WIDGET"
+	
+	val ACTION_PLAY = "me.masm11.contextplayer.PLAY"
+	val ACTION_PAUSE = "me.masm11.contextplayer.PAUSE"
+	val ACTION_SET_TOPDIR = "me.masm11.contextplayer.SET_TOPDIR"
+	val ACTION_SET_VOLUME = "me.masm11.contextplayer.SET_VOLUME"
+	val ACTION_SWITCH_CONTEXT = "me.masm11.contextplayer.SWICH_CONTEXT"
+	val ACTION_SEEK = "me.masm11.contextplayer.SEEK"
+	val ACTION_PREV_TRACK = "me.masm11.contextplayer.PREV_TRACK"
+	val ACTION_NEXT_TRACK = "me.masm11.contextplayer.NEXT_TRACK"
+	
+	val EXTRA_POS = "me.masm11.contextplayer.POS"
+	val EXTRA_PATH = "me.masm11.contextplayer.PATH"
+	val EXTRA_VOLUME = "me.masm11.contextplayer.VOLUME"
+	val EXTRA_TOPDIR = "me.masm11.contextplayer.TOPDIR"
+
+	fun play(ctxt: Context, path: String?) {
+	    val intent = Intent(ctxt, PlayerService::class.java)
+	    intent.action = ACTION_PLAY
+	    intent.putExtra(EXTRA_PATH, path)
+	    ctxt.startService(intent)
+	}
+
+	fun pause(ctxt: Context) {
+	    val intent = Intent(ctxt, PlayerService::class.java)
+	    intent.action = ACTION_PAUSE
+	    ctxt.startService(intent)
+	}
+
+	fun prevTrack(ctxt: Context) {
+	    val intent = Intent(ctxt, PlayerService::class.java)
+	    intent.action = ACTION_PREV_TRACK
+	    ctxt.startService(intent)
+	}
+
+	fun nextTrack(ctxt: Context) {
+	    val intent = Intent(ctxt, PlayerService::class.java)
+	    intent.action = ACTION_NEXT_TRACK
+	    ctxt.startService(intent)
+	}
+
+	fun seek(ctxt: Context, pos: Int) {
+	    val intent = Intent(ctxt, PlayerService::class.java)
+	    intent.action = ACTION_SEEK
+	    intent.putExtra(EXTRA_POS, pos)
+	    ctxt.startService(intent)
+	}
+	
+	fun setVolume(ctxt: Context, volume: Int) {
+	    val intent = Intent(ctxt, PlayerService::class.java)
+	    intent.action = ACTION_SET_VOLUME
+	    intent.putExtra(EXTRA_VOLUME, volume)
+	    ctxt.startService(intent)
+	}
+	
+	fun setTopDir(ctxt: Context, topDir: String) {
+	    val intent = Intent(ctxt, PlayerService::class.java)
+	    intent.action = ACTION_SET_TOPDIR
+	    intent.putExtra(EXTRA_VOLUME, topDir)
+	    ctxt.startService(intent)
+	}
+	
+	fun switchContext(ctxt: Context) {
+	    val intent = Intent(ctxt, PlayerService::class.java)
+	    intent.action = ACTION_SWITCH_CONTEXT
+	    ctxt.startService(intent)
+	}
     }
 }

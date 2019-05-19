@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 	    updateTrackInfo(s.currentStatus)
 	    
             if (needSwitchContext) {
-		s.switchContext()
+		PlayerService.switchContext(this@MainActivity)
                 needSwitchContext = false
             }
         }
@@ -130,9 +130,8 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
         playing_pos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    svc?.seek(progress)
-                }
+                if (fromUser)
+		    PlayerService.seek(this@MainActivity, progress)
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -148,7 +147,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         volume.progress = vol - VOLUME_BASE
         volume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(volume: SeekBar, progress: Int, fromUser: Boolean) {
-                svc?.setVolume(VOLUME_BASE + progress)
+                PlayerService.setVolume(this@MainActivity, VOLUME_BASE + progress)
 
                 vol = VOLUME_BASE + progress
             }

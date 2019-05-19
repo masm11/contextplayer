@@ -135,7 +135,7 @@ class ContextActivity : AppCompatActivity() {
 	    
             db.configDao().setContextId(item.id)
 	    
-            svc?.switchContext()
+            PlayerService.switchContext(this)
         }
 
         context_list.setOnItemLongClickListener(object : AdapterView.OnItemLongClickListener {

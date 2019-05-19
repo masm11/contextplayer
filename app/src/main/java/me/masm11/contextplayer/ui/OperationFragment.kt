@@ -58,19 +58,19 @@ class OperationFragment : Fragment() {
         val view = inflater.inflate(R.layout.operation_fragment, container, false)
 
         view.op_play.setOnClickListener {
-            svc?.play(null)
+            PlayerService.play(context, null)
         }
 
         view.op_pause.setOnClickListener {
-            svc?.pause()
+            PlayerService.pause(context)
         }
 
         view.op_prev.setOnClickListener {
-            svc?.prevTrack()
+            PlayerService.prevTrack(context)
         }
 
         view.op_next.setOnClickListener {
-            svc?.nextTrack()
+            PlayerService.nextTrack(context)
         }
 
         return view

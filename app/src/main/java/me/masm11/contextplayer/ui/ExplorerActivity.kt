@@ -365,7 +365,7 @@ class ExplorerActivity : AppCompatActivity() {
 	    cur = curDir.toString() + "/"
         path.path = cur
 
-        svc?.setTopDir(newDir.absolutePath)
+        PlayerService.setTopDir(this, newDir.absolutePath)
 
 	ctxt.topDir = newDir.absolutePath
 	ctxt.path = null
@@ -403,7 +403,7 @@ class ExplorerActivity : AppCompatActivity() {
     }
 
     private fun play(file: MFile) {
-        svc?.play(file.absolutePath)
+        PlayerService.play(this, file.absolutePath)
     }
 
     public override fun onStart() {
