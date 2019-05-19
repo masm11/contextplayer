@@ -78,6 +78,10 @@ class PlayerService : Service() {
 		volume)
     }
     
+    interface OnStatusChangedListener {
+        fun onStatusChanged(status: CurrentStatus)
+    }
+    
     private lateinit var db: AppDatabase
     private var topDir: String = "/"
     private var contextId: Long = 0
