@@ -35,30 +35,42 @@ class BluetoothReceiver : BroadcastReceiver() {
         if (intent != null) {
             val action = intent.action
             Log.d("action=${action}")
+	    var doCheck = false
+	    var state: Int = -1
+	    var prevstate: Int = -1
+	    var device: Parcelable? = null
 	    if (action != null && action == BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED) {
-		val state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1)
-		val prevstate = intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)
-                val device = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
+		state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1)
+		prevstate = intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)
+                device = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
                 Log.d("headset: ${device}: ${prevstate} -> ${state}")
+		doCheck = true
 	    }
 	    if (action != null && action == BluetoothA2dp.ACTION_PLAYING_STATE_CHANGED) {
-		val state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1)
-		val prevstate = intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)
-                val device = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
+		state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1)
+		prevstate = intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)
+                device = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
                 Log.d("playing_state: ${device}: ${prevstate} -> ${state}")
 	    }
             if (action != null && action == BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED) {
-                val state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1)
-                val prevstate = intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)
-                val device = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
+                state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1)
+                prevstate = intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)
+                device = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
                 Log.d("a2dp: ${device}: ${prevstate} -> ${state}")
-                if (state == BluetoothProfile.STATE_DISCONNECTED && prevstate != BluetoothProfile.STATE_DISCONNECTED) {
-                    Log.d("a2dp disconnected.")
+		doCheck = true
+            }
+	    if (doCheck) {
+		var stop = false
+                if (state == BluetoothProfile.STATE_DISCONNECTED && prevstate != BluetoothProfile.STATE_DISCONNECTED)
+		    stop = true
+		
+		if (stop) {
+                    Log.d("disconnected.")
                     val i = Intent(context, PlayerService::class.java)
                     i.action = PlayerService.ACTION_A2DP_DISCONNECTED
                     context.startService(i)
-                }
-            }
+		}
+	    }
         }
     }
 }

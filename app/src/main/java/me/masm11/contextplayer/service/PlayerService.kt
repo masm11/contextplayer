@@ -218,6 +218,7 @@ class PlayerService : Service() {
 	    var connected = false
             try {
                 while (true) {
+/*
 		    val headset = bluetoothHeadset
 		    var newConnected = false
 		    if (headset != null) {
@@ -231,6 +232,7 @@ class PlayerService : Service() {
 			if (!connected)
 			    handler.post { pause() }
 		    }
+*/
                     Thread.sleep(500)
                 }
             } catch (e: InterruptedException) {

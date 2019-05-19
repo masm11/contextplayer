@@ -30,6 +30,12 @@
 	
         <service android:name=".service.PlayerService"/>
 	
+	<receiver android:name=".receiver.BluetoothReceiver">
+	  <intent-filter>
+	    <action android:name="android.bluetooth.headset.profile.action.CONNECTION_STATE_CHANGED"/>
+	  </intent-filter>
+	</receiver>
+
 	<receiver android:name=".widget.WidgetProvider">
 	  <intent-filter>
 	    <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
