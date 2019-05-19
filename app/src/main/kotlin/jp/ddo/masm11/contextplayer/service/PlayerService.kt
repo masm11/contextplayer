@@ -54,7 +54,6 @@ import jp.ddo.masm11.contextplayer.db.AppDatabase
 import jp.ddo.masm11.contextplayer.db.PlayContext
 import jp.ddo.masm11.contextplayer.db.Config
 import jp.ddo.masm11.contextplayer.widget.WidgetProvider
-import jp.ddo.masm11.contextplayer.player.Player
 
 import jp.ddo.masm11.logger.Log
 
@@ -108,7 +107,6 @@ class PlayerService : Service() {
     private var bluetoothHeadset: BluetoothHeadset? = null
     private lateinit var headsetMonitor: Thread
     private lateinit var notificationManager: NotificationManager
-    private lateinit var player: Player
 
     fun setOnStatusChangedListener(listener: OnStatusChangedListener) {
         Log.d("listener=${listener}")
@@ -183,7 +181,6 @@ class PlayerService : Service() {
                 .build()
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         audioSessionId = audioManager.generateAudioSessionId()
-	player = Player.create(this, audioAttributes, audioSessionId)
 
         val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange -> handleAudioFocusChangeEvent(focusChange) }
 
@@ -220,33 +217,33 @@ class PlayerService : Service() {
             get() = this@PlayerService.currentStatus
 
         fun seek(pos: Int) {
-            player.seek(pos)
+            this@PlayerService.seek(pos)
         }
 
         fun play(path: String?) {
-            player.play(path)
+            this@PlayerService.play(path)
         }
 
         fun pause() {
-            player.stop()
+            this@PlayerService.pause()
         }
 
         fun prevTrack() {
-            player.prev()
+            this@PlayerService.prevTrack()
         }
 
         fun nextTrack() {
-            player.next()
+            this@PlayerService.nextTrack()
         }
-	
+
         fun switchContext() {
             this@PlayerService.switchContext()
         }
-	
+
         fun setTopDir(topDir: String) {
             this@PlayerService.setTopDir(topDir)
         }
-	
+
         fun setVolume(volume: Int) {
             this@PlayerService.setVolume(volume)
         }
