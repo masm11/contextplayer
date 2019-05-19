@@ -87,6 +87,7 @@ class PlayerService : Service() {
     private var contextId: Long = 0
     private lateinit var audioManager: AudioManager
     private lateinit var audioAttributes: AudioAttributes
+    private var audioSessionId: Int = 0
     private lateinit var audioFocusChangeListener: AudioManager.OnAudioFocusChangeListener
     private lateinit var audioFocusRequest: AudioFocusRequest
     private var broadcaster: Thread? = null
@@ -173,7 +174,8 @@ class PlayerService : Service() {
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                 .build()
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
-	player = Player.create(this, audioAttributes, audioManager.generateAudioSessionId(), {
+        audioSessionId = audioManager.generateAudioSessionId()
+	player = Player.create(this, audioAttributes, audioSessionId, {
 	    -> saveContext()
 	}, {
 	    onoff -> setForeground(onoff)
