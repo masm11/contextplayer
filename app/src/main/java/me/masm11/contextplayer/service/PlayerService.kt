@@ -42,6 +42,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothHeadset
 
 import java.util.Locale
+import java.util.concurrent.locks.ReentrantLock
 
 import me.masm11.contextplayer.R
 import me.masm11.contextplayer.ui.MainActivity
@@ -107,7 +108,47 @@ class PlayerService : Service() {
     private var bluetoothHeadset: BluetoothHeadset? = null
     private lateinit var headsetMonitor: Thread
     private lateinit var notificationManager: NotificationManager
+    
+    private inner class IntentHandler: Runnable {
+	private val mutex = ReentrantLock()
+	private val cond = mutex.newCondition()
+	private val queue = mutableListOf<Intent>()
+	
+	override fun run() {
+	    while (true) {
+		mutex.lock()
+		while (queue.size == 0)
+		    cond.await()
+		val intent = queue.removeAt(0)
+		mutex.unlock()
+		
+		handleIntent(intent)
+	    }
+	}
+	
+	fun enqueue(intent: Intent) {
+	    mutex.lock()
+	    queue.add(intent)
+	    cond.signal()
+	    mutex.unlock()
+	}
 
+	private fun handleIntent(intent: Intent) {
+	    val action = intent.action
+            Log.d("action=${action}")
+            when (action) {
+		ACTION_A2DP_DISCONNECTED -> pause()
+		ACTION_HEADSET_UNPLUGGED -> pause()
+		ACTION_TOGGLE -> toggle()
+		ACTION_UPDATE_APPWIDGET -> updateAppWidget()
+	    }
+	}
+	
+    }
+    
+    private val intentHandler = IntentHandler()
+    private lateinit var intentHandlerThread: Thread
+    
     fun setOnStatusChangedListener(listener: OnStatusChangedListener) {
         Log.d("listener=${listener}")
         statusChangedListeners.add(listener)
@@ -188,7 +229,10 @@ class PlayerService : Service() {
 	builder.setOnAudioFocusChangeListener(audioFocusChangeListener)
 	builder.setAudioAttributes(audioAttributes)
 	audioFocusRequest = builder.build()
-
+	
+	intentHandlerThread = Thread(intentHandler)
+	intentHandlerThread.start()
+	
         handler = Handler()
 
         volumeDuck = 100
@@ -199,12 +243,10 @@ class PlayerService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
         Log.d("action=${action}")
-        when (action) {
-            ACTION_A2DP_DISCONNECTED -> pause()
-            ACTION_HEADSET_UNPLUGGED -> pause()
-            ACTION_TOGGLE -> toggle()
-            ACTION_UPDATE_APPWIDGET -> updateAppWidget()
-        }
+	
+	if (intent != null)
+	    intentHandler.enqueue(intent)
+	
         return Service.START_NOT_STICKY
     }
 
@@ -941,6 +983,9 @@ class PlayerService : Service() {
         stopPlay()
         Log.d("release curPlayer.")
         releaseCurPlayer()
+
+	intentHandlerThread.interrupt()
+	intentHandlerThread.join()
 
 	headsetMonitor.interrupt()
 	headsetMonitor.join()
