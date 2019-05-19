@@ -60,7 +60,7 @@ import jp.ddo.masm11.logger.Log
 
 class PlayerService : Service() {
 
-    data class CurrentStatus(
+    class CurrentStatus(
             val contextId: Long,
             val path: String?,
             val topDir: String,
@@ -77,6 +77,8 @@ class PlayerService : Service() {
 		player.duration,
 		volume)
     }
+    
+    class CreatedMediaPlayer (val mediaPlayer: MediaPlayer, val path: String)
     
     interface OnStatusChangedListener {
         fun onStatusChanged(status: CurrentStatus)
