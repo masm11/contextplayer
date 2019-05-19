@@ -66,7 +66,7 @@ class PlayerService : Service() {
 		contextId,
 		player.playingPath,
 		topDir,
-		player.currentPosition,
+		player.currentPosition.toInt(),
 		player.duration,
 		volume)
     }
@@ -337,7 +337,7 @@ class PlayerService : Service() {
             Log.d("Id=${ctxt.id}")
             ctxt.path = player.playingPath
             Log.d("path=${ctxt.path}")
-            ctxt.pos = player.currentPosition.toLong()
+            ctxt.pos = player.currentPosition
             Log.d("pos=${ctxt.pos}")
 	    ctxt.volume = volume
 	    Log.d("volume=${volume}")

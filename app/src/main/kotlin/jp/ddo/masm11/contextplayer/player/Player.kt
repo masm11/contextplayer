@@ -338,16 +338,11 @@ class Player : Runnable {
 	}
     }
     
-    val currentPosition: Int
+    val currentPosition : Long
     get() {
-	try {
-	    val plr = curPlayer
-	    if (plr != null)
-		return plr.currentPosition
-	    return 0
-	} catch (e: IllegalStateException) {
-            Log.e("exception", e)
-	}
+	val plr = curPlayer
+	if (plr != null)
+	    return plr.currentPosition.toLong()
 	return 0
     }
     
