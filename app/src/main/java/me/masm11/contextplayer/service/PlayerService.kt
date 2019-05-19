@@ -381,14 +381,12 @@ class PlayerService : Service() {
 
             Log.d("set to foreground")
             setForeground(true)
-
+	    
             startBroadcast()
-
+	    
             updateAppWidget()
-/*
-
-            callSaveContextListener()
-*/
+	    
+            saveContext()
         }
     }
 
@@ -418,10 +416,8 @@ class PlayerService : Service() {
             Log.d("abandon audio focus.")
 	    audioManager.abandonAudioFocusRequest(audioFocusRequest)
 	    
-/*
             Log.d("save context")
-            callSaveContextListener()
-*/
+            saveContext()
         } catch (e: Exception) {
             Log.e("exception", e)
         }
@@ -500,9 +496,7 @@ class PlayerService : Service() {
                     nextPath = null
                     nextPlayer = null
 
-/*
-                    callSaveContextListener()
-*/
+                    saveContext()
 
                     if (curPlayer != null) {
                         Log.d("enqueue next mediaplayer.")
@@ -536,9 +530,7 @@ class PlayerService : Service() {
                     enqueueNext()
                     setMediaPlayerVolume()
 
-/*
-                    callSaveContextListener()
-*/
+                    saveContext()
 
                     true
                 })
