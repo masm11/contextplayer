@@ -92,9 +92,8 @@ class Player : Runnable {
 		}
 		OP_SEEK -> {
 		    val plr = curPlayer
-		    Log.d("pos=${msg.arg1}")
-		    if (msg.arg1 != -1 && plr != null)
-		        plr.seekTo(msg.arg1)
+		    if (plr != null)
+			plr.seekTo(msg.arg1)
 		}
 		OP_SET_VOLUME -> {
 		    val plr = curPlayer
