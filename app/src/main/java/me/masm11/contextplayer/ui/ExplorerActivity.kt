@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer.ui
+package me.masm11.contextplayer.ui
 
 import android.support.v7.app.AppCompatActivity
 import android.app.Service
@@ -49,15 +49,15 @@ import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 
-import jp.ddo.masm11.contextplayer.R
-import jp.ddo.masm11.contextplayer.db.AppDatabase
-import jp.ddo.masm11.contextplayer.db.PlayContext
-import jp.ddo.masm11.contextplayer.db.Config
-import jp.ddo.masm11.contextplayer.util.Metadata
-import jp.ddo.masm11.contextplayer.fs.MFile
-import jp.ddo.masm11.contextplayer.service.PlayerService
+import me.masm11.contextplayer.R
+import me.masm11.contextplayer.db.AppDatabase
+import me.masm11.contextplayer.db.PlayContext
+import me.masm11.contextplayer.db.Config
+import me.masm11.contextplayer.util.Metadata
+import me.masm11.contextplayer.fs.MFile
+import me.masm11.contextplayer.service.PlayerService
 
-import jp.ddo.masm11.logger.Log
+import me.masm11.logger.Log
 
 class ExplorerActivity : AppCompatActivity() {
     private var conn: PlayerServiceConnection? = null
@@ -445,7 +445,7 @@ class ExplorerActivity : AppCompatActivity() {
     }
 
     companion object {
-        private val STATE_CUR_DIR = "jp.ddo.masm11.contextplayer.CUR_DIR"
+        private val STATE_CUR_DIR = "me.masm11.contextplayer.CUR_DIR"
 
         private val mimeTypeMap = MimeTypeMap.getSingleton()
 

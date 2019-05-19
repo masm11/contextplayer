@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer.service
+package me.masm11.contextplayer.service
 
 import android.app.Service
 import android.app.Notification
@@ -43,19 +43,19 @@ import android.bluetooth.BluetoothHeadset
 
 import java.util.Locale
 
-import jp.ddo.masm11.contextplayer.R
-import jp.ddo.masm11.contextplayer.ui.MainActivity
-import jp.ddo.masm11.contextplayer.ui.ExplorerActivity
-import jp.ddo.masm11.contextplayer.util.WeakSet
-import jp.ddo.masm11.contextplayer.util.MutableWeakSet
-import jp.ddo.masm11.contextplayer.fs.MFile
-import jp.ddo.masm11.contextplayer.receiver.HeadsetReceiver
-import jp.ddo.masm11.contextplayer.db.AppDatabase
-import jp.ddo.masm11.contextplayer.db.PlayContext
-import jp.ddo.masm11.contextplayer.db.Config
-import jp.ddo.masm11.contextplayer.widget.WidgetProvider
+import me.masm11.contextplayer.R
+import me.masm11.contextplayer.ui.MainActivity
+import me.masm11.contextplayer.ui.ExplorerActivity
+import me.masm11.contextplayer.util.WeakSet
+import me.masm11.contextplayer.util.MutableWeakSet
+import me.masm11.contextplayer.fs.MFile
+import me.masm11.contextplayer.receiver.HeadsetReceiver
+import me.masm11.contextplayer.db.AppDatabase
+import me.masm11.contextplayer.db.PlayContext
+import me.masm11.contextplayer.db.Config
+import me.masm11.contextplayer.widget.WidgetProvider
 
-import jp.ddo.masm11.logger.Log
+import me.masm11.logger.Log
 
 class PlayerService : Service() {
 
@@ -973,9 +973,9 @@ class PlayerService : Service() {
     }
 
     companion object {
-        val ACTION_A2DP_DISCONNECTED = "jp.ddo.masm11.contextplayer.A2DP_DISCONNECTED"
-        val ACTION_HEADSET_UNPLUGGED = "jp.ddo.masm11.contextplayer.HEADSET_UNPLUGGED"
-        val ACTION_TOGGLE = "jp.ddo.masm11.contextplayer.TOGGLE"
-        val ACTION_UPDATE_APPWIDGET = "jp.ddo.masm11.contextplayer.UPDATE_APP_WIDGET"
+        val ACTION_A2DP_DISCONNECTED = "me.masm11.contextplayer.A2DP_DISCONNECTED"
+        val ACTION_HEADSET_UNPLUGGED = "me.masm11.contextplayer.HEADSET_UNPLUGGED"
+        val ACTION_TOGGLE = "me.masm11.contextplayer.TOGGLE"
+        val ACTION_UPDATE_APPWIDGET = "me.masm11.contextplayer.UPDATE_APP_WIDGET"
     }
 }

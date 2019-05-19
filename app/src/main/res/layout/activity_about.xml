@@ -6,11 +6,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="jp.ddo.masm11.contextplayer.ui.AboutActivity">
+    tools:context="me.masm11.contextplayer.ui.AboutActivity">
   
   <!-- action bar -->
   <fragment
-      class="jp.ddo.masm11.contextplayer.ui.ActionBarFragment"
+      class="me.masm11.contextplayer.ui.ActionBarFragment"
       android:id="@+id/actionbar_frag"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"/>

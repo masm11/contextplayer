@@ -16,7 +16,7 @@
       android:layout_height="wrap_content"
       android:textIsSelectable="false"/>
   
-  <jp.ddo.masm11.contextplayer.ui.PathView
+  <me.masm11.contextplayer.ui.PathView
       android:id="@+id/context_topdir"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"

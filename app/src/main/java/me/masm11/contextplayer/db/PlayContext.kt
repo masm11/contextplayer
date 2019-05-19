@@ -14,23 +14,41 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer
+package me.masm11.contextplayer.db
 
-import android.arch.persistence.room.Room
+import java.util.UUID
 
-import com.crashlytics.android.Crashlytics
-import io.fabric.sdk.android.Fabric
+import android.support.annotation.NonNull
+import android.arch.persistence.room.Entity
+import android.arch.persistence.room.PrimaryKey
+import android.arch.persistence.room.ColumnInfo
+import android.arch.persistence.room.Index
 
-import jp.ddo.masm11.logger.Log
-import jp.ddo.masm11.contextplayer.db.AppDatabase
-
-class Application : android.app.Application() {
-    override fun onCreate() {
-        super.onCreate()
-	
-        Fabric.with(this, Crashlytics())
-        Log.init(getExternalFilesDir(null), BuildConfig.DEBUG)
-	
-	AppDatabase.setApplication(this)
+@Entity
+class PlayContext {
+    constructor() {
+	val uuid = UUID.randomUUID()
+	val hi = uuid.getMostSignificantBits()
+	val lo = uuid.getLeastSignificantBits()
+	id = hi xor lo
+    }
+    
+    @PrimaryKey
+    var id: Long
+    
+    @NonNull
+    var name: String = ""
+    
+    @NonNull
+    var topDir: String = ""
+    
+    var path: String? = null
+    
+    var pos: Long = 0		// msec
+    
+    var volume: Int = 100
+    
+    override fun toString(): String {
+	return name
     }
 }

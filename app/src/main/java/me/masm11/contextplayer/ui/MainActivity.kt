@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer.ui
+package me.masm11.contextplayer.ui
 
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
@@ -47,15 +47,15 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.io.IOException
 import java.util.Locale
 
-import jp.ddo.masm11.contextplayer.R
-import jp.ddo.masm11.contextplayer.service.PlayerService
-import jp.ddo.masm11.contextplayer.util.Metadata
-import jp.ddo.masm11.contextplayer.fs.MFile
-import jp.ddo.masm11.contextplayer.db.AppDatabase
-import jp.ddo.masm11.contextplayer.db.PlayContext
-import jp.ddo.masm11.contextplayer.db.Config
+import me.masm11.contextplayer.R
+import me.masm11.contextplayer.service.PlayerService
+import me.masm11.contextplayer.util.Metadata
+import me.masm11.contextplayer.fs.MFile
+import me.masm11.contextplayer.db.AppDatabase
+import me.masm11.contextplayer.db.PlayContext
+import me.masm11.contextplayer.db.Config
 
-import jp.ddo.masm11.logger.Log
+import me.masm11.logger.Log
 
 class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
     private inner class PlayerServiceConnection : ServiceConnection {
@@ -187,7 +187,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         if (intent != null) {
             val action = intent.getAction()
             if (action != null && action == Intent.ACTION_MAIN) {
-                val id = intent.getLongExtra("jp.ddo.masm11.contextplayer.CONTEXT_ID", -1)
+                val id = intent.getLongExtra("me.masm11.contextplayer.CONTEXT_ID", -1)
 
                 if (id != -1L) {
                     db.configDao().setContextId(id)

@@ -14,16 +14,16 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer.receiver
+package me.masm11.contextplayer.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Intent
 import android.content.Context
 import android.media.AudioManager
 
-import jp.ddo.masm11.contextplayer.service.PlayerService
+import me.masm11.contextplayer.service.PlayerService
 
-import jp.ddo.masm11.logger.Log
+import me.masm11.logger.Log
 
 class HeadsetReceiver : BroadcastReceiver() {
     private var isPlugged = -1

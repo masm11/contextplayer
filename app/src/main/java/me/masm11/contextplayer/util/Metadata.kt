@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer.util
+package me.masm11.contextplayer.util
 
 import android.media.MediaMetadataRetriever
 
@@ -24,7 +24,7 @@ import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
 import java.util.concurrent.locks.ReentrantLock
 
-import jp.ddo.masm11.logger.Log
+import me.masm11.logger.Log
 
 class Metadata(private val path: String) {
     var title: String? = null

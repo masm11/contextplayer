@@ -14,11 +14,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer.fs
+package me.masm11.contextplayer.fs
 
 import java.io.File
 
-import jp.ddo.masm11.logger.Log
+import me.masm11.logger.Log
 
 import android.os.Environment
 import android.content.Context

@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer.ui
+package me.masm11.contextplayer.ui
 
 import android.support.v7.widget.Toolbar
 import android.app.Fragment
@@ -29,9 +29,9 @@ import android.content.Intent
 
 import kotlinx.android.synthetic.main.actionbar_fragment.view.*
 
-import jp.ddo.masm11.contextplayer.R
+import me.masm11.contextplayer.R
 
-import jp.ddo.masm11.logger.Log
+import me.masm11.logger.Log
 
 class ActionBarFragment : Fragment() {
     var toolbar: Toolbar? = null

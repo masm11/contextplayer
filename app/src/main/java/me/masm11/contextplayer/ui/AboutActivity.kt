@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer.ui
+package me.masm11.contextplayer.ui
 
 import android.support.v7.app.AppCompatActivity
 import android.webkit.WebSettings
@@ -26,9 +26,9 @@ import android.os.Bundle
 
 import kotlinx.android.synthetic.main.activity_about.*
 
-import jp.ddo.masm11.contextplayer.R
+import me.masm11.contextplayer.R
 
-import jp.ddo.masm11.logger.Log
+import me.masm11.logger.Log
 
 class AboutActivity : AppCompatActivity() {
     private inner class WebAppInterface(private val context: Context) {
@@ -36,7 +36,7 @@ class AboutActivity : AppCompatActivity() {
             @JavascriptInterface
             get() {
                 val pm = context.packageManager
-                val pi = pm.getPackageInfo("jp.ddo.masm11.contextplayer", 0)
+                val pi = pm.getPackageInfo("me.masm11.contextplayer", 0)
                 return pi.versionName
             }
     }

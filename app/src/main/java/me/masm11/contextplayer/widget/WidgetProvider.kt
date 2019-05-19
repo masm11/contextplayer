@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package jp.ddo.masm11.contextplayer.widget
+package me.masm11.contextplayer.widget
 
 import android.appwidget.AppWidgetProvider
 import android.appwidget.AppWidgetManager
@@ -25,14 +25,14 @@ import android.content.ComponentName
 import android.app.PendingIntent
 import android.os.Bundle
 
-import jp.ddo.masm11.contextplayer.R
-import jp.ddo.masm11.contextplayer.ui.ContextActivity
-import jp.ddo.masm11.contextplayer.service.PlayerService
-import jp.ddo.masm11.contextplayer.db.AppDatabase
-import jp.ddo.masm11.contextplayer.db.PlayContext
-import jp.ddo.masm11.contextplayer.db.Config
+import me.masm11.contextplayer.R
+import me.masm11.contextplayer.ui.ContextActivity
+import me.masm11.contextplayer.service.PlayerService
+import me.masm11.contextplayer.db.AppDatabase
+import me.masm11.contextplayer.db.PlayContext
+import me.masm11.contextplayer.db.Config
 
-import jp.ddo.masm11.logger.Log
+import me.masm11.logger.Log
 
 class WidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
