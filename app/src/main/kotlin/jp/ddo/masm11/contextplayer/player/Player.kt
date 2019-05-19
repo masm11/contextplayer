@@ -383,7 +383,7 @@ class Player : Runnable {
             Log.d("request audio focus.")
             callAudioFocusRequestListener(true)
 
-            setMediaPlayerVolume()
+            // setMediaPlayerVolume()
 
             try {
                 Log.d("starting.")
@@ -410,7 +410,7 @@ class Player : Runnable {
             Log.d("set to non-foreground")
             callSetForegroundListener(false)
 
-            setMediaPlayerVolume()
+            // setMediaPlayerVolume()
 
             if (curPlayer != null) {
                 /* paused から pause() は問題ないが、
@@ -436,11 +436,7 @@ class Player : Runnable {
     }
 
     private fun setMediaPlayerVolume() {
-	val vol = volume.toFloat() / 100.0f
-	if (curPlayer != null)
-            curPlayer!!.setVolume(vol, vol)
-	if (nextPlayer != null)
-            nextPlayer!!.setVolume(vol, vol)
+	//...
     }
 
     private fun enqueueNext() {

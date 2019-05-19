@@ -86,6 +86,7 @@ class PlayerService : Service() {
     
     private lateinit var db: AppDatabase
     private var topDir: String = "/"
+    private var playingPath: String? = null
     private var contextId: Long = 0
     private lateinit var audioManager: AudioManager
     private lateinit var audioAttributes: AudioAttributes
@@ -331,7 +332,7 @@ class PlayerService : Service() {
         val ctxt = db.playContextDao().find(contextId)
         if (ctxt != null) {
             Log.d("Id=${ctxt.id}")
-            ctxt.path = player.playingPath
+            ctxt.path = playingPath
             Log.d("path=${ctxt.path}")
             ctxt.pos = player.currentPosition
             Log.d("pos=${ctxt.pos}")
@@ -348,12 +349,13 @@ class PlayerService : Service() {
         Log.d("contextId=${contextId}")
         val ctxt = db.playContextDao().find(contextId)
         if (ctxt != null) {
-            val path = ctxt.path
+            playingPath = ctxt.path
             topDir = ctxt.topDir
 	    volume = ctxt.volume
-            Log.d("path=${path}")
+            Log.d("playingPath=${playingPath}")
             Log.d("topDir=${topDir}")
 	    player.setTopDir(topDir)
+	    val path = playingPath
 	    if (path != null)
 		player.setFile(path)
 	    setPlayerVolume()
