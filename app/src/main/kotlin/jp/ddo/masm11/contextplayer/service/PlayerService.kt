@@ -372,7 +372,7 @@ class PlayerService : Service() {
 	    val path = playingPath
 	    if (path != null)
 		player.setFile(path)
-	    setMediaPlayerVolume()
+	    player.setVolume(volume)
 
 /*
             if (playingPath != null) {
