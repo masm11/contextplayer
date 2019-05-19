@@ -69,12 +69,13 @@ class PlayerService : Service() {
 	    val volume: Int)
     
     private fun buildCurrentStatus(): CurrentStatus {
+	val player: MediaPlayer? = curPlayer
 	return CurrentStatus(
 		contextId,
 		playingPath,
 		topDir,
-		player.currentPosition.toInt(),
-		player.duration,
+		if (player == null) 0 else player.currentPosition,
+		if (player == null) 0 else player.duration,
 		volume)
     }
     
@@ -88,6 +89,8 @@ class PlayerService : Service() {
     private var topDir: String = "/"
     private var playingPath: String? = null
     private var nextPath: String? = null
+    private var curPlayer: MediaPlayer? = null
+    private var nextPlayer: MediaPlayer? = null
     private var contextId: Long = 0
     private lateinit var audioManager: AudioManager
     private lateinit var audioAttributes: AudioAttributes
@@ -287,11 +290,13 @@ class PlayerService : Service() {
      * context を読み出し、再生を再開する。
      */
     private fun switchContext() {
+        Log.d("curPlayer=${curPlayer}")
         player.stop()    // saveContext() を含む。
 
         Log.d("load context.")
         loadContext()
 
+        Log.d("curPlayer=${curPlayer}")
 	player.play(null)
 /*
         if (curPlayer != null) {
@@ -333,11 +338,12 @@ class PlayerService : Service() {
     private fun saveContext() {
         Log.d("contextId=${contextId}")
         val ctxt = db.playContextDao().find(contextId)
-        if (ctxt != null) {
+        if (ctxt != null && curPlayer != null) {
             Log.d("Id=${ctxt.id}")
             ctxt.path = playingPath
             Log.d("path=${ctxt.path}")
-            ctxt.pos = player.currentPosition
+            val stamp = curPlayer!!.timestamp
+            ctxt.pos = stamp.anchorMediaTimeUs / 1000    // us -> ms
             Log.d("pos=${ctxt.pos}")
 	    ctxt.volume = volume
 	    Log.d("volume=${volume}")
@@ -476,7 +482,7 @@ class PlayerService : Service() {
             contextName = ctxt.name
 
         var icon = android.R.drawable.ic_media_play
-        if (player.isPlaying)
+        if (curPlayer != null && curPlayer!!.isPlaying)
             icon = android.R.drawable.ic_media_pause
 
         WidgetProvider.updateAppWidget(this, null, icon, contextName)
