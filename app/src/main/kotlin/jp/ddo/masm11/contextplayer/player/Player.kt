@@ -202,8 +202,10 @@ class Player : Runnable {
 	private fun handle_set_volume(msg: Message) {
 	    volume = msg.arg1
 	    val vol = volume.toFloat() / 100.0f
-	    curPlayer?.setVolume(vol, vol)
-	    nextPlayer?.setVolume(vol, vol)
+	    if (curPlayer != null)
+		curPlayer!!.setVolume(vol, vol)
+	    if (nextPlayer != null)
+		nextPlayer!!.setVolume(vol, vol)
 	}
 	
 	private fun handle_set_topdir(msg: Message) {
@@ -250,9 +252,8 @@ class Player : Runnable {
 		nextPath = null
 		nextPlayer = null
 		
-		val plr = curPlayer
-		if (plr != null) {
-		    plr.start()
+		if (curPlayer != null) {
+		    curPlayer!!.start()
 		    enqueueNext()
 		}
 	    }
@@ -260,8 +261,7 @@ class Player : Runnable {
 	
 	private fun handle_toggle(@Suppress("UNUSED_PARAMETER") msg: Message) {
 	    Log.d("")
-	    val plr = curPlayer
-	    if (plr != null && plr.isPlaying)
+	    if (curPlayer != null && curPlayer!!.isPlaying)
 		stopPlay()
 	    else
 		play(null)
@@ -408,7 +408,7 @@ class Player : Runnable {
 
             try {
                 Log.d("starting.")
-                curPlayer?.start()
+                curPlayer!!.start()
             } catch (e: Exception) {
                 Log.e("exception", e)
             }
@@ -433,16 +433,15 @@ class Player : Runnable {
 
             setMediaPlayerVolume()
 
-	    val plr = curPlayer
-            if (plr != null) {
+            if (curPlayer != null) {
                 /* paused から pause() は問題ないが、
 		 * prepared から pause() は正しくないみたい。
 		 */
-                if (plr.isPlaying) {
-                    Log.d("pause ${plr}")
-                    plr.pause()
+                if (curPlayer!!.isPlaying) {
+                    Log.d("pause ${curPlayer}")
+                    curPlayer!!.pause()
                 } else
-                    Log.d("already paused ${plr}")
+                    Log.d("already paused ${curPlayer}")
             }
 
             callUpdateAppWidgetListener()
@@ -456,13 +455,15 @@ class Player : Runnable {
             Log.e("exception", e)
         }
     }
-    
+
     private fun setMediaPlayerVolume() {
 	val vol = volume.toFloat() / 100.0f
-        curPlayer?.setVolume(vol, vol)
-        nextPlayer?.setVolume(vol, vol)
+	if (curPlayer != null)
+            curPlayer!!.setVolume(vol, vol)
+	if (nextPlayer != null)
+            nextPlayer!!.setVolume(vol, vol)
     }
-    
+
     private fun enqueueNext() {
         Log.d("release nextPlayer")
         releaseNextPlayer()
@@ -481,7 +482,7 @@ class Player : Runnable {
         Log.d("nextPath=${nextPath}")
         try {
             Log.d("setting it as nextmediaplayer.")
-            curPlayer?.setNextMediaPlayer(nextPlayer)
+            curPlayer!!.setNextMediaPlayer(nextPlayer)
         } catch (e: Exception) {
             Log.e("exception", e)
         }
@@ -558,7 +559,7 @@ class Player : Runnable {
                     setMediaPlayerVolume()
 
                     Log.d("starting it.")
-                    curPlayer?.start()
+                    curPlayer!!.start()
 
                     Log.d("enqueuing next.")
                     enqueueNext()
@@ -582,10 +583,12 @@ class Player : Runnable {
     private fun releaseCurPlayer() {
         Log.d("")
         try {
-            Log.d("releasing...")
-            curPlayer?.release()
-            Log.d("releasing... ok")
-            curPlayer = null
+            if (curPlayer != null) {
+                Log.d("releasing...")
+                curPlayer!!.release()
+                Log.d("releasing... ok")
+                curPlayer = null
+            }
         } catch (e: Exception) {
             Log.e("exception", e)
         }
@@ -595,10 +598,12 @@ class Player : Runnable {
     private fun releaseNextPlayer() {
         Log.d("")
         try {
-            Log.d("releasing...")
-            nextPlayer?.release()
-            Log.d("releasing... ok")
-            nextPlayer = null
+            if (nextPlayer != null) {
+                Log.d("releasing...")
+                nextPlayer!!.release()
+                Log.d("releasing... ok")
+                nextPlayer = null
+            }
         } catch (e: Exception) {
             Log.e("exception", e)
         }
