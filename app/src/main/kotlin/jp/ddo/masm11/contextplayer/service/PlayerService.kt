@@ -166,7 +166,7 @@ class PlayerService : Service() {
 			Log.d("bluetooth headset: ${connected} -> ${newConnected}")
 			connected = newConnected
 			if (!connected)
-			    handler.post { player.stop() }
+			    handler.post { player.pause() }
 		    }
                     Thread.sleep(500)
                 }
@@ -203,9 +203,9 @@ class PlayerService : Service() {
         val action = intent?.action
         Log.d("action=${action}")
         when (action) {
-            ACTION_A2DP_DISCONNECTED -> player.stop()
-            ACTION_HEADSET_UNPLUGGED -> player.stop()
-            ACTION_TOGGLE -> player.toggle()
+            ACTION_A2DP_DISCONNECTED -> player.pause()
+            ACTION_HEADSET_UNPLUGGED -> player.pause()
+            ACTION_TOGGLE -> toggle()
             ACTION_UPDATE_APPWIDGET -> updateAppWidget()
         }
         return Service.START_NOT_STICKY
@@ -268,7 +268,7 @@ class PlayerService : Service() {
                 volumeDuck = 100
                 setMediaPlayerVolume()
             }
-            AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> player.stop()
+            AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> player.pause()
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
                 volumeDuck = 25
                 setMediaPlayerVolume()

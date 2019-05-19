@@ -90,7 +90,6 @@ class Player : Runnable {
 		    *      - playingPath == null の場合:
 		    *        → topDir 内で最初に再生できる曲を再生する。
 		    */
-		    val path = msg.obj as String?
 		    Log.i("path=${path}")
 
 		    Log.d("release nextPlayer")
@@ -243,7 +242,7 @@ class Player : Runnable {
 		OP_TOGGLE -> {
 		    Log.d("")
 		    if (curPlayer != null && curPlayer!!.isPlaying)
-			stopPlay()
+			pause()
 		    else
 			play(null)
 		}
@@ -287,14 +286,6 @@ class Player : Runnable {
 	val h = handler
 	if (h != null) {
 	    val msg = Message.obtain(h, OP_PREV)
-	    h.sendMessage(msg)
-	}
-    }
-    
-    fun toggle() {
-	val h = handler
-	if (h != null) {
-	    val msg = Message.obtain(h, OP_TOGGLE)
 	    h.sendMessage(msg)
 	}
     }
@@ -370,11 +361,11 @@ class Player : Runnable {
     private fun startPlay() {
         if (curPlayer != null) {
             Log.d("request audio focus.")
-            // audioManager.requestAudioFocus(audioFocusRequest)
+            audioManager.requestAudioFocus(audioFocusRequest)
 
             Log.d("volume on.")
 	    volumeOnOff = 100
-            // setMediaPlayerVolume()
+            setMediaPlayerVolume()
 
             try {
                 Log.d("starting.")
@@ -384,26 +375,26 @@ class Player : Runnable {
             }
 
             Log.d("set to foreground")
-            // setForeground(true)
+            setForeground(true)
 
-            // startBroadcast()
+            startBroadcast()
 
-            // updateAppWidget()
+            updateAppWidget()
 
-            // saveContext()
+            saveContext()
         }
     }
 
     private fun stopPlay() {
         try {
-            // stopBroadcast()
+            stopBroadcast()
 
             Log.d("set to non-foreground")
-            // setForeground(false)
+            setForeground(false)
 
             Log.d("volume off.")
 	    volumeOnOff = 0
-            // setMediaPlayerVolume()
+            setMediaPlayerVolume()
 
             if (curPlayer != null) {
                 /* paused から pause() は問題ないが、
@@ -416,16 +407,17 @@ class Player : Runnable {
                     Log.d("already paused ${curPlayer}")
             }
 
-            // updateAppWidget()
+            updateAppWidget()
 
             Log.d("abandon audio focus.")
-            // audioManager.abandonAudioFocusRequest(audioFocusRequest)
+            audioManager.abandonAudioFocusRequest(audioFocusRequest)
 
             Log.d("save context")
-            // saveContext()
+            saveContext()
         } catch (e: Exception) {
             Log.e("exception", e)
         }
+
     }
 
     private fun setMediaPlayerVolume() {
@@ -475,7 +467,7 @@ class Player : Runnable {
                 tested = tested + path
 
                 Log.d("try create mediaplayer.")
-                val player = MediaPlayer.create(ctxt, Uri.parse("file://${MFile(path).file.absolutePath}"), null, attr, aid)
+                val player = MediaPlayer.create(this, Uri.parse("file://${MFile(path).file.absolutePath}"), null, audioAttributes, audioSessionId)
                 if (player == null) {
                     Log.w("MediaPlayer.create() failed: ${path}")
                     path = if (back) selectPrev(path) else selectNext(path)
@@ -499,7 +491,7 @@ class Player : Runnable {
                     nextPath = null
                     nextPlayer = null
 
-                    // saveContext()
+                    saveContext()
 
                     if (curPlayer != null) {
                         Log.d("enqueue next mediaplayer.")
@@ -533,7 +525,7 @@ class Player : Runnable {
                     enqueueNext()
                     setMediaPlayerVolume()
 
-                    // saveContext()
+                    saveContext()
 
                     true
                 })
