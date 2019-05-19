@@ -71,7 +71,7 @@ class PlayerService : Service() {
     private fun buildCurrentStatus(): CurrentStatus {
 	return CurrentStatus(
 		contextId,
-		player.playingPath,
+		playingPath,
 		topDir,
 		player.currentPosition.toInt(),
 		player.duration,
