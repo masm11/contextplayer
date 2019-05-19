@@ -291,14 +291,12 @@ class PlayerService : Service() {
      */
     private fun switchContext() {
         Log.d("curPlayer=${curPlayer}")
-        player.stop()    // saveContext() を含む。
+        stopPlay()    // saveContext() を含む。
 
         Log.d("load context.")
         loadContext()
 
         Log.d("curPlayer=${curPlayer}")
-	player.play(null)
-/*
         if (curPlayer != null) {
             Log.d("starting")
             startPlay()
@@ -308,7 +306,6 @@ class PlayerService : Service() {
             Log.d("enqueue next player.")
             enqueueNext()
         }
-*/
     }
 
     private fun setForeground(on: Boolean) {
@@ -353,7 +350,6 @@ class PlayerService : Service() {
     }
 
     private fun loadContext() {
-/*
         Log.d("release nextPlayer.")
         releaseNextPlayer()
 
@@ -363,7 +359,6 @@ class PlayerService : Service() {
         releaseCurPlayer()
         Log.d("set to non-foreground.")
         setForeground(false)
-*/
 
         Log.d("getting context_id")
         contextId = db.configDao().getContextId()
@@ -376,7 +371,6 @@ class PlayerService : Service() {
             Log.d("playingPath=${playingPath}")
             Log.d("topDir=${topDir}")
 
-/*
             if (playingPath != null) {
                 Log.d("creating mediaplayer.")
                 val ret = createMediaPlayer(playingPath, ctxt.pos.toInt(), false)
@@ -405,7 +399,6 @@ class PlayerService : Service() {
                 Log.d("playingPath=${playingPath}")
                 setMediaPlayerVolume()
             }
-*/
         }
     }
 
@@ -457,11 +450,10 @@ class PlayerService : Service() {
         saveContext()
 
         Log.d("release nextPlayer.")
-	player.stop()
-        // releaseNextPlayer()
-        // stopPlay()
+        releaseNextPlayer()
+        stopPlay()
         Log.d("release curPlayer.")
-        // releaseCurPlayer()
+        releaseCurPlayer()
 
 	headsetMonitor.interrupt()
 	headsetMonitor.join()

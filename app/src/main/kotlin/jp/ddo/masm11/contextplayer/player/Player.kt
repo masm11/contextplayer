@@ -51,7 +51,6 @@ class Player : Runnable {
     private val OP_PREV = 7
     private val OP_NEXT = 8
     private val OP_TOGGLE = 9
-    private val OP_FINISH = 10
     
     private lateinit var thr: Thread
     
@@ -248,26 +247,16 @@ class Player : Runnable {
 		    else
 			play(null)
 		}
-		OP_FINISH -> {
-		    Looper.myLooper().quitSafely()
-		}
 	    }
 	}
     }
     
     override fun run() {
-	Looper.prepare()
-	handler = MyHandler()
-	Looper.loop()
-    }
-    
-    fun finish() {
-	val h = handler
-	if (h != null) {
-	    val msg = Message.obtain(h, OP_FINISH)
-	    h.sendMessage(msg)
+	while (true) {
+	    Looper.prepare()
+	    handler = MyHandler()
+	    Looper.loop()
 	}
-	thr.join()
     }
     
     fun play(path: String?) {
