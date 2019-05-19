@@ -20,6 +20,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.LocalBroadcastManager
 import android.app.Service
 import android.app.AlertDialog
 import android.app.FragmentManager
@@ -40,6 +41,8 @@ import android.content.ComponentName
 import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.content.pm.PackageInfo
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
 import android.Manifest
 
 import kotlinx.android.synthetic.main.activity_main.*
@@ -58,38 +61,8 @@ import me.masm11.contextplayer.db.Config
 import me.masm11.logger.Log
 
 class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
-    private inner class PlayerServiceConnection : ServiceConnection {
-        private val listener = object : PlayerService.OnStatusChangedListener {
-	    override fun onStatusChanged(status: PlayerService.CurrentStatus) {
-		/*
-		Log.d("path=${status.path}, topDir=${status.topDir}, position=${status.position}.")
-		*/
-		updateTrackInfo(status)
-	    }
-        }
-
-        override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            val s = service as PlayerService.PlayerServiceBinder
-	    svc = s
-
-	    s.setOnStatusChangedListener(listener)
-	    
-	    updateTrackInfo(s.currentStatus)
-	    
-            if (needSwitchContext) {
-		PlayerService.switchContext(this@MainActivity)
-                needSwitchContext = false
-            }
-        }
-
-        override fun onServiceDisconnected(name: ComponentName) {
-            svc = null
-        }
-    }
 
     private lateinit var db: AppDatabase
-    private var svc: PlayerService.PlayerServiceBinder? = null
-    private var conn: ServiceConnection? = null
     private val rootDir = MFile("//")
     private var curPath: String? = null
     private var curTopDir: String? = null
@@ -98,7 +71,9 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     private var seeking: Boolean = false
     private var vol: Int = 100
     private var needSwitchContext: Boolean = false
-
+    private lateinit var localBroadcastManager: LocalBroadcastManager
+    private lateinit var localBroadcastReceiver: BroadcastReceiver
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -195,8 +170,24 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
                 }
             }
         }
+	
+	localBroadcastManager = LocalBroadcastManager.getInstance(this)
+	localBroadcastReceiver = object: BroadcastReceiver() {
+	    override fun onReceive(context: Context, intent: Intent) {
+		val path = intent.getStringExtra(PlayerService.EXTRA_PATH)
+		val topDir = intent.getStringExtra(PlayerService.EXTRA_TOPDIR)
+		val volume = intent.getIntExtra(PlayerService.EXTRA_VOLUME, 0)
+		val pos = intent.getIntExtra(PlayerService.EXTRA_POS, 0)
+		val duration = intent.getIntExtra(PlayerService.EXTRA_DURATION, 0)
+		updateTrackInfo(path, topDir, pos, duration, volume)
+	    }
+	}
+	val filter = IntentFilter(PlayerService.ACTION_CURRENT_STATUS)
+	localBroadcastManager.registerReceiver(localBroadcastReceiver, filter)
+	
+	PlayerService.requestCurrentStatus(this)
     }
-
+    
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>,
                                             grantResults: IntArray) {
@@ -208,34 +199,23 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 	    }
         }
     }
-
-    override fun onStart() {
-        super.onStart()
-
-        // started service にする。
-        startService(Intent(this, PlayerService::class.java))
-
-        val intent = Intent(this, PlayerService::class.java)
-        conn = PlayerServiceConnection()
-        bindService(intent, conn, Service.BIND_AUTO_CREATE)
-    }
-
+    
     override fun onResume() {
         val ctxt = db.playContextDao().find(db.configDao().getContextId())
         if (ctxt != null)
             context_name.text = ctxt.name
-
+	
         super.onResume()
     }
-
-    override fun onStop() {
-        unbindService(conn)
-
-        super.onStop()
+    
+    override fun onDestroy() {
+	localBroadcastManager.unregisterReceiver(localBroadcastReceiver)
+	
+	super.onDestroy()
     }
-
-    private fun updateTrackInfo(status: PlayerService.CurrentStatus) {
-	var p = status.path
+    
+    private fun updateTrackInfo(path: String?, topDir: String, pos: Int, duration: Int, vol1: Int) {
+	var p = path
 	if (p == null)
 	    p = "//"
         if (curPath != p) {
@@ -261,14 +241,14 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             playing_artist.text = artist
         }
 
-        if (curTopDir != status.topDir) {
-            curTopDir = status.topDir
+        if (curTopDir != topDir) {
+            curTopDir = topDir
 	    val dir = curTopDir
             playing_filename.topDir = if (dir != null) dir else "//"
         }
 
-        if (maxPos != status.duration) {
-            maxPos = status.duration
+        if (maxPos != duration) {
+            maxPos = duration
 
             playing_pos.max = maxPos
 
@@ -277,8 +257,8 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             playing_maxtime.text = maxTime
         }
 
-        if (curPos != status.position) {
-            curPos = status.position
+        if (curPos != pos) {
+            curPos = pos
 
             playing_pos.progress = curPos
 
@@ -287,8 +267,8 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             playing_curtime.text = curTime
         }
 
-	if (vol != status.volume) {
-	    vol = status.volume
+	if (vol != vol1) {
+	    vol = vol1
 	    volume.progress = vol - VOLUME_BASE
 	}
     }

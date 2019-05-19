@@ -17,14 +17,17 @@
 package me.masm11.contextplayer.ui
 
 import android.support.v7.app.AppCompatActivity
+import android.support.v4.content.LocalBroadcastManager
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Parcelable
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.Context
 import android.content.DialogInterface
 import android.content.ServiceConnection
 import android.content.ComponentName
+import android.content.BroadcastReceiver
 import android.widget.ArrayAdapter
 import android.widget.AdapterView
 import android.widget.ListView
@@ -50,45 +53,19 @@ import me.masm11.contextplayer.db.Config
 import me.masm11.contextplayer.util.emptyMutableListOf
 import me.masm11.contextplayer.fs.MFile
 
+import me.masm11.logger.Log
+
 class ContextActivity : AppCompatActivity() {
-    private inner class PlayerServiceConnection : ServiceConnection {
-	// 参照を保持しておかないと、GC に回収されてしまう。
-        private val listener = object : PlayerService.OnStatusChangedListener {
-	    override fun onStatusChanged(status: PlayerService.CurrentStatus) {
-		var changed = false
-		for (item in items) {
-		    if (item.id == status.contextId) {
-			if (item.path != status.path) {
-			    item.path = status.path
-			    changed = true
-			}
-		    }
-		}
-		if (changed)
-		    adapter.notifyDataSetChanged()
-	    }
-        }
-
-        override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            val s = service as PlayerService.PlayerServiceBinder
-	    svc = s
-	    s.setOnStatusChangedListener(listener)
-        }
-
-        override fun onServiceDisconnected(name: ComponentName) {
-            svc = null
-        }
-    }
 
     private lateinit var db: AppDatabase
-    private var conn: PlayerServiceConnection? = null
-    private var svc: PlayerService.PlayerServiceBinder? = null
     private val rootDir = MFile("//")
     private lateinit var items: MutableList<Item>
     private lateinit var adapter: ItemAdapter
-
+    private lateinit var localBroadcastManager: LocalBroadcastManager
+    private lateinit var localBroadcastReceiver: BroadcastReceiver
+    
     private inner class Item(val id: Long, var name: String?, val topDir: String, var path: String?)
-
+    
     private inner class ItemAdapter(context: Context, items: List<Item>) : ArrayAdapter<Item>(context, R.layout.list_context, items) {
         private val inflater = LayoutInflater.from(context)
 
@@ -228,22 +205,28 @@ class ContextActivity : AppCompatActivity() {
             }
             builder.show()
         }
-    }
-
-    public override fun onStart() {
-        super.onStart()
-
-        // started service にする。
-        startService(Intent(this, PlayerService::class.java))
-
-        val intent = Intent(this, PlayerService::class.java)
-        conn = PlayerServiceConnection()
-        bindService(intent, conn, Service.BIND_AUTO_CREATE)
-    }
-
-    public override fun onStop() {
-        unbindService(conn)
-
-        super.onStop()
+	
+	localBroadcastManager = LocalBroadcastManager.getInstance(this)
+	localBroadcastReceiver = object: BroadcastReceiver() {
+	    override fun onReceive(context: Context, intent: Intent) {
+		Log.d("received.")
+		val contextId = intent.getLongExtra(PlayerService.EXTRA_CONTEXT_ID, 0)
+		val path = intent.getStringExtra(PlayerService.EXTRA_PATH)
+		
+		var changed = false
+		for (item in items) {
+		    if (item.id == contextId) {
+			if (item.path != path) {
+			    item.path = path
+			    changed = true
+			}
+		    }
+		}
+		if (changed)
+		    adapter.notifyDataSetChanged()
+	    }
+	}
+	val filter = IntentFilter(PlayerService.ACTION_CURRENT_STATUS)
+	localBroadcastManager.registerReceiver(localBroadcastReceiver, filter)
     }
 }

@@ -36,19 +36,6 @@ import me.masm11.contextplayer.service.PlayerService
 import me.masm11.logger.Log
 
 class OperationFragment : Fragment() {
-    private inner class PlayerServiceConnection : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            svc = service as PlayerService.PlayerServiceBinder
-        }
-
-        override fun onServiceDisconnected(name: ComponentName) {
-            svc = null
-        }
-    }
-
-    private var svc: PlayerService.PlayerServiceBinder? = null
-    private var conn: PlayerServiceConnection? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d("")
         super.onCreate(savedInstanceState)
@@ -74,26 +61,5 @@ class OperationFragment : Fragment() {
         }
 
         return view
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        // started service にする。
-        context.startService(Intent(context, PlayerService::class.java))
-
-        val intent = Intent(context, PlayerService::class.java)
-	val c = PlayerServiceConnection()
-        conn = c
-        context.bindService(intent, c, Service.BIND_AUTO_CREATE)
-    }
-
-    override fun onStop() {
-	val c = conn
-	if (c != null)
-	    context.unbindService(c)
-	conn = null
-
-        super.onStop()
     }
 }

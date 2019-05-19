@@ -41,6 +41,7 @@ import android.widget.RemoteViews
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothHeadset
+import android.support.v4.content.LocalBroadcastManager
 
 import java.util.Locale
 import java.util.concurrent.locks.ReentrantLock
@@ -61,30 +62,7 @@ import me.masm11.logger.Log
 
 class PlayerService : Service() {
 
-    class CurrentStatus(
-            val contextId: Long,
-            val path: String?,
-            val topDir: String,
-            val position: Int,
-            val duration: Int,
-	    val volume: Int)
-    
-    private fun buildCurrentStatus(): CurrentStatus {
-	val player: MediaPlayer? = curPlayer
-	return CurrentStatus(
-		contextId,
-		playingPath,
-		topDir,
-		if (player == null) 0 else player.currentPosition,
-		if (player == null) 0 else player.duration,
-		volume)
-    }
-    
     class CreatedMediaPlayer (val mediaPlayer: MediaPlayer, val path: String)
-    
-    interface OnStatusChangedListener {
-        fun onStatusChanged(status: CurrentStatus)
-    }
     
     private lateinit var db: AppDatabase
     private var topDir: String = "/"
@@ -100,7 +78,6 @@ class PlayerService : Service() {
     private lateinit var audioFocusRequest: AudioFocusRequest
     private var broadcaster: Thread? = null
     private lateinit var handler: Handler
-    private lateinit var statusChangedListeners: MutableSet<OnStatusChangedListener>
     private lateinit var headsetReceiver: BroadcastReceiver
     private var volume: Int = 0
     private var volumeDuck: Int = 0
@@ -109,6 +86,7 @@ class PlayerService : Service() {
     private var bluetoothHeadset: BluetoothHeadset? = null
     private lateinit var headsetMonitor: Thread
     private lateinit var notificationManager: NotificationManager
+    private lateinit var localBroadcastManager: LocalBroadcastManager
     
     private inner class IntentHandler: Runnable {
 	private val mutex = ReentrantLock()
@@ -133,7 +111,7 @@ class PlayerService : Service() {
 	    cond.signal()
 	    mutex.unlock()
 	}
-
+	
 	private fun handleIntent(intent: Intent) {
 	    val action = intent.action
             Log.d("action=${action}")
@@ -151,7 +129,7 @@ class PlayerService : Service() {
 		ACTION_SEEK -> handleSeek(intent)
 		ACTION_PREV_TRACK -> handlePrevTrack(intent)
 		ACTION_NEXT_TRACK -> handleNextTrack(intent)
-
+		ACTION_REQUEST_CURRENT_STATUS -> handleRequestCurrentStatus(intent)
 	    }
 	}
 	
@@ -191,28 +169,27 @@ class PlayerService : Service() {
             setVolume(volume)
         }
 
+        fun handleRequestCurrentStatus(intent: Intent) {
+	    broadcastStatus()
+        }
+
     }
     
     private val intentHandler = IntentHandler()
     private lateinit var intentHandlerThread: Thread
-    
-    fun setOnStatusChangedListener(listener: OnStatusChangedListener) {
-        Log.d("listener=${listener}")
-        statusChangedListeners.add(listener)
-    }
 
     override fun onCreate() {
 	db = AppDatabase.getDB()
 	
+	localBroadcastManager = LocalBroadcastManager.getInstance(this)
+	
 	notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 	val channel = NotificationChannel("notify_channel_1", getString(R.string.notification), NotificationManager.IMPORTANCE_LOW)
 	notificationManager.createNotificationChannel(channel)
-
-        statusChangedListeners = MutableWeakSet<OnStatusChangedListener>()
-
+	
         headsetReceiver = HeadsetReceiver()
         registerReceiver(headsetReceiver, IntentFilter(AudioManager.ACTION_HEADSET_PLUG))
-
+	
 	val ba = BluetoothAdapter.getDefaultAdapter()
 	bluetoothAdapter = ba
 	if (ba != null) {
@@ -296,18 +273,9 @@ class PlayerService : Service() {
 	
         return Service.START_NOT_STICKY
     }
-
-    inner class PlayerServiceBinder : Binder() {
-        fun setOnStatusChangedListener(listener: OnStatusChangedListener) {
-            this@PlayerService.setOnStatusChangedListener(listener)
-        }
-
-        val currentStatus: CurrentStatus
-            get() = this@PlayerService.currentStatus
-    }
-
-    override fun onBind(intent: Intent): IBinder {
-        return PlayerServiceBinder()
+    
+    override fun onBind(intent: Intent): IBinder? {
+        return null
     }
 
     /* 再生を開始する。
@@ -979,16 +947,19 @@ class PlayerService : Service() {
     }
 
     private fun broadcastStatus() {
-        val status = buildCurrentStatus()
-        for (listener in statusChangedListeners) {
-            // Log.d("listener=${listener}")
-            listener.onStatusChanged(status)
-        }
+	val intent = Intent(ACTION_CURRENT_STATUS)
+		.putExtra(EXTRA_CONTEXT_ID, contextId)
+		.putExtra(EXTRA_PATH, playingPath)
+		.putExtra(EXTRA_TOPDIR, topDir)
+		.putExtra(EXTRA_VOLUME, volume)
+	val p = curPlayer
+	if (p != null) {
+	    intent.putExtra(EXTRA_POS, p.currentPosition)
+	    intent.putExtra(EXTRA_DURATION, p.duration)
+	}
+	localBroadcastManager.sendBroadcast(intent)
     }
-
-    private val currentStatus: CurrentStatus
-        get() = buildCurrentStatus()
-
+    
     override fun onDestroy() {
         Log.d("save context")
         saveContext()
@@ -1046,11 +1017,15 @@ class PlayerService : Service() {
 	val ACTION_SEEK = "me.masm11.contextplayer.SEEK"
 	val ACTION_PREV_TRACK = "me.masm11.contextplayer.PREV_TRACK"
 	val ACTION_NEXT_TRACK = "me.masm11.contextplayer.NEXT_TRACK"
+	val ACTION_REQUEST_CURRENT_STATUS = "me.masm11.contextplayer.REQUEST_CURRENT_STATUS"
+	val ACTION_CURRENT_STATUS = "me.masm11.contextplayer.CURRENT_STATUS"
 	
 	val EXTRA_POS = "me.masm11.contextplayer.POS"
 	val EXTRA_PATH = "me.masm11.contextplayer.PATH"
 	val EXTRA_VOLUME = "me.masm11.contextplayer.VOLUME"
 	val EXTRA_TOPDIR = "me.masm11.contextplayer.TOPDIR"
+	val EXTRA_CONTEXT_ID = "me.masm11.contextplayer.CONTEXT_ID"
+	val EXTRA_DURATION = "me.masm11.contextplayer.DURATION"
 
 	fun play(ctxt: Context, path: String?) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
@@ -1101,6 +1076,12 @@ class PlayerService : Service() {
 	fun switchContext(ctxt: Context) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_SWITCH_CONTEXT
+	    ctxt.startService(intent)
+	}
+
+	fun requestCurrentStatus(ctxt: Context) {
+	    val intent = Intent(ctxt, PlayerService::class.java)
+	    intent.action = ACTION_REQUEST_CURRENT_STATUS
 	    ctxt.startService(intent)
 	}
     }

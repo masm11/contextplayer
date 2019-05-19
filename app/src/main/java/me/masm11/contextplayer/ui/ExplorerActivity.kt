@@ -60,19 +60,7 @@ import me.masm11.contextplayer.service.PlayerService
 import me.masm11.logger.Log
 
 class ExplorerActivity : AppCompatActivity() {
-    private var conn: PlayerServiceConnection? = null
-    private var svc: PlayerService.PlayerServiceBinder? = null
     private var backKeyShortPress: Boolean = false
-
-    private inner class PlayerServiceConnection : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            svc = service as PlayerService.PlayerServiceBinder
-        }
-
-        override fun onServiceDisconnected(name: ComponentName) {
-            svc = null
-        }
-    }
 
     private class FileItem(val file: MFile) {
         var title: String? = null
@@ -405,28 +393,11 @@ class ExplorerActivity : AppCompatActivity() {
     private fun play(file: MFile) {
         PlayerService.play(this, file.absolutePath)
     }
-
-    public override fun onStart() {
-        super.onStart()
-
-        // started service にする。
-        startService(Intent(this, PlayerService::class.java))
-
-        val intent = Intent(this, PlayerService::class.java)
-        conn = PlayerServiceConnection()
-        bindService(intent, conn, Service.BIND_AUTO_CREATE)
-    }
-
+    
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
         outState.putString(STATE_CUR_DIR, curDir.absolutePath)
-    }
-
-    public override fun onStop() {
-        unbindService(conn)
-
-        super.onStop()
     }
 
     public override fun onDestroy() {
