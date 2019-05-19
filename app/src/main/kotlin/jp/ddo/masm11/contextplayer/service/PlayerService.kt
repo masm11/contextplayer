@@ -99,6 +99,7 @@ class PlayerService : Service() {
     private lateinit var headsetReceiver: BroadcastReceiver
     private var volume: Int = 0
     private var volumeDuck: Int = 0
+    private var volumeOnOff: Int = 0
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothHeadset: BluetoothHeadset? = null
     private lateinit var headsetMonitor: Thread
@@ -261,8 +262,8 @@ class PlayerService : Service() {
         return PlayerServiceBinder()
     }
 
-    private fun setPlayerVolume() {
-        val vol = volume * volumeDuck / 100
+    private fun setMediaPlayerVolume() {
+        val vol = volume * volumeDuck * volumeOnOff / 100 / 100
 	player.setVolume(vol)
     }
 
@@ -271,12 +272,12 @@ class PlayerService : Service() {
         when (focusChange) {
             AudioManager.AUDIOFOCUS_GAIN -> {
                 volumeDuck = 100
-                setPlayerVolume()
+                setMediaPlayerVolume()
             }
             AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> player.stop()
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
                 volumeDuck = 25
-                setPlayerVolume()
+                setMediaPlayerVolume()
             }
         }
     }
@@ -358,7 +359,7 @@ class PlayerService : Service() {
 	    val path = playingPath
 	    if (path != null)
 		player.setFile(path)
-	    setPlayerVolume()
+	    setMediaPlayerVolume()
 
 /*
             if (playingPath != null) {
@@ -373,7 +374,7 @@ class PlayerService : Service() {
                 playingPath = ret.path
                 Log.d("curPlayer=${curPlayer}")
                 Log.d("playingPath=${playingPath}")
-                setPlayerVolume()
+                setMediaPlayerVolume()
             } else {
                 // 作られたばかりの context の場合。
                 Log.d("creating mediaplayer.")
@@ -387,7 +388,7 @@ class PlayerService : Service() {
                 playingPath = ret.path
                 Log.d("curPlayer=${curPlayer}")
                 Log.d("playingPath=${playingPath}")
-                setPlayerVolume()
+                setMediaPlayerVolume()
             }
 */
         }
@@ -474,7 +475,7 @@ class PlayerService : Service() {
 
     private fun setVolume(volume: Int) {
         this.volume = volume
-        setPlayerVolume()
+        setMediaPlayerVolume()
     }
 
     companion object {
