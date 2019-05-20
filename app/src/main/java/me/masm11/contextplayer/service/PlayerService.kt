@@ -407,7 +407,7 @@ class PlayerService : Service() {
 
     private fun toggle() {
         Log.d("")
-        if (curPlayer != null && curPlayer!!.isPlaying)
+        if (curPlayer?.isPlaying ?: false)
             pause()
         else
             play(null)
@@ -448,8 +448,9 @@ class PlayerService : Service() {
             nextPath = null
             nextPlayer = null
 
-            if (curPlayer != null) {
-                curPlayer!!.start()
+	    val p = curPlayer
+            if (p != null) {
+                p.start()
                 enqueueNext()
             }
         }
@@ -457,14 +458,16 @@ class PlayerService : Service() {
 
     private fun seek(pos: Int) {
         Log.d("pos=${pos}")
-        if (pos != -1 && curPlayer != null)
-            curPlayer!!.seekTo(pos)
+	val p = curPlayer
+        if (pos != -1 && p != null)
+            p.seekTo(pos)
     }
-
+    
     // curPlayer がセットされた状態で呼ばれ、
     // 再生を start する。
     private fun startPlay() {
-        if (curPlayer != null) {
+	val p = curPlayer
+        if (p != null) {
             Log.d("request audio focus.")
             audioManager.requestAudioFocus(audioFocusRequest)
 
@@ -474,7 +477,7 @@ class PlayerService : Service() {
 
             try {
                 Log.d("starting.")
-                curPlayer!!.start()
+                p.start()
             } catch (e: Exception) {
                 Log.e("exception", e)
             }
@@ -501,13 +504,14 @@ class PlayerService : Service() {
 	    volumeOnOff = 0
             setMediaPlayerVolume()
 
-            if (curPlayer != null) {
+	    val p = curPlayer
+            if (p != null) {
                 /* paused から pause() は問題ないが、
 		 * prepared から pause() は正しくないみたい。
 		 */
-                if (curPlayer!!.isPlaying) {
+                if (p.isPlaying) {
                     Log.d("pause ${curPlayer}")
-                    curPlayer!!.pause()
+                    p.pause()
                 } else
                     Log.d("already paused ${curPlayer}")
             }
@@ -527,10 +531,8 @@ class PlayerService : Service() {
 
     private fun setMediaPlayerVolume() {
         val vol = (volume * volumeDuck * volumeOnOff).toFloat() / 100.0f / 100.0f / 100.0f
-        if (curPlayer != null)
-            curPlayer!!.setVolume(vol, vol)
-        if (nextPlayer != null)
-            nextPlayer!!.setVolume(vol, vol)
+        curPlayer?.setVolume(vol, vol)
+        nextPlayer?.setVolume(vol, vol)
     }
 
     private fun handleAudioFocusChangeEvent(focusChange: Int) {
@@ -570,7 +572,7 @@ class PlayerService : Service() {
         Log.d("nextPath=${nextPath}")
         try {
             Log.d("setting it as nextmediaplayer.")
-            curPlayer!!.setNextMediaPlayer(nextPlayer)
+            curPlayer?.setNextMediaPlayer(nextPlayer)
         } catch (e: Exception) {
             Log.e("exception", e)
         }
@@ -668,7 +670,7 @@ class PlayerService : Service() {
         setMediaPlayerVolume()
 	
         Log.d("starting it.")
-        curPlayer!!.start()
+        curPlayer?.start()
 	
         Log.d("enqueuing next.")
         enqueueNext()
@@ -683,31 +685,25 @@ class PlayerService : Service() {
     private fun releaseCurPlayer() {
         Log.d("")
         try {
-            if (curPlayer != null) {
-                Log.d("releasing...")
-                curPlayer!!.release()
-                Log.d("releasing... ok")
-                curPlayer = null
-            }
+            Log.d("releasing...")
+            curPlayer?.release()
+            Log.d("releasing... ok")
+            curPlayer = null
         } catch (e: Exception) {
             Log.e("exception", e)
         }
-
     }
 
     private fun releaseNextPlayer() {
         Log.d("")
         try {
-            if (nextPlayer != null) {
-                Log.d("releasing...")
-                nextPlayer!!.release()
-                Log.d("releasing... ok")
-                nextPlayer = null
-            }
+            Log.d("releasing...")
+            nextPlayer?.release()
+            Log.d("releasing... ok")
+            nextPlayer = null
         } catch (e: Exception) {
             Log.e("exception", e)
         }
-
     }
     
     /* topDir を変更する。
@@ -773,11 +769,12 @@ class PlayerService : Service() {
     private fun saveContext() {
         Log.d("contextId=${contextId}")
         val ctxt = db.playContextDao().find(contextId)
-        if (ctxt != null && curPlayer != null) {
+	val p = curPlayer
+        if (ctxt != null && p != null) {
             Log.d("Id=${ctxt.id}")
             ctxt.path = playingPath
             Log.d("path=${ctxt.path}")
-            ctxt.pos = curPlayer!!.currentPosition.toLong()
+            ctxt.pos = p.currentPosition.toLong()
             Log.d("pos=${ctxt.pos}")
 	    ctxt.volume = volume
 	    Log.d("volume=${volume}")
@@ -785,7 +782,7 @@ class PlayerService : Service() {
             db.playContextDao().update(ctxt)
         }
     }
-
+    
     private fun loadContext() {
         Log.d("release nextPlayer.")
         releaseNextPlayer()
@@ -919,14 +916,14 @@ class PlayerService : Service() {
         var contextName: String? = null
         if (ctxt != null)
             contextName = ctxt.name
-
+	
         var icon = android.R.drawable.ic_media_play
-        if (curPlayer != null && curPlayer!!.isPlaying)
+        if (curPlayer?.isPlaying ?: false)
             icon = android.R.drawable.ic_media_pause
-
+	
         WidgetProvider.updateAppWidget(this, null, icon, contextName)
     }
-
+    
     private fun setVolume(volume: Int) {
         this.volume = volume
         setMediaPlayerVolume()
