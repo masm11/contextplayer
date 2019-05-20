@@ -64,6 +64,8 @@ class PlayerService : Service() {
 
     class CreatedMediaPlayer (val mediaPlayer: MediaPlayer, val path: String)
     
+    private val mutex = ReentrantLock()
+    
     private lateinit var db: AppDatabase
     private var topDir: String = "/"
     private var playingPath: String? = null
@@ -97,11 +99,13 @@ class PlayerService : Service() {
 		while (true) {
 		    mutex.lock()
 		    while (queue.size == 0)
-		    cond.await()
+			cond.await()
 		    val intent = queue.removeAt(0)
 		    mutex.unlock()
 		    
+		    this@PlayerService.mutex.lock()
 		    handleIntent(intent)
+		    this@PlayerService.mutex.unlock()
 		}
 	    } catch (e: InterruptedException) {
 		// ignore.
@@ -123,7 +127,7 @@ class PlayerService : Service() {
 		ACTION_HEADSET_UNPLUGGED -> pause()
 		ACTION_TOGGLE -> toggle()
 		ACTION_UPDATE_APPWIDGET -> updateAppWidget()
-
+		
 		ACTION_PLAY -> handlePlay(intent)
 		ACTION_PAUSE -> handlePause(intent)
 		ACTION_SET_TOPDIR -> handleSetTopDir(intent)
@@ -180,9 +184,11 @@ class PlayerService : Service() {
     
     private val intentHandler = IntentHandler()
     private lateinit var intentHandlerThread: Thread
-
+    
     // main thread
     override fun onCreate() {
+	mutex.lock()
+	
 	db = AppDatabase.getDB()
 	
 	localBroadcastManager = LocalBroadcastManager.getInstance(this)
@@ -199,16 +205,20 @@ class PlayerService : Service() {
 	if (ba != null) {
 	    ba.getProfileProxy(this, object: BluetoothProfile.ServiceListener {
 		override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
+		    mutex.lock()
 		    if (profile == BluetoothProfile.HEADSET) {
 			Log.i("Connected to bluetooth headset proxy.")
 			bluetoothHeadset = proxy as BluetoothHeadset
 		    }
+		    mutex.unlock()
 		}
 		override fun onServiceDisconnected(profile: Int) {
+		    mutex.lock()
 		    if (profile == BluetoothProfile.HEADSET) {
 			Log.i("Disconnected from bluetooth headset proxy.")
 			bluetoothHeadset = null
 		    }
+		    mutex.unlock()
 		}
 	    }, BluetoothProfile.HEADSET)
 	}
@@ -268,16 +278,21 @@ class PlayerService : Service() {
         volumeDuck = 100
 
         loadContext()
+	
+	mutex.unlock()
     }
 
     // main thread
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+	mutex.lock()
+	
         val action = intent?.action
         Log.d("action=${action}")
 	
 	if (intent != null)
 	    intentHandler.enqueue(intent)
 	
+	mutex.unlock()
         return Service.START_NOT_STICKY
     }
     
@@ -524,6 +539,8 @@ class PlayerService : Service() {
 
     // main thread
     private fun handleAudioFocusChangeEvent(focusChange: Int) {
+	mutex.lock()
+	
         Log.d("focusChange=${focusChange}")
         when (focusChange) {
             AudioManager.AUDIOFOCUS_GAIN -> {
@@ -536,6 +553,8 @@ class PlayerService : Service() {
                 setMediaPlayerVolume()
             }
         }
+	
+	mutex.unlock()
     }
 
     // another thread / main thread
@@ -610,6 +629,8 @@ class PlayerService : Service() {
     
     // main thread
     private fun handleCompletion(mp: MediaPlayer) {
+	mutex.lock()
+	
         Log.d("shifting")
         playingPath = nextPath
         curPlayer = nextPlayer
@@ -628,10 +649,14 @@ class PlayerService : Service() {
             enqueueNext()
         } else
 	    stopPlay()
+	
+	mutex.unlock()
     }
     
     // main thread
     private fun handleError(mp: MediaPlayer, what: Int, extra: Int): Boolean {
+	mutex.lock()
+	
         Log.d("error reported. ${what}, ${extra}.")
 	
         // 両方 release して新たに作り直す。
@@ -643,6 +668,7 @@ class PlayerService : Service() {
         if (ret == null) {
             Log.w("No audio file found.")
             stopPlay()
+	    mutex.unlock()
             return true
         }
 	
@@ -659,6 +685,7 @@ class PlayerService : Service() {
 	
         saveContext()
 	
+	mutex.unlock()
         return true
     }
     
@@ -879,6 +906,8 @@ class PlayerService : Service() {
     
     // main thread
     override fun onDestroy() {
+	mutex.lock()
+	
         Log.d("save context")
         saveContext()
 
@@ -899,10 +928,12 @@ class PlayerService : Service() {
 	    if (ba != null)
 		ba.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothHeadset)
 	}
-
+	
         unregisterReceiver(headsetReceiver)
+	
+	mutex.unlock()
     }
-
+    
     // another thread / main thread
     private fun updateAppWidget() {
         val ctxt = db.playContextDao().find(contextId)
