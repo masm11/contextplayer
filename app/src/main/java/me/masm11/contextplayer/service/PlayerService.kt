@@ -93,14 +93,18 @@ class PlayerService : Service() {
 	private val queue = mutableListOf<Intent>()
 	
 	override fun run() {
-	    while (true) {
-		mutex.lock()
-		while (queue.size == 0)
+	    try {
+		while (true) {
+		    mutex.lock()
+		    while (queue.size == 0)
 		    cond.await()
-		val intent = queue.removeAt(0)
-		mutex.unlock()
-		
-		handleIntent(intent)
+		    val intent = queue.removeAt(0)
+		    mutex.unlock()
+		    
+		    handleIntent(intent)
+		}
+	    } catch (e: InterruptedException) {
+		// ignore.
 	    }
 	}
 	
