@@ -37,7 +37,6 @@ import android.os.IBinder
 import android.os.Binder
 import android.os.Handler
 import android.appwidget.AppWidgetManager
-import android.widget.RemoteViews
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothHeadset
@@ -64,6 +63,17 @@ class PlayerService : Service() {
 
     class CreatedMediaPlayer (val mediaPlayer: MediaPlayer, val path: String)
     
+    /*
+    * 以下のポイントで排他制御する。
+    * - onXxxXxx
+    * - listener
+    * - 別スレッド内
+    *
+    * 以下のクラスはメインスレッドでのみ使用
+    * - android.widget.*
+    * - android.view.*
+    * (https://developer.android.com/guide/components/processes-and-threads?hl=JA 参照)
+    */
     private val mutex = ReentrantLock()
     
     private lateinit var db: AppDatabase
@@ -108,7 +118,7 @@ class PlayerService : Service() {
 		    this@PlayerService.mutex.unlock()
 		}
 	    } catch (e: InterruptedException) {
-		// ignore.
+		Log.e("interrupted.", e)
 	    }
 	}
 	
@@ -1100,32 +1110,32 @@ class PlayerService : Service() {
 	val EXTRA_TOPDIR = "me.masm11.contextplayer.TOPDIR"
 	val EXTRA_CONTEXT_ID = "me.masm11.contextplayer.CONTEXT_ID"
 	val EXTRA_DURATION = "me.masm11.contextplayer.DURATION"
-
+	
 	fun play(ctxt: Context, path: String?) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_PLAY
 	    intent.putExtra(EXTRA_PATH, path)
 	    ctxt.startService(intent)
 	}
-
+	
 	fun pause(ctxt: Context) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_PAUSE
 	    ctxt.startService(intent)
 	}
-
+	
 	fun prevTrack(ctxt: Context) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_PREV_TRACK
 	    ctxt.startService(intent)
 	}
-
+	
 	fun nextTrack(ctxt: Context) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_NEXT_TRACK
 	    ctxt.startService(intent)
 	}
-
+	
 	fun seek(ctxt: Context, pos: Int) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_SEEK
@@ -1152,7 +1162,7 @@ class PlayerService : Service() {
 	    intent.action = ACTION_SWITCH_CONTEXT
 	    ctxt.startService(intent)
 	}
-
+	
 	fun requestCurrentStatus(ctxt: Context) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_REQUEST_CURRENT_STATUS
