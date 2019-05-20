@@ -85,7 +85,6 @@ class PlayerService : Service() {
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothHeadset: BluetoothHeadset? = null
     private lateinit var headsetMonitor: Thread
-    private lateinit var notificationManager: NotificationManager
     private lateinit var localBroadcastManager: LocalBroadcastManager
     
     private inner class IntentHandler: Runnable {
@@ -183,7 +182,7 @@ class PlayerService : Service() {
 	
 	localBroadcastManager = LocalBroadcastManager.getInstance(this)
 	
-	notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+	val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 	val channel = NotificationChannel("notify_channel_1", getString(R.string.notification), NotificationManager.IMPORTANCE_LOW)
 	notificationManager.createNotificationChannel(channel)
 	
@@ -546,7 +545,7 @@ class PlayerService : Service() {
         }
 
     }
-
+    
     private fun createMediaPlayer(startPath: String?, startPos: Int, back: Boolean): CreatedMediaPlayer? {
         var path = startPath
         var pos = startPos
