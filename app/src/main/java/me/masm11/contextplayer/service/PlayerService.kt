@@ -64,6 +64,7 @@ class PlayerService : Service() {
     * - onXxxXxx
     * - listener
     * - 別スレッド内
+    * ただし、適宜 lock には lockInterruptibly を使うこと。
     *
     * 以下のクラスはメインスレッドでのみ使用
     * - android.widget.*
@@ -100,13 +101,13 @@ class PlayerService : Service() {
 	override fun run() {
 	    try {
 		while (true) {
-		    mutex.lock()
+		    mutex.lockInterruptibly()
 		    while (queue.size == 0)
 			cond.await()
 		    val intent = queue.removeAt(0)
 		    mutex.unlock()
 		    
-		    this@PlayerService.mutex.lock()
+		    this@PlayerService.mutex.lockInterruptibly()
 		    handleIntent(intent)
 		    this@PlayerService.mutex.unlock()
 		}
@@ -191,6 +192,9 @@ class PlayerService : Service() {
     override fun onCreate() {
 	mutex.lock()
 	
+	intentHandlerThread = Thread(intentHandler)
+	intentHandlerThread.start()
+	
 	db = AppDatabase.getDB()
 	
 	localBroadcastManager = LocalBroadcastManager.getInstance(this)
@@ -236,9 +240,6 @@ class PlayerService : Service() {
 	builder.setOnAudioFocusChangeListener { focusChange -> handleAudioFocusChangeEvent(focusChange) }
 	builder.setAudioAttributes(audioAttributes)
 	audioFocusRequest = builder.build()
-	
-	intentHandlerThread = Thread(intentHandler)
-	intentHandlerThread.start()
 	
         volumeDuck = 100
 
@@ -795,32 +796,40 @@ class PlayerService : Service() {
     }
 
     private fun startBroadcast() {
+	Log.d("enter.")
         val code = Runnable {
-            try {
-                while (true) {
-		    mutex.lock()
-                    broadcastStatus()
+	    try {
+		while (true) {
+		    mutex.lockInterruptibly()
+		    broadcastStatus()
 		    mutex.unlock()
 		    
                     Thread.sleep(500)
-                }
-            } catch (e: InterruptedException) {
+		}
+	    } catch (e: InterruptedException) {
                 Log.d("interrupted.", e)
             }
         }
-
+	
+	Log.d("stop broadcast.")
         stopBroadcast()    // 念の為
+	Log.d("creating thread.")
 	val thr = Thread(code)
         broadcaster = thr
+	Log.d("starting thread.")
         thr.start()
+	Log.d("leave.")
     }
     
     private fun stopBroadcast() {
 	val thr = broadcaster
         if (thr != null) {
+	    Log.d("interrupt")
             thr.interrupt()
             try {
+		Log.d("joining...")
                 thr.join()
+		Log.d("joining... done")
             } catch (e: InterruptedException) {
                 Log.e("interrupted.", e)
             }
