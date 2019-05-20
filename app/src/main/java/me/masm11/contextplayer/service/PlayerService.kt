@@ -34,8 +34,6 @@ import android.content.IntentFilter
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.os.IBinder
-import android.os.Binder
-import android.os.Handler
 import android.appwidget.AppWidgetManager
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothAdapter
@@ -86,7 +84,6 @@ class PlayerService : Service() {
     private var audioSessionId: Int = 0
     private lateinit var audioFocusRequest: AudioFocusRequest
     private var broadcaster: Thread? = null
-    private lateinit var handler: Handler
     private lateinit var headsetReceiver: BroadcastReceiver
     private var volume: Int = 0
     private var volumeDuck: Int = 0
@@ -243,8 +240,6 @@ class PlayerService : Service() {
 	intentHandlerThread = Thread(intentHandler)
 	intentHandlerThread.start()
 	
-        handler = Handler()
-
         volumeDuck = 100
 
         loadContext()
