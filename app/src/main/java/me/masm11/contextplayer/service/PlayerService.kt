@@ -407,7 +407,7 @@ class PlayerService : Service() {
                 releaseNextPlayer()
                 releaseCurPlayer()
 
-                val ret = createMediaPlayer(selectPrev(playingPath), 0, true)
+                val ret = createMediaPlayer(selectPrev(playingPath, topDir), 0, true)
                 if (ret == null) {
                     Log.w("No audio file.")
                     stopPlay()
@@ -544,7 +544,7 @@ class PlayerService : Service() {
         releaseNextPlayer()
 
         Log.d("creating mediaplayer")
-        val ret = createMediaPlayer(selectNext(playingPath), 0, false)
+        val ret = createMediaPlayer(selectNext(playingPath, topDir), 0, false)
         if (ret == null) {
             Log.w("No audio file found.")
             return
@@ -586,7 +586,7 @@ class PlayerService : Service() {
                 val player = MediaPlayer.create(this, Uri.parse("file://${MFile(path).file.absolutePath}"), null, audioAttributes, audioSessionId)
                 if (player == null) {
                     Log.w("MediaPlayer.create() failed: ${path}")
-                    path = if (back) selectPrev(path) else selectNext(path)
+                    path = if (back) selectPrev(path, topDir) else selectNext(path, topDir)
                     pos = 0    // お目当てのファイルが見つからなかった。次のファイルの先頭からとする。
                     continue
                 }
@@ -693,129 +693,7 @@ class PlayerService : Service() {
         }
 
     }
-
-    // another thread / main thread
-    private fun selectNext(nextOf: String?): String? {
-	if (nextOf == null)
-	    return null;
-        Log.d("nextOf=${nextOf}")
-        var found: String? = null
-        if (nextOf.startsWith(topDir)) {
-	    if (topDir != "//") {
-		//                           +1: for '/'   ↓
-		val parts = nextOf.substring(topDir.length + 1).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-		found = lookForFile(MFile(topDir), parts, 0, false)
-	    } else {
-		val parts = nextOf.substring(2).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-		found = lookForFile(MFile(topDir), parts, 0, false)
-	    }
-        }
-        if (found == null)
-            found = lookForFile(MFile(topDir), null, 0, false)
-        Log.d("found=${found}")
-        return found
-    }
-
-    // another thread / main thread
-    private fun selectPrev(prevOf: String?): String? {
-	if (prevOf == null)
-	    return null;
-        Log.d("prevOf=${prevOf}")
-        var found: String? = null
-        if (prevOf.startsWith(topDir)) {
-	    if (topDir != "//") {
-		//                            +1: for '/'  ↓
-		val parts = prevOf.substring(topDir.length + 1).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-		found = lookForFile(MFile(topDir), parts, 0, true)
-	    } else {
-		val parts = prevOf.substring(2).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-		found = lookForFile(MFile(topDir), parts, 0, true)
-	    }
-        }
-        if (found == null)
-            found = lookForFile(MFile(topDir), null, 0, true)
-        Log.d("found=${found}")
-        return found
-    }
-
-    /* 次のファイルを探す。
-     *   dir: 今見ているディレクトリ
-     *   parts[]: topdir からの相対 path。'/' で区切られている。
-     *   parts_idx: ディレクトリの nest。
-     *   backward: 逆向き検索。
-     * 最初にこのメソッドに来る時、nextOf は、
-     *   /dir/parts[0]/parts[1]/…/parts[N]
-     * だったことになる。
-     * lookForFile() の役割は、dir 内 subdir も含めて、nextOf の次のファイルを探すこと。
-     * parts == null の場合、nextOf の path tree から外れた場所を探している。
-     */
-    // another thread / main thread
-    private fun lookForFile(dir: MFile, parts: Array<String>?, parts_idx: Int, backward: Boolean): String? {
-        var cur: String? = null
-        if (parts != null) {
-            if (parts_idx < parts.size)
-                cur = parts[parts_idx]
-        }
-
-        val files = ExplorerActivity.listFiles(dir, backward)
-
-        for (file in files) {
-            if (cur == null) {
-                if (file.isDirectory) {
-                    val r = lookForFile(file, null, parts_idx + 1, backward)
-                    if (r != null)
-                        return r
-                } else {
-                    return file.absolutePath
-                }
-            } else {
-                val compare = comparePath(file.name, cur)
-                if (compare == 0) {
-                    // 今そこ。
-                    if (file.isDirectory) {
-                        val r = lookForFile(file, parts, parts_idx + 1, backward)
-                        if (r != null)
-                            return r
-                    } else {
-                        // これは今再生中。
-                    }
-                } else if (!backward && compare > 0) {
-                    if (file.isDirectory) {
-                        // 次を探していたら dir だった
-                        val r = lookForFile(file, null, parts_idx + 1, backward)
-                        if (r != null)
-                            return r
-                    } else {
-                        // 次のファイルを見つけた
-                        return file.absolutePath
-                    }
-                } else if (backward && compare < 0) {
-                    if (file.isDirectory) {
-                        // 次を探していたら dir だった
-                        val r = lookForFile(file, null, parts_idx + 1, backward)
-                        if (r != null)
-                            return r
-                    } else {
-                        // 次のファイルを見つけた
-                        return file.absolutePath
-                    }
-                }
-            }
-        }
-
-        return null
-    }
-
-    // another thread
-    private fun comparePath(p1: String, p2: String): Int {
-        val l1 = p1.toLowerCase(Locale.getDefault())
-        val l2 = p2.toLowerCase(Locale.getDefault())
-        var r = l1.compareTo(l2)
-        if (r == 0)
-            r = p1.compareTo(p2)
-        return r
-    }
-
+    
     /* topDir を変更する。
      *    topDir を設定し、enqueueNext() し直す。
      */
@@ -1046,6 +924,129 @@ class PlayerService : Service() {
     }
 
     companion object {
+	
+	// another thread / main thread
+	private fun selectNext(nextOf: String?, topDir: String): String? {
+	    if (nextOf == null)
+		return null;
+            Log.d("nextOf=${nextOf}")
+            var found: String? = null
+            if (nextOf.startsWith(topDir)) {
+		if (topDir != "//") {
+		    //                           +1: for '/'   ↓
+		    val parts = nextOf.substring(topDir.length + 1).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+		    found = lookForFile(MFile(topDir), parts, 0, false)
+		} else {
+		    val parts = nextOf.substring(2).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+		    found = lookForFile(MFile(topDir), parts, 0, false)
+		}
+            }
+            if (found == null)
+		found = lookForFile(MFile(topDir), null, 0, false)
+            Log.d("found=${found}")
+            return found
+	}
+	
+	// another thread / main thread
+	private fun selectPrev(prevOf: String?, topDir: String): String? {
+	    if (prevOf == null)
+		return null;
+            Log.d("prevOf=${prevOf}")
+            var found: String? = null
+            if (prevOf.startsWith(topDir)) {
+		if (topDir != "//") {
+		    //                            +1: for '/'  ↓
+		    val parts = prevOf.substring(topDir.length + 1).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+		    found = lookForFile(MFile(topDir), parts, 0, true)
+		} else {
+		    val parts = prevOf.substring(2).split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+		    found = lookForFile(MFile(topDir), parts, 0, true)
+		}
+            }
+            if (found == null)
+		found = lookForFile(MFile(topDir), null, 0, true)
+            Log.d("found=${found}")
+            return found
+	}
+	
+	/* 次のファイルを探す。
+	*   dir: 今見ているディレクトリ
+	*   parts[]: topdir からの相対 path。'/' で区切られている。
+	*   parts_idx: ディレクトリの nest。
+	*   backward: 逆向き検索。
+	* 最初にこのメソッドに来る時、nextOf は、
+	*   /dir/parts[0]/parts[1]/…/parts[N]
+	* だったことになる。
+	* lookForFile() の役割は、dir 内 subdir も含めて、nextOf の次のファイルを探すこと。
+	* parts == null の場合、nextOf の path tree から外れた場所を探している。
+	*/
+	// another thread / main thread
+	private fun lookForFile(dir: MFile, parts: Array<String>?, parts_idx: Int, backward: Boolean): String? {
+            var cur: String? = null
+            if (parts != null) {
+		if (parts_idx < parts.size)
+		    cur = parts[parts_idx]
+            }
+	    
+            val files = ExplorerActivity.listFiles(dir, backward)
+	    
+            for (file in files) {
+		if (cur == null) {
+                    if (file.isDirectory) {
+			val r = lookForFile(file, null, parts_idx + 1, backward)
+			if (r != null)
+			    return r
+		    } else {
+			return file.absolutePath
+                    }
+		} else {
+                    val compare = comparePath(file.name, cur)
+                    if (compare == 0) {
+			// 今そこ。
+			if (file.isDirectory) {
+                            val r = lookForFile(file, parts, parts_idx + 1, backward)
+                            if (r != null)
+				return r
+			} else {
+                            // これは今再生中。
+			}
+                    } else if (!backward && compare > 0) {
+			if (file.isDirectory) {
+                            // 次を探していたら dir だった
+                            val r = lookForFile(file, null, parts_idx + 1, backward)
+                            if (r != null)
+				return r
+			} else {
+			    // 次のファイルを見つけた
+			    return file.absolutePath
+			}
+		    } else if (backward && compare < 0) {
+			if (file.isDirectory) {
+			    // 次を探していたら dir だった
+			    val r = lookForFile(file, null, parts_idx + 1, backward)
+			    if (r != null)
+				return r
+			} else {
+			    // 次のファイルを見つけた
+			    return file.absolutePath
+			}
+		    }
+		}
+	    }
+	    
+	    return null
+	}
+	
+	// another thread
+	private fun comparePath(p1: String, p2: String): Int {
+            val l1 = p1.toLowerCase(Locale.getDefault())
+            val l2 = p2.toLowerCase(Locale.getDefault())
+            var r = l1.compareTo(l2)
+            if (r == 0)
+		r = p1.compareTo(p2)
+	    return r
+	}
+	
         val ACTION_A2DP_DISCONNECTED = "me.masm11.contextplayer.A2DP_DISCONNECTED"
         val ACTION_HEADSET_UNPLUGGED = "me.masm11.contextplayer.HEADSET_UNPLUGGED"
         val ACTION_TOGGLE = "me.masm11.contextplayer.TOGGLE"
