@@ -181,6 +181,7 @@ class PlayerService : Service() {
     private val intentHandler = IntentHandler()
     private lateinit var intentHandlerThread: Thread
 
+    // main thread
     override fun onCreate() {
 	db = AppDatabase.getDB()
 	
@@ -269,6 +270,7 @@ class PlayerService : Service() {
         loadContext()
     }
 
+    // main thread
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
         Log.d("action=${action}")
@@ -279,6 +281,7 @@ class PlayerService : Service() {
         return Service.START_NOT_STICKY
     }
     
+    // main thread
     override fun onBind(intent: Intent): IBinder? {
         return null
     }
@@ -295,6 +298,7 @@ class PlayerService : Service() {
      *      - playingPath == null の場合:
      *        → topDir 内で最初に再生できる曲を再生する。
      */
+    // another thread
     private fun play(path: String?) {
         Log.i("path=${path}")
 
@@ -377,11 +381,13 @@ class PlayerService : Service() {
      *  - curPlayer == null の場合
      *    → 何もしない
      */
+    // another thread
     private fun pause() {
         Log.d("")
         stopPlay()
     }
 
+    // another thread
     private fun toggle() {
         Log.d("")
         if (curPlayer != null && curPlayer!!.isPlaying)
@@ -390,6 +396,7 @@ class PlayerService : Service() {
             play(null)
     }
 
+    // another thread
     private fun prevTrack() {
 	val player: MediaPlayer? = curPlayer
         if (player != null) {
@@ -416,6 +423,7 @@ class PlayerService : Service() {
         }
     }
 
+    // another thread
     private fun nextTrack() {
         if (curPlayer != null) {
             releaseCurPlayer()
@@ -432,6 +440,7 @@ class PlayerService : Service() {
         }
     }
 
+    // another thread
     private fun seek(pos: Int) {
         Log.d("pos=${pos}")
         if (pos != -1 && curPlayer != null)
@@ -440,6 +449,7 @@ class PlayerService : Service() {
 
     // curPlayer がセットされた状態で呼ばれ、
     // 再生を start する。
+    // another thread
     private fun startPlay() {
         if (curPlayer != null) {
             Log.d("request audio focus.")
@@ -467,6 +477,7 @@ class PlayerService : Service() {
         }
     }
 
+    // another thread / main thread
     private fun stopPlay() {
         try {
             stopBroadcast()
@@ -502,6 +513,7 @@ class PlayerService : Service() {
 
     }
 
+    // another thread / main thread
     private fun setMediaPlayerVolume() {
         val vol = (volume * volumeDuck * volumeOnOff).toFloat() / 100.0f / 100.0f / 100.0f
         if (curPlayer != null)
@@ -510,6 +522,7 @@ class PlayerService : Service() {
             nextPlayer!!.setVolume(vol, vol)
     }
 
+    // main thread
     private fun handleAudioFocusChangeEvent(focusChange: Int) {
         Log.d("focusChange=${focusChange}")
         when (focusChange) {
@@ -525,6 +538,7 @@ class PlayerService : Service() {
         }
     }
 
+    // another thread / main thread
     private fun enqueueNext() {
         Log.d("release nextPlayer")
         releaseNextPlayer()
@@ -550,6 +564,7 @@ class PlayerService : Service() {
 
     }
     
+    // another thread / main thread
     private fun createMediaPlayer(startPath: String?, startPos: Int, back: Boolean): CreatedMediaPlayer? {
         var path = startPath
         var pos = startPos
@@ -593,6 +608,7 @@ class PlayerService : Service() {
         }
     }
     
+    // main thread
     private fun handleCompletion(mp: MediaPlayer) {
         Log.d("shifting")
         playingPath = nextPath
@@ -614,6 +630,7 @@ class PlayerService : Service() {
 	    stopPlay()
     }
     
+    // main thread
     private fun handleError(mp: MediaPlayer, what: Int, extra: Int): Boolean {
         Log.d("error reported. ${what}, ${extra}.")
 	
@@ -645,6 +662,7 @@ class PlayerService : Service() {
         return true
     }
     
+    // main thread / another thread
     private fun releaseCurPlayer() {
         Log.d("")
         try {
@@ -660,6 +678,7 @@ class PlayerService : Service() {
 
     }
 
+    // another thread / main thread
     private fun releaseNextPlayer() {
         Log.d("")
         try {
@@ -675,6 +694,7 @@ class PlayerService : Service() {
 
     }
 
+    // another thread / main thread
     private fun selectNext(nextOf: String?): String? {
 	if (nextOf == null)
 	    return null;
@@ -696,6 +716,7 @@ class PlayerService : Service() {
         return found
     }
 
+    // another thread / main thread
     private fun selectPrev(prevOf: String?): String? {
 	if (prevOf == null)
 	    return null;
@@ -728,6 +749,7 @@ class PlayerService : Service() {
      * lookForFile() の役割は、dir 内 subdir も含めて、nextOf の次のファイルを探すこと。
      * parts == null の場合、nextOf の path tree から外れた場所を探している。
      */
+    // another thread / main thread
     private fun lookForFile(dir: MFile, parts: Array<String>?, parts_idx: Int, backward: Boolean): String? {
         var cur: String? = null
         if (parts != null) {
@@ -784,6 +806,7 @@ class PlayerService : Service() {
         return null
     }
 
+    // another thread
     private fun comparePath(p1: String, p2: String): Int {
         val l1 = p1.toLowerCase(Locale.getDefault())
         val l2 = p2.toLowerCase(Locale.getDefault())
@@ -796,6 +819,7 @@ class PlayerService : Service() {
     /* topDir を変更する。
      *    topDir を設定し、enqueueNext() し直す。
      */
+    // another thread
     private fun setTopDir(path: String) {
         Log.d("path=${path}")
         topDir = path
@@ -810,6 +834,7 @@ class PlayerService : Service() {
      * 今再生中なら pause() し、context を保存する。
      * context を読み出し、再生を再開する。
      */
+    // another thread
     private fun switchContext() {
         Log.d("curPlayer=${curPlayer}")
         stopPlay()    // saveContext() を含む。
@@ -829,6 +854,7 @@ class PlayerService : Service() {
         }
     }
 
+    // another thread / main thread
     private fun setForeground(on: Boolean) {
         Log.d("on=${on}")
         if (on) {
@@ -853,6 +879,7 @@ class PlayerService : Service() {
         }
     }
 
+    // another thread / main thread
     private fun saveContext() {
         Log.d("contextId=${contextId}")
         val ctxt = db.playContextDao().find(contextId)
@@ -869,6 +896,7 @@ class PlayerService : Service() {
         }
     }
 
+    // another thread / main thread
     private fun loadContext() {
         Log.d("release nextPlayer.")
         releaseNextPlayer()
@@ -922,6 +950,7 @@ class PlayerService : Service() {
         }
     }
 
+    // another thread
     private fun startBroadcast() {
         val code = Runnable {
             try {
@@ -940,6 +969,7 @@ class PlayerService : Service() {
         thr.start()
     }
 
+    // another thread / main thread
     private fun stopBroadcast() {
 	val thr = broadcaster
         if (thr != null) {
@@ -953,7 +983,8 @@ class PlayerService : Service() {
             broadcaster = null
         }
     }
-
+    
+    // another thread
     private fun broadcastStatus() {
 	val intent = Intent(ACTION_CURRENT_STATUS)
 		.putExtra(EXTRA_CONTEXT_ID, contextId)
@@ -968,6 +999,7 @@ class PlayerService : Service() {
 	localBroadcastManager.sendBroadcast(intent)
     }
     
+    // main thread
     override fun onDestroy() {
         Log.d("save context")
         saveContext()
@@ -993,6 +1025,7 @@ class PlayerService : Service() {
         unregisterReceiver(headsetReceiver)
     }
 
+    // another thread / main thread
     private fun updateAppWidget() {
         val ctxt = db.playContextDao().find(contextId)
         var contextName: String? = null
@@ -1006,6 +1039,7 @@ class PlayerService : Service() {
         WidgetProvider.updateAppWidget(this, null, icon, contextName)
     }
 
+    // another thread
     private fun setVolume(volume: Int) {
         this.volume = volume
         setMediaPlayerVolume()
