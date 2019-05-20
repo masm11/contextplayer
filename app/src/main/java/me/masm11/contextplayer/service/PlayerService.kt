@@ -573,7 +573,7 @@ class PlayerService : Service() {
                     player.seekTo(pos)
                 }
                 player.setOnCompletionListener { mp -> handleCompletion(mp) }
-                player.setOnErrorListener(MediaPlayer.OnErrorListener { mp, what, extra -> handleError(mp, what, extra) })
+                player.setOnErrorListener { mp, what, extra -> handleError(mp, what, extra) }
 		
                 Log.d("done. player=${player}, path=${path}")
                 return CreatedMediaPlayer(player, path)
