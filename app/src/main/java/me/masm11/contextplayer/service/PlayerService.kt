@@ -84,7 +84,6 @@ class PlayerService : Service() {
     private lateinit var audioManager: AudioManager
     private lateinit var audioAttributes: AudioAttributes
     private var audioSessionId: Int = 0
-    private lateinit var audioFocusChangeListener: AudioManager.OnAudioFocusChangeListener
     private lateinit var audioFocusRequest: AudioFocusRequest
     private var broadcaster: Thread? = null
     private lateinit var handler: Handler
@@ -94,7 +93,6 @@ class PlayerService : Service() {
     private var volumeOnOff: Int = 0
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothHeadset: BluetoothHeadset? = null
-    private lateinit var headsetMonitor: Thread
     private lateinit var localBroadcastManager: LocalBroadcastManager
     
     private inner class IntentHandler: Runnable {
@@ -230,50 +228,15 @@ class PlayerService : Service() {
 	    }, BluetoothProfile.HEADSET)
 	}
 
-	/* bluetooth headset への接続が切れたら、再生を停止する。
-	* intent だとかなり遅延することがあるので、
-	* 自前で BluetoothHeadset class で接続状況を監視する。
-	* log がかなりうざい…
-	*/
-	val code = Runnable {
-	    var connected = false
-            try {
-                while (true) {
-/*
-		    val headset = bluetoothHeadset
-		    var newConnected = false
-		    if (headset != null) {
-			val devices = headset.getConnectedDevices()
-			if (devices.size >= 1)
-			    newConnected = true
-		    }
-		    if (connected != newConnected) {
-			Log.d("bluetooth headset: ${connected} -> ${newConnected}")
-			connected = newConnected
-			if (!connected)
-			    handler.post { pause() }
-		    }
-*/
-                    Thread.sleep(500)
-                }
-            } catch (e: InterruptedException) {
-                Log.d("interrupted.", e)
-            }
-	}
-	headsetMonitor = Thread(code)
-	headsetMonitor.start()
-
         audioAttributes = AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_MEDIA)
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                 .build()
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         audioSessionId = audioManager.generateAudioSessionId()
-
-        val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange -> handleAudioFocusChangeEvent(focusChange) }
-
+	
 	val builder = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-	builder.setOnAudioFocusChangeListener(audioFocusChangeListener)
+	builder.setOnAudioFocusChangeListener { focusChange -> handleAudioFocusChangeEvent(focusChange) }
 	builder.setAudioAttributes(audioAttributes)
 	audioFocusRequest = builder.build()
 	
@@ -840,7 +803,10 @@ class PlayerService : Service() {
         val code = Runnable {
             try {
                 while (true) {
-                    handler.post { broadcastStatus() }
+		    mutex.lock()
+                    broadcastStatus()
+		    mutex.unlock()
+		    
                     Thread.sleep(500)
                 }
             } catch (e: InterruptedException) {
@@ -853,7 +819,7 @@ class PlayerService : Service() {
         broadcaster = thr
         thr.start()
     }
-
+    
     private fun stopBroadcast() {
 	val thr = broadcaster
         if (thr != null) {
@@ -896,10 +862,7 @@ class PlayerService : Service() {
 
 	intentHandlerThread.interrupt()
 	intentHandlerThread.join()
-
-	headsetMonitor.interrupt()
-	headsetMonitor.join()
-
+	
 	if (bluetoothHeadset != null) {
 	    val ba = bluetoothAdapter
 	    if (ba != null)
