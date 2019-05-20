@@ -860,8 +860,7 @@ class PlayerService : Service() {
             Log.d("Id=${ctxt.id}")
             ctxt.path = playingPath
             Log.d("path=${ctxt.path}")
-            val stamp = curPlayer!!.timestamp
-            ctxt.pos = stamp.anchorMediaTimeUs / 1000    // us -> ms
+            ctxt.pos = curPlayer!!.currentPosition.toLong()
             Log.d("pos=${ctxt.pos}")
 	    ctxt.volume = volume
 	    Log.d("volume=${volume}")
