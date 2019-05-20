@@ -577,57 +577,9 @@ class PlayerService : Service() {
                     Log.d("seek to ${pos}")
                     player.seekTo(pos)
                 }
-                player.setOnCompletionListener { mp ->
-                    Log.d("shifting")
-                    playingPath = nextPath
-                    curPlayer = nextPlayer
-                    Log.d("now playingPath=${playingPath}")
-                    Log.d("now curPlayer=${curPlayer}")
-                    Log.d("releasing ${mp}")
-                    mp.release()
-                    Log.d("clearing nextPath/nextPlayer")
-                    nextPath = null
-                    nextPlayer = null
-
-                    saveContext()
-
-                    if (curPlayer != null) {
-                        Log.d("enqueue next mediaplayer.")
-                        enqueueNext()
-                    } else
-                        stopPlay()
-                }
-                player.setOnErrorListener(MediaPlayer.OnErrorListener { _, what, extra ->
-                    Log.d("error reported. ${what}, ${extra}.")
-
-                    // 両方 release して新たに作り直す。
-                    releaseNextPlayer()
-                    releaseCurPlayer()
-
-                    Log.d("creating mediaplayer.")
-                    val ret = createMediaPlayer(nextPath, 0, false)
-                    if (ret == null) {
-                        Log.w("No audio file found.")
-                        stopPlay()
-                        return@OnErrorListener true
-                    }
-
-                    curPlayer = ret.mediaPlayer
-                    playingPath = ret.path
-                    setMediaPlayerVolume()
-
-                    Log.d("starting it.")
-                    curPlayer!!.start()
-
-                    Log.d("enqueuing next.")
-                    enqueueNext()
-                    setMediaPlayerVolume()
-
-                    saveContext()
-
-                    true
-                })
-
+                player.setOnCompletionListener { mp -> handleCompletion(mp) }
+                player.setOnErrorListener(MediaPlayer.OnErrorListener { mp, what, extra -> handleError(mp, what, extra) })
+		
                 Log.d("done. player=${player}, path=${path}")
                 return CreatedMediaPlayer(player, path)
             } catch (e: Exception) {
@@ -637,7 +589,59 @@ class PlayerService : Service() {
             return null
         }
     }
-
+    
+    private fun handleCompletion(mp: MediaPlayer) {
+        Log.d("shifting")
+        playingPath = nextPath
+        curPlayer = nextPlayer
+        Log.d("now playingPath=${playingPath}")
+        Log.d("now curPlayer=${curPlayer}")
+        Log.d("releasing ${mp}")
+        mp.release()
+        Log.d("clearing nextPath/nextPlayer")
+        nextPath = null
+        nextPlayer = null
+	
+        saveContext()
+	
+        if (curPlayer != null) {
+            Log.d("enqueue next mediaplayer.")
+            enqueueNext()
+        } else
+	    stopPlay()
+    }
+    
+    private fun handleError(mp: MediaPlayer, what: Int, extra: Int): Boolean {
+        Log.d("error reported. ${what}, ${extra}.")
+	
+        // 両方 release して新たに作り直す。
+        releaseNextPlayer()
+        releaseCurPlayer()
+	
+        Log.d("creating mediaplayer.")
+        val ret = createMediaPlayer(nextPath, 0, false)
+        if (ret == null) {
+            Log.w("No audio file found.")
+            stopPlay()
+            return true
+        }
+	
+        curPlayer = ret.mediaPlayer
+        playingPath = ret.path
+        setMediaPlayerVolume()
+	
+        Log.d("starting it.")
+        curPlayer!!.start()
+	
+        Log.d("enqueuing next.")
+        enqueueNext()
+        setMediaPlayerVolume()
+	
+        saveContext()
+	
+        return true
+    }
+    
     private fun releaseCurPlayer() {
         Log.d("")
         try {
