@@ -48,7 +48,7 @@ class HeadsetReceiver : BroadcastReceiver() {
                         Log.d("headset unplugged.")
                         val i = Intent(context, PlayerService::class.java)
                         i.action = PlayerService.ACTION_HEADSET_UNPLUGGED
-                        context.startService(i)
+                        context.startForegroundService(i)
                     }
                     isPlugged = state
                 } else {

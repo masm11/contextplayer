@@ -68,7 +68,7 @@ class BluetoothReceiver : BroadcastReceiver() {
                     Log.d("disconnected.")
                     val i = Intent(context, PlayerService::class.java)
                     i.action = PlayerService.ACTION_A2DP_DISCONNECTED
-                    context.startService(i)
+                    context.startForegroundService(i)
 		}
 	    }
         }

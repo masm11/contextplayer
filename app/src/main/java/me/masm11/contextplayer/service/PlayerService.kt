@@ -1044,58 +1044,58 @@ class PlayerService : Service() {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_PLAY
 	    intent.putExtra(EXTRA_PATH, path)
-	    ctxt.startService(intent)
+	    ctxt.startForegroundService(intent)
 	}
 	
 	fun pause(ctxt: Context) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_PAUSE
-	    ctxt.startService(intent)
+	    ctxt.startForegroundService(intent)
 	}
 	
 	fun prevTrack(ctxt: Context) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_PREV_TRACK
-	    ctxt.startService(intent)
+	    ctxt.startForegroundService(intent)
 	}
 	
 	fun nextTrack(ctxt: Context) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_NEXT_TRACK
-	    ctxt.startService(intent)
+	    ctxt.startForegroundService(intent)
 	}
 	
 	fun seek(ctxt: Context, pos: Int) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_SEEK
 	    intent.putExtra(EXTRA_POS, pos)
-	    ctxt.startService(intent)
+	    ctxt.startForegroundService(intent)
 	}
 	
 	fun setVolume(ctxt: Context, volume: Int) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_SET_VOLUME
 	    intent.putExtra(EXTRA_VOLUME, volume)
-	    ctxt.startService(intent)
+	    ctxt.startForegroundService(intent)
 	}
 	
 	fun setTopDir(ctxt: Context, topDir: String) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_SET_TOPDIR
 	    intent.putExtra(EXTRA_VOLUME, topDir)
-	    ctxt.startService(intent)
+	    ctxt.startForegroundService(intent)
 	}
 	
 	fun switchContext(ctxt: Context) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_SWITCH_CONTEXT
-	    ctxt.startService(intent)
+	    ctxt.startForegroundService(intent)
 	}
 	
 	fun requestCurrentStatus(ctxt: Context) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_REQUEST_CURRENT_STATUS
-	    ctxt.startService(intent)
+	    ctxt.startForegroundService(intent)
 	}
     }
 }
