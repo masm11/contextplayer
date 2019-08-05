@@ -92,6 +92,7 @@ class PlayerService : Service() {
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothHeadset: BluetoothHeadset? = null
     private lateinit var localBroadcastManager: LocalBroadcastManager
+    private var inForeground: Boolean = false
     
     private inner class IntentHandler: Runnable {
 	private val mutex = ReentrantLock()
@@ -100,15 +101,36 @@ class PlayerService : Service() {
 	
 	override fun run() {
 	    try {
+		var sleepUntil: Long? = null
 		while (true) {
+		    var timeout = false
 		    mutex.lockInterruptibly()
-		    while (queue.size == 0)
-			cond.await()
-		    val intent = queue.removeAt(0)
+		    while (queue.size == 0) {
+			if (sleepUntil == null) {
+			    Log.d("await forever.")
+			    cond.await()
+			} else {
+			    val sleepNano = sleepUntil - System.currentTimeMillis() as Long * 1000000
+			    if (sleepNano <= 0) {
+				timeout = true
+				break
+			    }
+			    Log.d("await for ${sleepNano}ns.")
+			    cond.awaitNanos(sleepNano)
+			}
+		    }
+		    val intent: Intent? = if (timeout) null else queue.removeAt(0)
 		    mutex.unlock()
 		    
 		    this@PlayerService.mutex.lockInterruptibly()
-		    handleIntent(intent)
+		    if (intent != null) {
+			if (sleepUntil == null)
+			    sleepUntil = System.currentTimeMillis() as Long * 1000000 + 1000000000
+			handleIntent(intent)
+		    } else {
+			handleIntent(null)
+			sleepUntil = null
+		    }
 		    this@PlayerService.mutex.unlock()
 		}
 	    } catch (e: InterruptedException) {
@@ -123,24 +145,28 @@ class PlayerService : Service() {
 	    mutex.unlock()
 	}
 	
-	private fun handleIntent(intent: Intent) {
-	    val action = intent.action
-	    Log.d("action=${action}")
-	    when (action) {
-		ACTION_A2DP_DISCONNECTED -> pause()
-		ACTION_HEADSET_UNPLUGGED -> pause()
-		ACTION_TOGGLE -> toggle()
-		ACTION_UPDATE_APPWIDGET -> updateAppWidget()
-		
-		ACTION_PLAY -> handlePlay(intent)
-		ACTION_PAUSE -> handlePause(intent)
-		ACTION_SET_TOPDIR -> handleSetTopDir(intent)
-		ACTION_SET_VOLUME -> handleSetVolume(intent)
-		ACTION_SWITCH_CONTEXT -> handleSwitchContext(intent)
-		ACTION_SEEK -> handleSeek(intent)
-		ACTION_PREV_TRACK -> handlePrevTrack(intent)
-		ACTION_NEXT_TRACK -> handleNextTrack(intent)
-		ACTION_REQUEST_CURRENT_STATUS -> handleRequestCurrentStatus(intent)
+	private fun handleIntent(intent: Intent?) {
+	    if (intent != null) {
+		val action = intent.action
+		Log.d("action=${action}")
+		when (action) {
+		    ACTION_A2DP_DISCONNECTED -> pause()
+		    ACTION_HEADSET_UNPLUGGED -> pause()
+		    ACTION_TOGGLE -> toggle()
+		    ACTION_UPDATE_APPWIDGET -> updateAppWidget()
+
+		    ACTION_PLAY -> handlePlay(intent)
+		    ACTION_PAUSE -> handlePause(intent)
+		    ACTION_SET_TOPDIR -> handleSetTopDir(intent)
+		    ACTION_SET_VOLUME -> handleSetVolume(intent)
+		    ACTION_SWITCH_CONTEXT -> handleSwitchContext(intent)
+		    ACTION_SEEK -> handleSeek(intent)
+		    ACTION_PREV_TRACK -> handlePrevTrack(intent)
+		    ACTION_NEXT_TRACK -> handleNextTrack(intent)
+		    ACTION_REQUEST_CURRENT_STATUS -> handleRequestCurrentStatus(intent)
+		}
+	    } else {
+		handleForeground()
 	    }
 	}
 	
@@ -184,6 +210,17 @@ class PlayerService : Service() {
 	    broadcastStatus()
 	}
 	
+	fun handleForeground() {
+	    /* startForegroundService() の後は必ず startForeground() しなければならない。
+	    * 従って、volume 操作等 startForeground() しない処理の後は、
+	    * 必ず startForeground() をしてやる必要がある。
+	    * volume 操作は連続するが、毎回 startForeground() するのは無駄なので、
+	    * 1秒分まとめて1回やる。
+	    */
+	    Log.d("curPlayer=${curPlayer}")
+	    if (!inForeground)
+		setForegroundJustInstant()
+	}
     }
     
     private val intentHandler = IntentHandler()
@@ -721,11 +758,33 @@ class PlayerService : Service() {
 	    )
 	    builder.setContentIntent(pendingIntent)
 	    startForeground(1, builder.build())
+
+	    inForeground = true
 	} else {
 	    stopForeground(true)
+
+	    inForeground = false
 	}
     }
     
+    private fun setForegroundJustInstant() {
+	Log.d("")
+
+	val builder = Notification.Builder(this, "notify_channel_2")
+	builder.setSmallIcon(R.drawable.notification)
+	val intent = Intent(this, MainActivity::class.java)
+	val tsBuilder = TaskStackBuilder.create(this)
+	tsBuilder.addParentStack(MainActivity::class.java)
+	tsBuilder.addNextIntent(intent)
+	val pendingIntent = tsBuilder.getPendingIntent(
+	    0, PendingIntent.FLAG_UPDATE_CURRENT
+	)
+	builder.setContentIntent(pendingIntent)
+	startForeground(1, builder.build())
+	
+	stopForeground(true)
+    }
+
     private fun saveContext() {
 	Log.d("contextId=${contextId}")
 	val ctxt = db.playContextDao().find(contextId)
