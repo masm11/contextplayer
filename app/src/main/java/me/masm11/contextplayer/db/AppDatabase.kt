@@ -17,9 +17,9 @@
 package me.masm11.contextplayer.db
 
 import android.content.Context
-import android.arch.persistence.room.Database
-import android.arch.persistence.room.RoomDatabase
-import android.arch.persistence.room.Room
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import androidx.room.Room
 
 @Database(entities = [ Config::class, PlayContext::class ], version = 1)
 abstract class AppDatabase: RoomDatabase() {

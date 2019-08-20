@@ -16,7 +16,7 @@
 */
 package me.masm11.contextplayer.ui
 
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.app.Service
 import android.app.FragmentManager
 import android.os.Bundle
@@ -52,10 +52,12 @@ import java.util.concurrent.locks.ReentrantLock
 import me.masm11.contextplayer.R
 import me.masm11.contextplayer.db.AppDatabase
 import me.masm11.contextplayer.db.PlayContext
+import me.masm11.contextplayer.db.PlayContextList
 import me.masm11.contextplayer.db.Config
 import me.masm11.contextplayer.util.Metadata
 import me.masm11.contextplayer.fs.MFile
 import me.masm11.contextplayer.service.PlayerService
+import me.masm11.contextplayer.Application
 
 import me.masm11.logger.Log
 
@@ -202,6 +204,7 @@ class ExplorerActivity : AppCompatActivity() {
     }
     
     private lateinit var db: AppDatabase
+    private lateinit var playContexts: PlayContextList
     private val rootDir: MFile = MFile("//")
     private var topDir: MFile = MFile("//")
     private var curDir: MFile = MFile("//")
@@ -216,6 +219,7 @@ class ExplorerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_explorer)
 	
 	db = AppDatabase.getDB()
+	playContexts = (getApplication() as Application).getPlayContextList()
 	
         val fragMan = getFragmentManager()
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
@@ -226,10 +230,10 @@ class ExplorerActivity : AppCompatActivity() {
         adapter = FileAdapter(this, ArrayList<FileItem>())
 
         val ctxtId = db.configDao().getContextId()
-	var c = db.playContextDao().find(ctxtId)
+	var c = playContexts.get(ctxtId)
 	if (c == null) {
 	    c = PlayContext()
-	    db.playContextDao().insert(c)
+	    playContexts.add(c)
 	}
         ctxt = c
 	
@@ -358,7 +362,7 @@ class ExplorerActivity : AppCompatActivity() {
 	ctxt.topDir = newDir.absolutePath
 	ctxt.path = null
 	ctxt.pos = 0
-	db.playContextDao().update(ctxt)
+	playContexts.add(ctxt)
     }
 
     private fun renewAdapter(newDir: MFile) {

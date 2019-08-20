@@ -16,10 +16,10 @@
 */
 package me.masm11.contextplayer.db
 
-import android.arch.persistence.room.Dao
-import android.arch.persistence.room.Query
-import android.arch.persistence.room.Insert
-import android.arch.persistence.room.Update
+import androidx.room.Dao
+import androidx.room.Query
+import androidx.room.Insert
+import androidx.room.Update
 
 @Dao
 abstract class ConfigDao {

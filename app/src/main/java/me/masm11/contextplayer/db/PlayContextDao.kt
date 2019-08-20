@@ -16,26 +16,53 @@
 */
 package me.masm11.contextplayer.db
 
-import android.arch.persistence.room.Dao
-import android.arch.persistence.room.Query
-import android.arch.persistence.room.Insert
-import android.arch.persistence.room.Update
-import android.arch.persistence.room.Delete
+import androidx.room.Dao
+import androidx.room.Query
+import androidx.room.Insert
+import androidx.room.Update
+import androidx.room.Delete
 
 @Dao
 abstract class PlayContextDao {
+    // fixme: 必要?
     @Query("SELECT * FROM PlayContext ORDER BY id")
     abstract fun getAll(): List<PlayContext>
     
+    // context を作成
     @Insert
     abstract fun insert(ctxt: PlayContext)
     
+/*
+    // updateAll から使用
+    @Insert
+    abstract fun insertPlayContexts(ctxt: List<PlayContext>)
+*/
+
+/*
+    // 表示順序も含めて、画面に表示しているものをそのまま DB に反映
+    fun updateAll(ctxts: List<PlayContext>) {
+	deleteAll()
+	insertPlayContexts(ctxts)
+    }
+*/
+
+    // updateAll から使用。ただし、他から使いたければ、それも可?
+    @Query("DELETE FROM PlayContext")
+    abstract fun deleteAll()
+    
+    // 特定の context を得る
+    @Query("SELECT * FROM PlayContext WHERE id = :id")
+    abstract fun find(id: Long): PlayContext?
+    
+    // context を id 順に得る。fixme: 表示順に変更する。
+    @Query("SELECT * FROM PlayContext ORDER BY id")
+    abstract fun all(): PlayContext?
+
     @Update
     abstract fun update(ctxt: PlayContext)
     
-    @Delete
-    abstract fun delete(ctxt: PlayContext)
+    @Query("DELETE FROM PlayContext WHERE id = :id")
+    abstract fun delete(id: Long)
     
-    @Query("SELECT * FROM PlayContext WHERE id = :id")
-    abstract fun find(id: Long): PlayContext?
+    // まとめて insert や delete する方法ないかな。
 }

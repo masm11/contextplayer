@@ -16,11 +16,11 @@
 */
 package me.masm11.contextplayer.ui
 
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
-import android.support.v4.content.LocalBroadcastManager
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.app.Service
 import android.app.AlertDialog
 import android.app.FragmentManager

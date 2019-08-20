@@ -16,15 +16,20 @@
 */
 package me.masm11.contextplayer
 
-import android.arch.persistence.room.Room
+import androidx.room.Room
 
 import com.crashlytics.android.Crashlytics
 import io.fabric.sdk.android.Fabric
 
 import me.masm11.logger.Log
 import me.masm11.contextplayer.db.AppDatabase
+import me.masm11.contextplayer.db.PlayContextList
 
 class Application : android.app.Application() {
+    private lateinit var playContexts: PlayContextList
+    fun getPlayContextList(): PlayContextList {
+	return playContexts
+    }
     override fun onCreate() {
         super.onCreate()
 	
@@ -32,5 +37,6 @@ class Application : android.app.Application() {
         Log.init(getExternalFilesDir(null), BuildConfig.DEBUG)
 	
 	AppDatabase.setApplication(this)
+	playContexts = PlayContextList()
     }
 }

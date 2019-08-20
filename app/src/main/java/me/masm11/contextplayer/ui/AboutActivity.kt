@@ -16,7 +16,7 @@
 */
 package me.masm11.contextplayer.ui
 
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.webkit.WebSettings
 import android.webkit.JavascriptInterface
 import android.content.Context

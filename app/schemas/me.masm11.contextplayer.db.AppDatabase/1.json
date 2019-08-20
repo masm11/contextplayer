@@ -40,7 +40,7 @@
             "columnNames": [
               "key"
             ],
-            "createSql": "CREATE UNIQUE INDEX `index_Config_key` ON `${TABLE_NAME}` (`key`)"
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Config_key` ON `${TABLE_NAME}` (`key`)"
           }
         ],
         "foreignKeys": []
@@ -96,9 +96,10 @@
         "foreignKeys": []
       }
     ],
+    "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"b3ddd09b7db7194b4d4be9ef909e06b1\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b3ddd09b7db7194b4d4be9ef909e06b1')"
     ]
   }
 }

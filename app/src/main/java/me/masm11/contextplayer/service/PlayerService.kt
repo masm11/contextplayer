@@ -38,7 +38,7 @@ import android.appwidget.AppWidgetManager
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothHeadset
-import android.support.v4.content.LocalBroadcastManager
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 import java.util.Locale
 import java.util.concurrent.locks.ReentrantLock
@@ -50,8 +50,10 @@ import me.masm11.contextplayer.fs.MFile
 import me.masm11.contextplayer.receiver.HeadsetReceiver
 import me.masm11.contextplayer.db.AppDatabase
 import me.masm11.contextplayer.db.PlayContext
+import me.masm11.contextplayer.db.PlayContextList
 import me.masm11.contextplayer.db.Config
 import me.masm11.contextplayer.widget.WidgetProvider
+import me.masm11.contextplayer.Application
 
 import me.masm11.logger.Log
 
@@ -74,6 +76,7 @@ class PlayerService : Service() {
     private val mutex = ReentrantLock()
     
     private lateinit var db: AppDatabase
+    private lateinit var playContexts: PlayContextList
     private var topDir: String = "/"
     private var playingPath: String? = null
     private var nextPath: String? = null
@@ -233,6 +236,7 @@ class PlayerService : Service() {
 	intentHandlerThread.start()
 	
 	db = AppDatabase.getDB()
+	playContexts = (getApplication() as Application).getPlayContextList()
 	
 	localBroadcastManager = LocalBroadcastManager.getInstance(this)
 	
@@ -741,7 +745,7 @@ class PlayerService : Service() {
     private fun setForeground(on: Boolean) {
 	Log.d("on=${on}")
 	if (on) {
-	    val ctxt = db.playContextDao().find(contextId)
+	    val ctxt = playContexts.get(contextId)
 	    var contextName = "noname"
 	    if (ctxt != null)
 		contextName = ctxt.name
@@ -787,7 +791,7 @@ class PlayerService : Service() {
 
     private fun saveContext() {
 	Log.d("contextId=${contextId}")
-	val ctxt = db.playContextDao().find(contextId)
+	val ctxt = playContexts.get(contextId)
 	val p = curPlayer
 	if (ctxt != null && p != null) {
 	    Log.d("Id=${ctxt.id}")
@@ -798,7 +802,7 @@ class PlayerService : Service() {
 	    ctxt.volume = volume
 	    Log.d("volume=${volume}")
 	    Log.d("ctxt saving...")
-	    db.playContextDao().update(ctxt)
+	    playContexts.put(contextId)
 	}
     }
     
@@ -816,7 +820,7 @@ class PlayerService : Service() {
 	Log.d("getting context_id")
 	contextId = db.configDao().getContextId()
 	Log.d("contextId=${contextId}")
-	val ctxt = db.playContextDao().find(contextId)
+	val ctxt = playContexts.get(contextId)
 	if (ctxt != null) {
 	    playingPath = ctxt.path
 	    topDir = ctxt.topDir
@@ -939,7 +943,7 @@ class PlayerService : Service() {
     }
     
     private fun updateAppWidget() {
-	val ctxt = db.playContextDao().find(contextId)
+	val ctxt = playContexts.get(contextId)
 	var contextName: String? = null
 	if (ctxt != null)
 	    contextName = ctxt.name

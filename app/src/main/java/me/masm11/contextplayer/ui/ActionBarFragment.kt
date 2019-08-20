@@ -16,7 +16,7 @@
 */
 package me.masm11.contextplayer.ui
 
-import android.support.v7.widget.Toolbar
+import androidx.appcompat.widget.Toolbar
 import android.app.Fragment
 import android.view.View
 import android.view.ViewGroup
@@ -49,7 +49,7 @@ class ActionBarFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.actionbar_fragment, container, false)
 	
-        toolbar = view.toolbar
+        // toolbar = view.toolbar		// fixme: ??
 	
         return view
     }

@@ -16,8 +16,8 @@
 */
 package me.masm11.contextplayer.ui
 
-import android.support.v7.app.AppCompatActivity
-import android.support.v4.content.LocalBroadcastManager
+import androidx.appcompat.app.AppCompatActivity
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Parcelable
@@ -49,15 +49,18 @@ import me.masm11.contextplayer.R
 import me.masm11.contextplayer.service.PlayerService
 import me.masm11.contextplayer.db.AppDatabase
 import me.masm11.contextplayer.db.PlayContext
+import me.masm11.contextplayer.db.PlayContextList
 import me.masm11.contextplayer.db.Config
 import me.masm11.contextplayer.util.emptyMutableListOf
 import me.masm11.contextplayer.fs.MFile
+import me.masm11.contextplayer.Application
 
 import me.masm11.logger.Log
 
 class ContextActivity : AppCompatActivity() {
 
     private lateinit var db: AppDatabase
+    private lateinit var playContexts: PlayContextList
     private val rootDir = MFile("//")
     private lateinit var items: MutableList<Item>
     private lateinit var adapter: ItemAdapter
@@ -91,15 +94,19 @@ class ContextActivity : AppCompatActivity() {
         setContentView(R.layout.activity_context)
 	
 	db = AppDatabase.getDB()
+	playContexts = (getApplication() as Application).getPlayContextList()
 	
         val fragMan = getFragmentManager()
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
         setSupportActionBar(frag.toolbar)
 
         items = emptyMutableListOf<Item>()
-        for (ctxt in db.playContextDao().getAll()) {
-            val item = Item(ctxt.id, ctxt.name, ctxt.topDir, ctxt.path)
-            items.add(item)
+        for (id in playContexts.ids()) {
+	    val ctxt = playContexts.get(id)
+	    if (ctxt != null) {
+		val item = Item(ctxt.id, ctxt.name, ctxt.topDir, ctxt.path)
+		items.add(item)
+	    }
         }
 
         adapter = ItemAdapter(this, items)
@@ -147,10 +154,10 @@ class ContextActivity : AppCompatActivity() {
                 }
                 builder.setPositiveButton(android.R.string.ok) { _, _ ->
                     val newName = editText.text.toString()
-                    val ctxt = db.playContextDao().find(item.id)
+                    val ctxt = playContexts.get(item.id)
 		    if (ctxt != null) {
 			ctxt.name = newName
-			db.playContextDao().update(ctxt)
+			playContexts.put(item.id)
 		    }
 		    
                     item.name = newName
@@ -167,9 +174,9 @@ class ContextActivity : AppCompatActivity() {
                         // NOP.
                     }
                     builder.setPositiveButton(android.R.string.ok) { _, _ ->
-                        val ctxt = db.playContextDao().find(item.id)
+                        val ctxt = playContexts.get(item.id)
 			if (ctxt != null)
-                            db.playContextDao().delete(ctxt)
+                            playContexts.delete(item.id)
                         adapter.remove(item)
                     }
                     builder.show()
@@ -198,7 +205,7 @@ class ContextActivity : AppCompatActivity() {
                 val ctxt = PlayContext()
                 ctxt.name = newName
                 ctxt.topDir = rootDir.absolutePath
-		db.playContextDao().insert(ctxt)
+		playContexts.add(ctxt)
 
                 val item = Item(ctxt.id, newName, ctxt.topDir, null)
                 adapter.add(item)
