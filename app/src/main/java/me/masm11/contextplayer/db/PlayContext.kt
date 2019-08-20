@@ -34,6 +34,18 @@ class PlayContext {
 	id = hi xor lo
     }
     
+    fun dup(): PlayContext {
+	val r = PlayContext()
+	r.id = this.id
+	r.name = this.name
+	r.topDir = this.topDir
+	r.path = this.path
+	r.pos = this.pos
+	r.volume = this.volume
+	r.deleted = this.deleted
+	return r
+    }
+
     @PrimaryKey
     var id: Long
     

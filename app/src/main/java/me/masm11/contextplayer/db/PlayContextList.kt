@@ -44,43 +44,49 @@ class PlayContextList {
     
     fun put(id: Long) {
 	val ctxt = dat.get(id)
-	if (ctxt != null)
-	    updater.enqueue(ctxt)
+	if (ctxt != null) {
+	    val ct = ctxt.dup()
+	    updater.enqueue(ct)
+	}
     }
     
     fun delete(id: Long) {
 	val ctxt = dat.remove(id)
 	if (ctxt != null) {
-	    ctxt.deleted = true
-	    updater.enqueue(ctxt)
+	    val ct = ctxt.dup()
+	    ct.deleted = true
+	    updater.enqueue(ct)
 	}
     }
     
-    fun add(ctxt: PlayContext) {
-	
+    fun new(): PlayContext {
+	return PlayContext()
     }
     
     private inner class Updater: Runnable {
 	private val mutex = ReentrantLock()
 	private val cond = mutex.newCondition()
-	private val updateIds: MutableList<Long> = ArrayList()
+	private val jobs: MutableList<PlayContext> = ArrayList()
 	
 	fun enqueue(ctxt: PlayContext) {
+	    mutex.lock()
+	    jobs.add(ctxt)
+	    cond.signal()
+	    mutex.unlock()
 	}
 	
 	override fun run() {
 	    try {
 		while (true) {
 		    mutex.lock()
-		    while (updateIds.size == 0)
+		    while (jobs.size == 0)
 			cond.await()
-		    var id = updateIds.removeAt(0)
-		    var ctxt = get(id)
+		    val ctxt = jobs.removeAt(0)
 		    mutex.unlock()
 		    if (ctxt != null)
 			dao.update(ctxt)
 		    else
-			dao.delete(id)
+			dao.delete(ctxt.id)
 		}
 	    } catch (e: InterruptedException) {
 	    }
