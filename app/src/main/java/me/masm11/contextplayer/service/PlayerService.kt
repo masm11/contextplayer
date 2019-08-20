@@ -82,7 +82,7 @@ class PlayerService : Service() {
     private var nextPath: String? = null
     private var curPlayer: MediaPlayer? = null
     private var nextPlayer: MediaPlayer? = null
-    private var contextId: Long = 0
+    private lateinit var contextId: String
     private lateinit var audioManager: AudioManager
     private lateinit var audioAttributes: AudioAttributes
     private var audioSessionId: Int = 0
@@ -238,6 +238,8 @@ class PlayerService : Service() {
 	db = AppDatabase.getDB()
 	playContexts = (getApplication() as Application).getPlayContextList()
 	
+	contextId = ""		// fixme:
+
 	localBroadcastManager = LocalBroadcastManager.getInstance(this)
 	
 	val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
@@ -794,7 +796,7 @@ class PlayerService : Service() {
 	val ctxt = playContexts.get(contextId)
 	val p = curPlayer
 	if (ctxt != null && p != null) {
-	    Log.d("Id=${ctxt.id}")
+	    Log.d("Id=${ctxt.uuid}")
 	    ctxt.path = playingPath
 	    Log.d("path=${ctxt.path}")
 	    ctxt.pos = p.currentPosition.toLong()

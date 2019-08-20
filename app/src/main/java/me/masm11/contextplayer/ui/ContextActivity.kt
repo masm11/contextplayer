@@ -67,7 +67,7 @@ class ContextActivity : AppCompatActivity() {
     private lateinit var localBroadcastManager: LocalBroadcastManager
     private lateinit var localBroadcastReceiver: BroadcastReceiver
     
-    private inner class Item(val id: Long, var name: String?, val topDir: String, var path: String?)
+    private inner class Item(val uuid: String, var name: String?, val topDir: String, var path: String?)
     
     private inner class ItemAdapter(context: Context, items: List<Item>) : ArrayAdapter<Item>(context, R.layout.list_context, items) {
         private val inflater = LayoutInflater.from(context)
@@ -101,10 +101,10 @@ class ContextActivity : AppCompatActivity() {
         setSupportActionBar(frag.toolbar)
 
         items = emptyMutableListOf<Item>()
-        for (id in playContexts.ids()) {
-	    val ctxt = playContexts.get(id)
+        for (uuid in playContexts.uuids()) {
+	    val ctxt = playContexts.get(uuid)
 	    if (ctxt != null) {
-		val item = Item(ctxt.id, ctxt.name, ctxt.topDir, ctxt.path)
+		val item = Item(ctxt.uuid, ctxt.name, ctxt.topDir, ctxt.path)
 		items.add(item)
 	    }
         }
@@ -117,7 +117,7 @@ class ContextActivity : AppCompatActivity() {
             val listView = parent as ListView
             val item = listView.getItemAtPosition(position) as Item
 	    
-            db.configDao().setContextId(item.id)
+            db.configDao().setContextId(item.uuid)
 	    
             PlayerService.switchContext(this)
         }
@@ -154,10 +154,10 @@ class ContextActivity : AppCompatActivity() {
                 }
                 builder.setPositiveButton(android.R.string.ok) { _, _ ->
                     val newName = editText.text.toString()
-                    val ctxt = playContexts.get(item.id)
+                    val ctxt = playContexts.get(item.uuid)
 		    if (ctxt != null) {
 			ctxt.name = newName
-			playContexts.put(item.id)
+			playContexts.put(item.uuid)
 		    }
 		    
                     item.name = newName
@@ -174,9 +174,9 @@ class ContextActivity : AppCompatActivity() {
                         // NOP.
                     }
                     builder.setPositiveButton(android.R.string.ok) { _, _ ->
-                        val ctxt = playContexts.get(item.id)
+                        val ctxt = playContexts.get(item.uuid)
 			if (ctxt != null)
-                            playContexts.delete(item.id)
+                            playContexts.delete(item.uuid)
                         adapter.remove(item)
                     }
                     builder.show()
@@ -202,12 +202,12 @@ class ContextActivity : AppCompatActivity() {
             }
             builder.setPositiveButton(android.R.string.ok) { _, _ ->
                 val newName = editText.text.toString()
-                val ctxt = PlayContext()
+                val ctxt = playContexts.new()
                 ctxt.name = newName
                 ctxt.topDir = rootDir.absolutePath
-		playContexts.add(ctxt)
+		playContexts.put(ctxt.uuid)
 
-                val item = Item(ctxt.id, newName, ctxt.topDir, null)
+                val item = Item(ctxt.uuid, newName, ctxt.topDir, null)
                 adapter.add(item)
             }
             builder.show()
@@ -217,12 +217,12 @@ class ContextActivity : AppCompatActivity() {
 	localBroadcastReceiver = object: BroadcastReceiver() {
 	    override fun onReceive(context: Context, intent: Intent) {
 		Log.d("received.")
-		val contextId = intent.getLongExtra(PlayerService.EXTRA_CONTEXT_ID, 0)
+		val contextId = intent.getStringExtra(PlayerService.EXTRA_CONTEXT_ID)
 		val path = intent.getStringExtra(PlayerService.EXTRA_PATH)
 		
 		var changed = false
 		for (item in items) {
-		    if (item.id == contextId) {
+		    if (item.uuid == contextId) {
 			if (item.path != path) {
 			    item.path = path
 			    changed = true

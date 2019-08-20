@@ -28,15 +28,12 @@ import androidx.room.Index
 @Entity
 class PlayContext {
     constructor() {
-	val uuid = UUID.randomUUID()
-	val hi = uuid.getMostSignificantBits()
-	val lo = uuid.getLeastSignificantBits()
-	id = hi xor lo
+	uuid = UUID.randomUUID().toString()
     }
     
     fun dup(): PlayContext {
 	val r = PlayContext()
-	r.id = this.id
+	r.uuid = this.uuid
 	r.name = this.name
 	r.topDir = this.topDir
 	r.path = this.path
@@ -47,7 +44,7 @@ class PlayContext {
     }
 
     @PrimaryKey
-    var id: Long
+    var uuid: String
     
     @NonNull
     var name: String = ""
@@ -63,6 +60,9 @@ class PlayContext {
     
     @Ignore
     var deleted: Boolean = false
+    
+    @Ignore
+    var created: Boolean = false
     
     override fun toString(): String {
 	return name

@@ -56,13 +56,16 @@ import me.masm11.contextplayer.util.Metadata
 import me.masm11.contextplayer.fs.MFile
 import me.masm11.contextplayer.db.AppDatabase
 import me.masm11.contextplayer.db.PlayContext
+import me.masm11.contextplayer.db.PlayContextList
 import me.masm11.contextplayer.db.Config
+import me.masm11.contextplayer.Application
 
 import me.masm11.logger.Log
 
 class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
 
     private lateinit var db: AppDatabase
+    private lateinit var playContexts: PlayContextList
     private val rootDir = MFile("//")
     private var curPath: String? = null
     private var curTopDir: String? = null
@@ -79,6 +82,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         setContentView(R.layout.activity_main)
 
 	db = AppDatabase.getDB()
+	playContexts = (getApplication() as Application).getPlayContextList()
 
         val fragMan = getFragmentManager()
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
@@ -161,10 +165,10 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         if (intent != null) {
             val action = intent.getAction()
             if (action != null && action == Intent.ACTION_MAIN) {
-                val id = intent.getLongExtra("me.masm11.contextplayer.CONTEXT_ID", -1)
+                val uuid = intent.getStringExtra("me.masm11.contextplayer.CONTEXT_ID")
 
-                if (id != -1L) {
-                    db.configDao().setContextId(id)
+                if (uuid != null) {
+                    db.configDao().setContextId(uuid)
 
                     needSwitchContext = true
                 }
@@ -201,7 +205,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     }
     
     override fun onResume() {
-        val ctxt = db.playContextDao().find(db.configDao().getContextId())
+        val ctxt = playContexts.get(db.configDao().getContextId())
         if (ctxt != null)
             context_name.text = ctxt.name
 	

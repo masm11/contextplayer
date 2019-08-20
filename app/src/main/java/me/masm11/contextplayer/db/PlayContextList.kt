@@ -21,37 +21,37 @@ import java.util.concurrent.locks.ReentrantLock
 class PlayContextList {
     private val db = AppDatabase.getDB()
     private val dao = db.playContextDao()
-    private val dat = HashMap<Long, PlayContext>()
+    private val dat = HashMap<String, PlayContext>()
     private val updater = Updater()
     private val thread = Thread(updater)
     
     init {
 	val list = dao.getAll()
 	for (ctxt in list)
-	    dat.put(ctxt.id, ctxt)
+	    dat.put(ctxt.uuid, ctxt)
 	
 	thread.setDaemon(true)
 	thread.start()
     }
     
-    fun ids(): LongArray {
-	return dat.keys.toLongArray()
+    fun uuids(): Set<String> {
+	return dat.keys
     }
     
-    fun get(id: Long): PlayContext? {
-	return dat.get(id)
+    fun get(uuid: String): PlayContext? {
+	return dat.get(uuid)
     }
     
-    fun put(id: Long) {
-	val ctxt = dat.get(id)
+    fun put(uuid: String) {
+	val ctxt = dat.get(uuid)
 	if (ctxt != null) {
 	    val ct = ctxt.dup()
 	    updater.enqueue(ct)
 	}
     }
     
-    fun delete(id: Long) {
-	val ctxt = dat.remove(id)
+    fun delete(uuid: String) {
+	val ctxt = dat.remove(uuid)
 	if (ctxt != null) {
 	    val ct = ctxt.dup()
 	    ct.deleted = true
@@ -60,7 +60,12 @@ class PlayContextList {
     }
     
     fun new(): PlayContext {
-	return PlayContext()
+	val ctxt = PlayContext()
+	dat.put(ctxt.uuid, ctxt)
+	val ct = ctxt.dup()
+	ct.created = true
+	updater.enqueue(ct)
+	return ctxt
     }
     
     private inner class Updater: Runnable {
@@ -83,10 +88,12 @@ class PlayContextList {
 			cond.await()
 		    val ctxt = jobs.removeAt(0)
 		    mutex.unlock()
-		    if (ctxt != null)
-			dao.update(ctxt)
+		    if (ctxt.deleted)
+			dao.delete(ctxt.uuid)
+		    else if (ctxt.created)
+			dao.insert(ctxt)
 		    else
-			dao.delete(ctxt.id)
+			dao.update(ctxt)
 		}
 	    } catch (e: InterruptedException) {
 	    }

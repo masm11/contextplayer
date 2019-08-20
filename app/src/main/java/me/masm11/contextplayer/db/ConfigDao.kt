@@ -40,32 +40,32 @@ abstract class ConfigDao {
     @Update
     abstract fun update(config: Config)
     
-    fun getContextId(): Long {
+    fun getContextId(): String {
 	val config: Config? = findByKey("context_id")
 	if (config == null) {
 	    // 設定がない場合。
 	    // context があるなら、どれか 1つの id を返す。
 	    val ctxts = db.playContextDao().getAll()
 	    if (ctxts.size >= 1)
-		return ctxts.get(0).id
+		return ctxts.get(0).uuid
 	    
 	    // context が一つもないなら、新規に作って id を返す。
 	    val ctxt = PlayContext()
 	    db.playContextDao().insert(ctxt)
-	    return ctxt.id
+	    return ctxt.uuid
 	}
-	return config.value.toLong()
+	return config.value
     }
     
-    fun setContextId(value: Long) {
+    fun setContextId(value: String) {
 	var config: Config? = findByKey("context_id")
 	if (config == null) {
 	    config = Config()
 	    config.key = "context_id"
-	    config.value = value.toString()
+	    config.value = value
 	    insert(config)
 	} else {
-	    config.value = value.toString()
+	    config.value = value
 	    update(config)
 	}
     }

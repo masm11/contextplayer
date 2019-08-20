@@ -31,6 +31,7 @@ import me.masm11.contextplayer.service.PlayerService
 import me.masm11.contextplayer.db.AppDatabase
 import me.masm11.contextplayer.db.PlayContext
 import me.masm11.contextplayer.db.Config
+import me.masm11.contextplayer.Application
 
 import me.masm11.logger.Log
 
@@ -44,7 +45,8 @@ class WidgetProvider : AppWidgetProvider() {
 	val db = AppDatabase.getDB()
 
         val contextId = db.configDao().getContextId()
-        val ctxt = db.playContextDao().find(contextId)
+	val playContexts = (context.getApplicationContext() as Application).getPlayContextList()
+        val ctxt = playContexts.get(contextId)
         var contextName: String? = null
         if (ctxt != null)
             contextName = ctxt.name

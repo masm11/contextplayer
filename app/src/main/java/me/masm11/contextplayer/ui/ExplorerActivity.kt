@@ -232,8 +232,8 @@ class ExplorerActivity : AppCompatActivity() {
         val ctxtId = db.configDao().getContextId()
 	var c = playContexts.get(ctxtId)
 	if (c == null) {
-	    c = PlayContext()
-	    playContexts.add(c)
+	    c = playContexts.new()
+	    playContexts.put(c.uuid)
 	}
         ctxt = c
 	
@@ -362,7 +362,7 @@ class ExplorerActivity : AppCompatActivity() {
 	ctxt.topDir = newDir.absolutePath
 	ctxt.path = null
 	ctxt.pos = 0
-	playContexts.add(ctxt)
+	playContexts.put(ctxt.uuid)
     }
 
     private fun renewAdapter(newDir: MFile) {

@@ -27,14 +27,11 @@ import androidx.room.Index
 @Entity(indices = [ Index("key", unique = true) ])
 class Config {
     constructor() {
-	val uuid = UUID.randomUUID()
-	val hi = uuid.getMostSignificantBits()
-	val lo = uuid.getLeastSignificantBits()
-	id = hi xor lo
+	id = UUID.randomUUID().toString()
     }
     
     @PrimaryKey
-    var id: Long
+    var id: String
     
     @NonNull
     var key: String = ""

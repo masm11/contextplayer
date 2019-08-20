@@ -1,0 +1,5 @@
+ALTER TABLE PlayContexts ADD COLUMN uuid STRING
+UPDATE PlayContexts SET uuid = id::string
+ALTER TABLE PlayContexts SET COLUMN uuid NOT NULL
+ALTER TABLE PlayContexts DROP COLUMN id
+ALTER TABLE PlayContexts SET COLUMN uuid PRIMARY KEY

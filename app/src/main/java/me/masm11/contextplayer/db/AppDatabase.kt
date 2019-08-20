@@ -21,7 +21,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.Room
 
-@Database(entities = [ Config::class, PlayContext::class ], version = 1)
+@Database(entities = [ Config::class, PlayContext::class ], version = 4)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun configDao(): ConfigDao
     abstract fun playContextDao(): PlayContextDao
