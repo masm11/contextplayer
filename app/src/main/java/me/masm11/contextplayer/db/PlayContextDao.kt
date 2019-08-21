@@ -25,7 +25,7 @@ import androidx.room.Delete
 @Dao
 abstract class PlayContextDao {
     // 一覧を取得
-    @Query("SELECT * FROM PlayContext ORDER BY uuid")
+    @Query("SELECT * FROM PlayContext_2 ORDER BY uuid")
     abstract fun getAll(): List<PlayContext>
     
     // context を作成
@@ -35,6 +35,6 @@ abstract class PlayContextDao {
     @Update
     abstract fun update(ctxt: PlayContext)
     
-    @Query("DELETE FROM PlayContext WHERE uuid = :uuid")
+    @Query("DELETE FROM PlayContext_2 WHERE uuid = :uuid")
     abstract fun delete(uuid: String)
 }

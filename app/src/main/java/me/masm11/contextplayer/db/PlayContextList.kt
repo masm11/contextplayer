@@ -32,6 +32,10 @@ class PlayContextList {
 	
 	thread.setDaemon(true)
 	thread.start()
+	
+	/* 一つも存在しない場合は作成しておく */
+	if (dat.size == 0)
+	    new()
     }
     
     fun uuids(): Set<String> {

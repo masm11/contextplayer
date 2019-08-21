@@ -24,17 +24,18 @@ import androidx.room.PrimaryKey
 import androidx.room.ColumnInfo
 import androidx.room.Index
 
-@Entity(indices = [ Index("key", unique = true) ])
+@Entity(indices = [ Index("key", unique = true) ], tableName = "Config_2")
 class Config {
     constructor() {
-	id = UUID.randomUUID().toString()
+	uuid = UUID.randomUUID().toString()
     }
     
     @PrimaryKey
-    var id: String
+    var uuid: String
     
     @NonNull
     var key: String = ""
     
+    @NonNull
     var value: String = ""
 }

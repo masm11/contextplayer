@@ -25,7 +25,7 @@ import androidx.room.PrimaryKey
 import androidx.room.ColumnInfo
 import androidx.room.Index
 
-@Entity
+@Entity(tableName = "PlayContext_2")
 class PlayContext {
     constructor() {
 	uuid = UUID.randomUUID().toString()

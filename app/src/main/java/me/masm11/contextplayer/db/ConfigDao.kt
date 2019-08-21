@@ -28,10 +28,10 @@ abstract class ConfigDao {
 	this.db = db
     }
     
-    @Query("SELECT * FROM Config")
+    @Query("SELECT * FROM Config_2")
     abstract fun getAll(): List<Config>
     
-    @Query("SELECT * FROM Config WHERE key = :key")
+    @Query("SELECT * FROM Config_2 WHERE key = :key")
     abstract fun findByKey(key: String): Config?
     
     @Insert
