@@ -113,7 +113,7 @@ class PlayerService : Service() {
 			    Log.d("await forever.")
 			    cond.await()
 			} else {
-			    val sleepNano = sleepUntil - System.currentTimeMillis() as Long * 1000000
+			    val sleepNano = sleepUntil - System.currentTimeMillis() * 1000000
 			    if (sleepNano <= 0) {
 				timeout = true
 				break
@@ -128,7 +128,7 @@ class PlayerService : Service() {
 		    this@PlayerService.mutex.lockInterruptibly()
 		    if (intent != null) {
 			if (sleepUntil == null)
-			    sleepUntil = System.currentTimeMillis() as Long * 1000000 + 1000000000
+			    sleepUntil = System.currentTimeMillis() * 1000000 + 1000000000
 			handleIntent(intent)
 		    } else {
 			handleIntent(null)

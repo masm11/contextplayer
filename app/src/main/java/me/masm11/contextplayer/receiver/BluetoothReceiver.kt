@@ -38,24 +38,23 @@ class BluetoothReceiver : BroadcastReceiver() {
 	    var doCheck = false
 	    var state: Int = -1
 	    var prevstate: Int = -1
-	    var device: Parcelable? = null
 	    if (action != null && action == BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED) {
 		state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1)
 		prevstate = intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)
-                device = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
+                val device = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
                 Log.d("headset: ${device}: ${prevstate} -> ${state}")
 		doCheck = true
 	    }
 	    if (action != null && action == BluetoothA2dp.ACTION_PLAYING_STATE_CHANGED) {
 		state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1)
 		prevstate = intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)
-                device = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
+                val device = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
                 Log.d("playing_state: ${device}: ${prevstate} -> ${state}")
 	    }
             if (action != null && action == BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED) {
                 state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1)
                 prevstate = intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)
-                device = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
+                val device = intent.getParcelableExtra<Parcelable>(BluetoothDevice.EXTRA_DEVICE)
                 Log.d("a2dp: ${device}: ${prevstate} -> ${state}")
 		doCheck = true
             }
