@@ -56,10 +56,10 @@ class PlayContext {
     var uuid: String
     
     @NonNull
-    var name: String = ""
+    var name: String = "既定のコンテキスト"
     
     @NonNull
-    var topDir: String = ""
+    var topDir: String = "//"
     
     var path: String? = null
     
