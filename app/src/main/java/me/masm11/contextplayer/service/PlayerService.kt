@@ -76,6 +76,7 @@ class PlayerService : Service() {
     private val mutex = ReentrantLock()
     
     private lateinit var playContexts: PlayContextList
+    private lateinit var curContext: PlayContext
     private var topDir: String = "/"
     private var playingPath: String? = null
     private var nextPath: String? = null
@@ -234,6 +235,7 @@ class PlayerService : Service() {
 	intentHandlerThread.start()
 	
 	playContexts = (getApplication() as Application).getPlayContextList()
+	curContext = playContexts.getCurrent()
 	
 	localBroadcastManager = LocalBroadcastManager.getInstance(this)
 	
@@ -744,10 +746,8 @@ class PlayerService : Service() {
     private fun setForeground(on: Boolean) {
 	Log.d("on=${on}")
 	if (on) {
-	    val ctxt = playContexts.getCurrent()
-	    var contextName = "noname"
-	    if (ctxt != null)
-		contextName = ctxt.name
+	    val ctxt = curContext
+	    var contextName = ctxt.name
 	    val builder = Notification.Builder(this, "notify_channel_1")
 	    builder.setStyle(Notification.BigTextStyle()
 		.bigText(resources.getString(R.string.playing, contextName)))
@@ -790,7 +790,7 @@ class PlayerService : Service() {
 
     private fun saveContext() {
 	Log.d("contextId=----")
-	val ctxt = playContexts.getCurrent()
+	val ctxt = curContext
 	val p = curPlayer
 	if (ctxt != null && p != null) {
 	    Log.d("Id=${ctxt.uuid}")
@@ -820,6 +820,7 @@ class PlayerService : Service() {
 	Log.d("contextId=----")
 	val ctxt = playContexts.getCurrent()
 	if (ctxt != null) {
+	    curContext = ctxt
 	    playingPath = ctxt.path
 	    topDir = ctxt.topDir
 	    volume = ctxt.volume
@@ -901,7 +902,7 @@ class PlayerService : Service() {
     }
     
     private fun broadcastStatus() {
-	val ctxt = playContexts.getCurrent()
+	val ctxt = curContext
 	val intent = Intent(ACTION_CURRENT_STATUS)
 	    .putExtra(EXTRA_CONTEXT_ID, ctxt.uuid)
 	    .putExtra(EXTRA_PATH, playingPath)
@@ -942,7 +943,7 @@ class PlayerService : Service() {
     }
     
     private fun updateAppWidget() {
-	val ctxt = playContexts.getCurrent()
+	val ctxt = curContext
 	var contextName: String? = null
 	if (ctxt != null)
 	    contextName = ctxt.name
