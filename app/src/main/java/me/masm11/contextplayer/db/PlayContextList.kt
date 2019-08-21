@@ -24,11 +24,12 @@ class PlayContextList {
     private val dat = HashMap<String, PlayContext>()
     private val updater = Updater()
     private val thread = Thread(updater)
+    private val reader = Reader()
+    private val thread2 = Thread(reader)
     
     init {
-	val list = dao.getAll()
-	for (ctxt in list)
-	    dat.put(ctxt.uuid, ctxt)
+	thread2.start()
+	thread2.join()
 	
 	thread.setDaemon(true)
 	thread.start()
@@ -101,6 +102,16 @@ class PlayContextList {
 		}
 	    } catch (e: InterruptedException) {
 	    }
+	}
+    }
+
+    private inner class Reader: Runnable {
+	override fun run() {
+	    android.util.Log.i("PlayContextList", "dao.getAll")
+	    val list = dao.getAll()
+	    android.util.Log.i("PlayContextList", "dao.getAll done.")
+	    for (ctxt in list)
+		dat.put(ctxt.uuid, ctxt)
 	}
     }
 }

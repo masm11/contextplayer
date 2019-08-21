@@ -36,7 +36,6 @@ abstract class AppDatabase: RoomDatabase() {
 	
 	private val migration_1_2 = object: Migration(1, 2) {
 	    override fun migrate(database: SupportSQLiteDatabase) {
-		database.beginTransaction()
 		database.execSQL(
 		    "CREATE TABLE PlayContext_2 (" +
 		    "uuid TEXT NOT NULL PRIMARY KEY," +
@@ -58,8 +57,6 @@ abstract class AppDatabase: RoomDatabase() {
 		)
 		database.execSQL("INSERT INTO Config_2 SELECT CAST(id AS TEXT), key, value FROM Config")
 		database.execSQL("CREATE UNIQUE INDEX index_Config_2_key ON Config_2 (key)")
-		
-		database.endTransaction()
 	    }
 	}
 

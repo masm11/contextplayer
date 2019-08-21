@@ -90,13 +90,6 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
         Log.d("rootDir=${rootDir.absolutePath}")
 	
-        if (db.playContextDao().getAll().size == 0) {
-            val ctxt = PlayContext()
-            ctxt.name = resources.getString(R.string.default_context)
-            ctxt.topDir = rootDir.absolutePath
-            db.playContextDao().insert(ctxt)
-        }
-
         context_name.setOnClickListener {
             val i = Intent(this@MainActivity, ContextActivity::class.java)
             startActivity(i)
