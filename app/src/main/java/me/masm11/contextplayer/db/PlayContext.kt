@@ -47,6 +47,7 @@ class PlayContext {
 	r.path = this.path
 	r.pos = this.pos
 	r.volume = this.volume
+	r.current = this.current
 	r.deleted = this.deleted
 	return r
     }
