@@ -238,8 +238,10 @@ class PlayerService : Service() {
 	localBroadcastManager = LocalBroadcastManager.getInstance(this)
 	
 	val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-	val channel = NotificationChannel("notify_channel_1", getString(R.string.notification), NotificationManager.IMPORTANCE_LOW)
-	notificationManager.createNotificationChannel(channel)
+	val channel_1 = NotificationChannel("notify_channel_1", getString(R.string.notification), NotificationManager.IMPORTANCE_LOW)
+	notificationManager.createNotificationChannel(channel_1)
+	val channel_2 = NotificationChannel("notify_channel_2", getString(R.string.notification), NotificationManager.IMPORTANCE_LOW)
+	notificationManager.createNotificationChannel(channel_2)
 	
 	headsetReceiver = HeadsetReceiver()
 	registerReceiver(headsetReceiver, IntentFilter(AudioManager.ACTION_HEADSET_PLUG))
