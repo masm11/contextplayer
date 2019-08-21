@@ -1144,7 +1144,7 @@ class PlayerService : Service() {
 	fun setTopDir(ctxt: Context, topDir: String) {
 	    val intent = Intent(ctxt, PlayerService::class.java)
 	    intent.action = ACTION_SET_TOPDIR
-	    intent.putExtra(EXTRA_VOLUME, topDir)
+	    intent.putExtra(EXTRA_TOPDIR, topDir)
 	    ctxt.startForegroundService(intent)
 	}
 	
