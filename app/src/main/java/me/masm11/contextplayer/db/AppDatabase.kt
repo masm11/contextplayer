@@ -23,7 +23,7 @@ import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [ Config::class, PlayContext::class ], version = 2)
+@Database(entities = [ Config::class, PlayContext::class ], version = 3)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun configDao(): ConfigDao
     abstract fun playContextDao(): PlayContextDao
@@ -59,12 +59,19 @@ abstract class AppDatabase: RoomDatabase() {
 		database.execSQL("CREATE UNIQUE INDEX index_Config_2_key ON Config_2 (key)")
 	    }
 	}
+	
+	private val migration_2_3 = object: Migration(2, 3) {
+	    override fun migrate(database: SupportSQLiteDatabase) {
+		database.execSQL("ALTER TABLE PlayContext_2 ADD COLUMN current INTEGER")
+		database.execSQL("CREATE UNIQUE INDEX index_PlayContext_2_key ON PlayContext_2 (current)")
+	    }
+	}
 
 	private var appdb: AppDatabase? = null
 	fun getDB(): AppDatabase {
 	    var db = appdb
 	    if (db == null) {
-	        db = Room.databaseBuilder(app, AppDatabase::class.java, "ContextPlayer.db").addMigrations(migration_1_2).build()
+	        db = Room.databaseBuilder(app, AppDatabase::class.java, "ContextPlayer.db").addMigrations(migration_1_2, migration_2_3).build()
 		appdb = db
 	    }
 	    return db

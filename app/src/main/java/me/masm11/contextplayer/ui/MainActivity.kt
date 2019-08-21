@@ -64,7 +64,6 @@ import me.masm11.logger.Log
 
 class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
 
-    private lateinit var db: AppDatabase
     private lateinit var playContexts: PlayContextList
     private val rootDir = MFile("//")
     private var curPath: String? = null
@@ -81,7 +80,6 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-	db = AppDatabase.getDB()
 	playContexts = (getApplication() as Application).getPlayContextList()
 
         val fragMan = getFragmentManager()
@@ -161,8 +159,10 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
                 val uuid = intent.getStringExtra("me.masm11.contextplayer.CONTEXT_ID")
 
                 if (uuid != null) {
-                    db.configDao().setContextId(uuid)
-
+		    val ctxt = playContexts.get(uuid)
+		    if (ctxt != null)
+			playContexts.setCurrent(ctxt)
+		    
                     needSwitchContext = true
                 }
             }
@@ -198,9 +198,8 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     }
     
     override fun onResume() {
-        val ctxt = playContexts.get(db.configDao().getContextId())
-        if (ctxt != null)
-            context_name.text = ctxt.name
+        val ctxt = playContexts.getCurrent()
+        context_name.text = ctxt.name
 	
         super.onResume()
     }

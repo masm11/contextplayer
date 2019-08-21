@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 2,
-    "identityHash": "e85d9f8bcc199c87a22082412d49edee",
+    "version": 3,
+    "identityHash": "ab6758d17e161d1f5a0543dbc005c002",
     "entities": [
       {
         "tableName": "Config_2",
@@ -47,7 +47,7 @@
       },
       {
         "tableName": "PlayContext_2",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uuid` TEXT NOT NULL, `name` TEXT NOT NULL, `topDir` TEXT NOT NULL, `path` TEXT, `pos` INTEGER NOT NULL, `volume` INTEGER NOT NULL, `is_current` INTEGER, PRIMARY KEY(`uuid`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uuid` TEXT NOT NULL, `name` TEXT NOT NULL, `topDir` TEXT NOT NULL, `path` TEXT, `pos` INTEGER NOT NULL, `volume` INTEGER NOT NULL, `current` INTEGER, PRIMARY KEY(`uuid`))",
         "fields": [
           {
             "fieldPath": "uuid",
@@ -86,8 +86,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "is_current",
-            "columnName": "is_current",
+            "fieldPath": "current",
+            "columnName": "current",
             "affinity": "INTEGER",
             "notNull": false
           }
@@ -100,12 +100,12 @@
         },
         "indices": [
           {
-            "name": "index_PlayContext_2_is_current",
+            "name": "index_PlayContext_2_current",
             "unique": true,
             "columnNames": [
-              "is_current"
+              "current"
             ],
-            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_PlayContext_2_is_current` ON `${TABLE_NAME}` (`is_current`)"
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_PlayContext_2_current` ON `${TABLE_NAME}` (`current`)"
           }
         ],
         "foreignKeys": []
@@ -114,7 +114,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e85d9f8bcc199c87a22082412d49edee')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ab6758d17e161d1f5a0543dbc005c002')"
     ]
   }
 }

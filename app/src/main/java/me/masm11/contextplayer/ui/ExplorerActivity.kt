@@ -229,7 +229,7 @@ class ExplorerActivity : AppCompatActivity() {
 
         adapter = FileAdapter(this, ArrayList<FileItem>())
 
-        val ctxtId = db.configDao().getContextId()
+        val ctxtId = ""  // fixme: db.configDao().getContextId()
 	var c = playContexts.get(ctxtId)
 	if (c == null) {
 	    c = playContexts.new()

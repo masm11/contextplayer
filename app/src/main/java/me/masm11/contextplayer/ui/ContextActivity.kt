@@ -117,7 +117,8 @@ class ContextActivity : AppCompatActivity() {
             val listView = parent as ListView
             val item = listView.getItemAtPosition(position) as Item
 	    
-            db.configDao().setContextId(item.uuid)
+	    // fixme:
+            // db.configDao().setContextId(item.uuid)
 	    
             PlayerService.switchContext(this)
         }

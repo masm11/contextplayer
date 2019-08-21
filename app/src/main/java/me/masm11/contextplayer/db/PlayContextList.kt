@@ -47,6 +47,26 @@ class PlayContextList {
 	return dat.get(uuid)
     }
     
+    fun getCurrent(): PlayContext {
+	for (ctxt in dat.values) {
+	    if (ctxt.current == 1)
+		return ctxt
+	}
+	for (ctxt in dat.values)
+	    return ctxt
+	return new()
+    }
+    
+    fun setCurrent(ctxt: PlayContext) {
+	if (ctxt.current == 1)
+	    return
+	val cur = getCurrent()
+	cur.current = null
+	updater.enqueue(cur.dup())
+	ctxt.current = 1
+	updater.enqueue(ctxt.dup())
+    }
+    
     fun put(uuid: String) {
 	val ctxt = dat.get(uuid)
 	if (ctxt != null) {

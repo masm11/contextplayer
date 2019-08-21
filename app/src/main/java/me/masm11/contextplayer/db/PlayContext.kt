@@ -25,7 +25,15 @@ import androidx.room.PrimaryKey
 import androidx.room.ColumnInfo
 import androidx.room.Index
 
-@Entity(tableName = "PlayContext_2")
+@Entity(
+    tableName = "PlayContext_2",
+    indices = arrayOf(
+	Index(
+	    value = [ "current" ],
+	    unique = true
+	)
+    )
+)
 class PlayContext {
     constructor() {
 	uuid = UUID.randomUUID().toString()
@@ -57,6 +65,8 @@ class PlayContext {
     var pos: Long = 0		// msec
     
     var volume: Int = 100
+    
+    @ColumnInfo(name = "current") var current: Int? = null
     
     @Ignore
     var deleted: Boolean = false

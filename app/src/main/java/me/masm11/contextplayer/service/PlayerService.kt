@@ -75,14 +75,12 @@ class PlayerService : Service() {
     */
     private val mutex = ReentrantLock()
     
-    private lateinit var db: AppDatabase
     private lateinit var playContexts: PlayContextList
     private var topDir: String = "/"
     private var playingPath: String? = null
     private var nextPath: String? = null
     private var curPlayer: MediaPlayer? = null
     private var nextPlayer: MediaPlayer? = null
-    private lateinit var contextId: String
     private lateinit var audioManager: AudioManager
     private lateinit var audioAttributes: AudioAttributes
     private var audioSessionId: Int = 0
@@ -235,11 +233,8 @@ class PlayerService : Service() {
 	intentHandlerThread = Thread(intentHandler)
 	intentHandlerThread.start()
 	
-	db = AppDatabase.getDB()
 	playContexts = (getApplication() as Application).getPlayContextList()
 	
-	contextId = ""		// fixme:
-
 	localBroadcastManager = LocalBroadcastManager.getInstance(this)
 	
 	val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
@@ -747,7 +742,7 @@ class PlayerService : Service() {
     private fun setForeground(on: Boolean) {
 	Log.d("on=${on}")
 	if (on) {
-	    val ctxt = playContexts.get(contextId)
+	    val ctxt = playContexts.getCurrent()
 	    var contextName = "noname"
 	    if (ctxt != null)
 		contextName = ctxt.name
@@ -792,8 +787,8 @@ class PlayerService : Service() {
     }
 
     private fun saveContext() {
-	Log.d("contextId=${contextId}")
-	val ctxt = playContexts.get(contextId)
+	Log.d("contextId=----")
+	val ctxt = playContexts.getCurrent()
 	val p = curPlayer
 	if (ctxt != null && p != null) {
 	    Log.d("Id=${ctxt.uuid}")
@@ -804,7 +799,7 @@ class PlayerService : Service() {
 	    ctxt.volume = volume
 	    Log.d("volume=${volume}")
 	    Log.d("ctxt saving...")
-	    playContexts.put(contextId)
+	    playContexts.put(ctxt.uuid)
 	}
     }
     
@@ -820,9 +815,8 @@ class PlayerService : Service() {
 	setForeground(false)
 	
 	Log.d("getting context_id")
-	contextId = db.configDao().getContextId()
-	Log.d("contextId=${contextId}")
-	val ctxt = playContexts.get(contextId)
+	Log.d("contextId=----")
+	val ctxt = playContexts.getCurrent()
 	if (ctxt != null) {
 	    playingPath = ctxt.path
 	    topDir = ctxt.topDir
@@ -905,8 +899,9 @@ class PlayerService : Service() {
     }
     
     private fun broadcastStatus() {
+	val ctxt = playContexts.getCurrent()
 	val intent = Intent(ACTION_CURRENT_STATUS)
-	    .putExtra(EXTRA_CONTEXT_ID, contextId)
+	    .putExtra(EXTRA_CONTEXT_ID, ctxt.uuid)
 	    .putExtra(EXTRA_PATH, playingPath)
 	    .putExtra(EXTRA_TOPDIR, topDir)
 	    .putExtra(EXTRA_VOLUME, volume)
@@ -945,7 +940,7 @@ class PlayerService : Service() {
     }
     
     private fun updateAppWidget() {
-	val ctxt = playContexts.get(contextId)
+	val ctxt = playContexts.getCurrent()
 	var contextName: String? = null
 	if (ctxt != null)
 	    contextName = ctxt.name
