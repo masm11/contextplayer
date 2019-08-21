@@ -53,7 +53,6 @@ import me.masm11.contextplayer.R
 import me.masm11.contextplayer.db.AppDatabase
 import me.masm11.contextplayer.db.PlayContext
 import me.masm11.contextplayer.db.PlayContextList
-import me.masm11.contextplayer.db.Config
 import me.masm11.contextplayer.util.Metadata
 import me.masm11.contextplayer.fs.MFile
 import me.masm11.contextplayer.service.PlayerService

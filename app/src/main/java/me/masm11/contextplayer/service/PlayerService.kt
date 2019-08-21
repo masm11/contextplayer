@@ -51,7 +51,6 @@ import me.masm11.contextplayer.receiver.HeadsetReceiver
 import me.masm11.contextplayer.db.AppDatabase
 import me.masm11.contextplayer.db.PlayContext
 import me.masm11.contextplayer.db.PlayContextList
-import me.masm11.contextplayer.db.Config
 import me.masm11.contextplayer.widget.WidgetProvider
 import me.masm11.contextplayer.Application
 

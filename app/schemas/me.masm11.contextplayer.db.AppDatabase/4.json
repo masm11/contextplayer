@@ -2,52 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "bc5155e429f131feb7e3881c03784a74",
+    "identityHash": "2facaa2c9fe65f10dcf6abc74c7f7e56",
     "entities": [
       {
-        "tableName": "Config",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `key` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY(`id`))",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "key",
-            "columnName": "key",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "value",
-            "columnName": "value",
-            "affinity": "TEXT",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [
-            "id"
-          ],
-          "autoGenerate": false
-        },
-        "indices": [
-          {
-            "name": "index_Config_key",
-            "unique": true,
-            "columnNames": [
-              "key"
-            ],
-            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Config_key` ON `${TABLE_NAME}` (`key`)"
-          }
-        ],
-        "foreignKeys": []
-      },
-      {
-        "tableName": "PlayContext",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uuid` TEXT NOT NULL, `name` TEXT NOT NULL, `topDir` TEXT NOT NULL, `path` TEXT, `pos` INTEGER NOT NULL, `volume` INTEGER NOT NULL, PRIMARY KEY(`uuid`))",
+        "tableName": "PlayContext_2",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uuid` TEXT NOT NULL, `name` TEXT NOT NULL, `topDir` TEXT NOT NULL, `path` TEXT, `pos` INTEGER NOT NULL, `volume` INTEGER NOT NULL, `current` INTEGER, PRIMARY KEY(`uuid`))",
         "fields": [
           {
             "fieldPath": "uuid",
@@ -84,6 +43,12 @@
             "columnName": "volume",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "current",
+            "columnName": "current",
+            "affinity": "INTEGER",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -92,14 +57,23 @@
           ],
           "autoGenerate": false
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_PlayContext_2_current",
+            "unique": true,
+            "columnNames": [
+              "current"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_PlayContext_2_current` ON `${TABLE_NAME}` (`current`)"
+          }
+        ],
         "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bc5155e429f131feb7e3881c03784a74')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2facaa2c9fe65f10dcf6abc74c7f7e56')"
     ]
   }
 }
