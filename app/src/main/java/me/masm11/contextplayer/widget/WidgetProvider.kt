@@ -44,9 +44,8 @@ class WidgetProvider : AppWidgetProvider() {
 
 	val db = AppDatabase.getDB()
 
-        val contextId = db.configDao().getContextId()
 	val playContexts = (context.getApplicationContext() as Application).getPlayContextList()
-        val ctxt = playContexts.get(contextId)
+        val ctxt = playContexts.getCurrent()
         var contextName: String? = null
         if (ctxt != null)
             contextName = ctxt.name
