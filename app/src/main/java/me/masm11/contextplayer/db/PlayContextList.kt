@@ -49,7 +49,7 @@ class PlayContextList {
     
     fun getCurrent(): PlayContext {
 	for (ctxt in dat.values) {
-	    if (ctxt.current == 1)
+	    if (ctxt.current == CURRENT)
 		return ctxt
 	}
 	for (ctxt in dat.values)
@@ -58,12 +58,12 @@ class PlayContextList {
     }
     
     fun setCurrent(ctxt: PlayContext) {
-	if (ctxt.current == 1)
+	if (ctxt.current == CURRENT)
 	    return
 	val cur = getCurrent()
 	cur.current = null
 	updater.enqueue(cur.dup())
-	ctxt.current = 1
+	ctxt.current = CURRENT
 	updater.enqueue(ctxt.dup())
     }
     
@@ -124,14 +124,16 @@ class PlayContextList {
 	    }
 	}
     }
-
+    
     private inner class Reader: Runnable {
 	override fun run() {
-	    android.util.Log.i("PlayContextList", "dao.getAll")
 	    val list = dao.getAll()
-	    android.util.Log.i("PlayContextList", "dao.getAll done.")
 	    for (ctxt in list)
 		dat.put(ctxt.uuid, ctxt)
 	}
+    }
+    
+    companion object {
+	val CURRENT = 1
     }
 }
