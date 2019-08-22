@@ -219,10 +219,6 @@ class ExplorerActivity : ComponentActivity() {
 	
 	db = AppDatabase.getDB()
 	playContexts = (getApplication() as Application).getPlayContextList()
-	
-        val fragMan = getFragmentManager()
-	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
-        // setSupportActionBar(frag.toolbar)
 
         handler = Handler()
 

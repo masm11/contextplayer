@@ -45,10 +45,6 @@ class AboutActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_about)
 	
-        val fragMan = getFragmentManager()
-	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
-        // setSupportActionBar(frag.toolbar)
-	
         val settings = web_view.settings
         settings.javaScriptEnabled = true
 	settings.textZoom = 50

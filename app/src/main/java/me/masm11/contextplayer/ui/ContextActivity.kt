@@ -84,9 +84,6 @@ class ContextActivity : ComponentActivity() {
 	    view.context_topdir.topDir = item.topDir
 	    view.context_topdir.path = item.path
 
-	    if (item.current)
-		view.setTransitionName("transit_cat")
-
             return view
         }
     }
@@ -97,10 +94,6 @@ class ContextActivity : ComponentActivity() {
 	
 	db = AppDatabase.getDB()
 	playContexts = (getApplication() as Application).getPlayContextList()
-	
-        val fragMan = getFragmentManager()
-	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
-        // setSupportActionBar(frag.toolbar)
 
         items = emptyMutableListOf<Item>()
 	val current_ctxt = playContexts.getCurrent()

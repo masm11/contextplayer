@@ -84,10 +84,6 @@ class MainActivity : ComponentActivity(), ActivityCompat.OnRequestPermissionsRes
 
 	playContexts = (getApplication() as Application).getPlayContextList()
 
-        val fragMan = getFragmentManager()
-	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
-        // setSupportActionBar(frag.toolbar)
-
         Log.d("rootDir=${rootDir.absolutePath}")
 	
         context_name.setOnClickListener {
