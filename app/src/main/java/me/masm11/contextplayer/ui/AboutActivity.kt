@@ -16,7 +16,7 @@
 */
 package me.masm11.contextplayer.ui
 
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import android.webkit.WebSettings
 import android.webkit.JavascriptInterface
 import android.content.Context
@@ -30,7 +30,7 @@ import me.masm11.contextplayer.R
 
 import me.masm11.logger.Log
 
-class AboutActivity : AppCompatActivity() {
+class AboutActivity : ComponentActivity() {
     private inner class WebAppInterface(private val context: Context) {
         val appVersion: String
             @JavascriptInterface
@@ -47,7 +47,7 @@ class AboutActivity : AppCompatActivity() {
 	
         val fragMan = getFragmentManager()
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
-        setSupportActionBar(frag.toolbar)
+        // setSupportActionBar(frag.toolbar)
 	
         val settings = web_view.settings
         settings.javaScriptEnabled = true

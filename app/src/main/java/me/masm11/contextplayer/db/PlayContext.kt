@@ -51,7 +51,7 @@ class PlayContext {
 	r.deleted = this.deleted
 	return r
     }
-
+    
     @PrimaryKey
     var uuid: String
     

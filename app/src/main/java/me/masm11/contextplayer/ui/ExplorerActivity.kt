@@ -16,7 +16,7 @@
 */
 package me.masm11.contextplayer.ui
 
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import android.app.Service
 import android.app.FragmentManager
 import android.os.Bundle
@@ -60,7 +60,7 @@ import me.masm11.contextplayer.Application
 
 import me.masm11.logger.Log
 
-class ExplorerActivity : AppCompatActivity() {
+class ExplorerActivity : ComponentActivity() {
     private var backKeyShortPress: Boolean = false
 
     private class FileItem(val file: MFile) {
@@ -222,7 +222,7 @@ class ExplorerActivity : AppCompatActivity() {
 	
         val fragMan = getFragmentManager()
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
-        setSupportActionBar(frag.toolbar)
+        // setSupportActionBar(frag.toolbar)
 
         handler = Handler()
 

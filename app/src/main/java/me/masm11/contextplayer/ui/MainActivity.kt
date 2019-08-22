@@ -19,7 +19,10 @@ package me.masm11.contextplayer.ui
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
+import androidx.core.util.Pair
+import androidx.activity.ComponentActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.app.Service
 import android.app.AlertDialog
@@ -61,7 +64,7 @@ import me.masm11.contextplayer.Application
 
 import me.masm11.logger.Log
 
-class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
+class MainActivity : ComponentActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
 
     private lateinit var playContexts: PlayContextList
     private val rootDir = MFile("//")
@@ -83,18 +86,28 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
         val fragMan = getFragmentManager()
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
-        setSupportActionBar(frag.toolbar)
+        // setSupportActionBar(frag.toolbar)
 
         Log.d("rootDir=${rootDir.absolutePath}")
 	
         context_name.setOnClickListener {
             val i = Intent(this@MainActivity, ContextActivity::class.java)
-            startActivity(i)
+	    val pair_1 = Pair<View, String>(context_name, "transit_cat")
+	    val pair_2 = Pair<View, String>(findViewById(R.id.op_frag), "transit_op")
+	    val opt = ActivityOptionsCompat.makeSceneTransitionAnimation(
+		this@MainActivity, pair_1, pair_2
+	    )
+            startActivity(i, opt.toBundle())
         }
 
         playing_info.setOnClickListener {
             val i = Intent(this@MainActivity, ExplorerActivity::class.java)
-            startActivity(i)
+	    val pair_1 = Pair<View, String>(playing_info, "transit_title")
+	    val pair_2 = Pair<View, String>(findViewById(R.id.op_frag), "transit_op")
+	    val opt = ActivityOptionsCompat.makeSceneTransitionAnimation(
+		this@MainActivity, pair_1, pair_2
+	    )
+            startActivity(i, opt.toBundle())
         }
 
         playing_pos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {

@@ -48,7 +48,7 @@ class PathView(context: Context, attrs: AttributeSet) : TextView(context, attrs)
 
         if (cur.startsWith(top)) {
             val ss = SpannableString(cur)
-            ss.setSpan(span, 0, top.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+//            ss.setSpan(span, 0, top.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             text = ss
         } else {
             text = cur

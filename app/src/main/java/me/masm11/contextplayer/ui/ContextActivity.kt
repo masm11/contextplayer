@@ -16,7 +16,7 @@
 */
 package me.masm11.contextplayer.ui
 
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.os.Bundle
 import android.os.IBinder
@@ -56,7 +56,7 @@ import me.masm11.contextplayer.Application
 
 import me.masm11.logger.Log
 
-class ContextActivity : AppCompatActivity() {
+class ContextActivity : ComponentActivity() {
 
     private lateinit var db: AppDatabase
     private lateinit var playContexts: PlayContextList
@@ -66,7 +66,7 @@ class ContextActivity : AppCompatActivity() {
     private lateinit var localBroadcastManager: LocalBroadcastManager
     private lateinit var localBroadcastReceiver: BroadcastReceiver
     
-    private inner class Item(val uuid: String, var name: String?, val topDir: String, var path: String?)
+    private inner class Item(val uuid: String, var name: String?, val topDir: String, var path: String?, var current: Boolean)
     
     private inner class ItemAdapter(context: Context, items: List<Item>) : ArrayAdapter<Item>(context, R.layout.list_context, items) {
         private val inflater = LayoutInflater.from(context)
@@ -84,6 +84,9 @@ class ContextActivity : AppCompatActivity() {
 	    view.context_topdir.topDir = item.topDir
 	    view.context_topdir.path = item.path
 
+	    if (item.current)
+		view.setTransitionName("transit_cat")
+
             return view
         }
     }
@@ -97,13 +100,14 @@ class ContextActivity : AppCompatActivity() {
 	
         val fragMan = getFragmentManager()
 	val frag = fragMan.findFragmentById(R.id.actionbar_frag) as ActionBarFragment
-        setSupportActionBar(frag.toolbar)
+        // setSupportActionBar(frag.toolbar)
 
         items = emptyMutableListOf<Item>()
+	val current_ctxt = playContexts.getCurrent()
         for (uuid in playContexts.uuids()) {
 	    val ctxt = playContexts.get(uuid)
 	    if (ctxt != null) {
-		val item = Item(ctxt.uuid, ctxt.name, ctxt.topDir, ctxt.path)
+		val item = Item(ctxt.uuid, ctxt.name, ctxt.topDir, ctxt.path, ctxt == current_ctxt)
 		items.add(item)
 	    }
         }
@@ -208,7 +212,7 @@ class ContextActivity : AppCompatActivity() {
                 ctxt.topDir = rootDir.absolutePath
 		playContexts.put(ctxt.uuid)
 
-                val item = Item(ctxt.uuid, newName, ctxt.topDir, null)
+                val item = Item(ctxt.uuid, newName, ctxt.topDir, null, false)
                 adapter.add(item)
             }
             builder.show()
@@ -235,6 +239,6 @@ class ContextActivity : AppCompatActivity() {
 	    }
 	}
 	val filter = IntentFilter(PlayerService.ACTION_CURRENT_STATUS)
-	localBroadcastManager.registerReceiver(localBroadcastReceiver, filter)
+	localBroadcastManager.registerReceiver(localBroadcastReceiver, filter)	// fixme: 登録されっぱなし
     }
 }

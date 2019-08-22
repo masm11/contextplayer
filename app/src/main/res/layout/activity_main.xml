@@ -31,7 +31,7 @@
 	android:layout_height="wrap_content"
 	android:paddingTop="15dp"
 	android:paddingBottom="15dp"
-	android:background="@drawable/border_ripple"
+	android:transitionName="transit_cat"
 	android:textIsSelectable="false"/>
     
     <!-- 曲名等 -->
@@ -40,6 +40,7 @@
 	android:layout_height="0dp"
 	android:layout_weight="1"
 	android:gravity="center"
+	android:transitionName="transit_title"
 	android:orientation="vertical">
       
       <LinearLayout
@@ -48,8 +49,7 @@
 	  android:layout_height="wrap_content"
 	  android:paddingTop="15dp"
 	  android:paddingBottom="15dp"
-	  android:orientation="vertical"
-	  android:background="@drawable/border_ripple">
+	  android:orientation="vertical">
 	
 	<me.masm11.contextplayer.ui.PathView
 	    android:id="@+id/playing_filename"
@@ -61,7 +61,6 @@
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:textColor="#000000"
 	    android:textIsSelectable="false"/>
 	<TextView
 	    android:id="@+id/playing_artist"
@@ -196,7 +195,8 @@
 	class="me.masm11.contextplayer.ui.OperationFragment"
 	android:id="@+id/op_frag"
 	android:layout_width="match_parent"
-	android:layout_height="wrap_content"/>
+	android:layout_height="wrap_content"
+	android:transitionName="transit_op"/>
     
   </LinearLayout>
 </LinearLayout>

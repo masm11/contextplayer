@@ -43,7 +43,8 @@
 	class="me.masm11.contextplayer.ui.OperationFragment"
 	android:id="@+id/op_frag"
 	android:layout_width="match_parent"
-	android:layout_height="wrap_content"/>
+	android:layout_height="wrap_content"
+	android:transitionName="transit_op"/>
     
   </LinearLayout>
 </LinearLayout>
