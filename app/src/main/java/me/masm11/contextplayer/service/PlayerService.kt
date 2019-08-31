@@ -41,7 +41,9 @@ import android.bluetooth.BluetoothHeadset
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 import java.util.Locale
-import java.util.concurrent.locks.ReentrantLock
+
+// https://kotlinlang.org/docs/reference/coroutines/basics.html
+import kotlinx.coroutines.*
 
 import me.masm11.contextplayer.R
 import me.masm11.contextplayer.ui.MainActivity
@@ -56,23 +58,9 @@ import me.masm11.contextplayer.Application
 
 import me.masm11.logger.Log
 
-class PlayerService : Service() {
-    
+class PlayerService : Service(), CoroutineScope by MainScope() {
+
     class CreatedMediaPlayer (val mediaPlayer: MediaPlayer, val path: String)
-    
-    /*
-    * 以下のポイントで排他制御する。
-    * - onXxxXxx
-    * - listener
-    * - 別スレッド内
-    * ただし、適宜 lock には lockInterruptibly を使うこと。
-    *
-    * 以下のクラスはメインスレッドでのみ使用
-    * - android.widget.*
-    * - android.view.*
-    * (https://developer.android.com/guide/components/processes-and-threads?hl=JA 参照)
-    */
-    private val mutex = ReentrantLock()
     
     private lateinit var playContexts: PlayContextList
     private lateinit var curContext: PlayContext
@@ -85,7 +73,7 @@ class PlayerService : Service() {
     private lateinit var audioAttributes: AudioAttributes
     private var audioSessionId: Int = 0
     private lateinit var audioFocusRequest: AudioFocusRequest
-    private var broadcaster: Thread? = null
+    private var broadcaster: Job? = null
     private lateinit var headsetReceiver: BroadcastReceiver
     private var volume: Int = 0
     private var volumeDuck: Int = 0
@@ -93,146 +81,8 @@ class PlayerService : Service() {
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothHeadset: BluetoothHeadset? = null
     private lateinit var localBroadcastManager: LocalBroadcastManager
-    private var inForeground: Boolean = false
-    
-    private inner class IntentHandler: Runnable {
-	private val mutex = ReentrantLock()
-	private val cond = mutex.newCondition()
-	private val queue = mutableListOf<Intent>()
-	
-	override fun run() {
-	    try {
-		var sleepUntil: Long? = null
-		while (true) {
-		    var timeout = false
-		    mutex.lockInterruptibly()
-		    while (queue.size == 0) {
-			if (sleepUntil == null) {
-			    Log.d("await forever.")
-			    cond.await()
-			} else {
-			    val sleepNano = sleepUntil - System.currentTimeMillis() * 1000000
-			    if (sleepNano <= 0) {
-				timeout = true
-				break
-			    }
-			    Log.d("await for ${sleepNano}ns.")
-			    cond.awaitNanos(sleepNano)
-			}
-		    }
-		    val intent: Intent? = if (timeout) null else queue.removeAt(0)
-		    mutex.unlock()
-		    
-		    this@PlayerService.mutex.lockInterruptibly()
-		    if (intent != null) {
-			if (sleepUntil == null)
-			    sleepUntil = System.currentTimeMillis() * 1000000 + 1000000000
-			handleIntent(intent)
-		    } else {
-			handleIntent(null)
-			sleepUntil = null
-		    }
-		    this@PlayerService.mutex.unlock()
-		}
-	    } catch (e: InterruptedException) {
-		Log.e("interrupted.", e)
-	    }
-	}
-	
-	fun enqueue(intent: Intent) {
-	    mutex.lock()
-	    queue.add(intent)
-	    cond.signal()
-	    mutex.unlock()
-	}
-	
-	private fun handleIntent(intent: Intent?) {
-	    if (intent != null) {
-		val action = intent.action
-		Log.d("action=${action}")
-		when (action) {
-		    ACTION_A2DP_DISCONNECTED -> pause()
-		    ACTION_HEADSET_UNPLUGGED -> pause()
-		    ACTION_TOGGLE -> toggle()
-		    ACTION_UPDATE_APPWIDGET -> updateAppWidget()
-
-		    ACTION_PLAY -> handlePlay(intent)
-		    ACTION_PAUSE -> handlePause(intent)
-		    ACTION_SET_TOPDIR -> handleSetTopDir(intent)
-		    ACTION_SET_VOLUME -> handleSetVolume(intent)
-		    ACTION_SWITCH_CONTEXT -> handleSwitchContext(intent)
-		    ACTION_SEEK -> handleSeek(intent)
-		    ACTION_PREV_TRACK -> handlePrevTrack(intent)
-		    ACTION_NEXT_TRACK -> handleNextTrack(intent)
-		    ACTION_REQUEST_CURRENT_STATUS -> handleRequestCurrentStatus(intent)
-		}
-	    } else {
-		handleForeground()
-	    }
-	}
-	
-	fun handleSeek(intent: Intent) {
-	    val pos = intent.getIntExtra(EXTRA_POS, 0)
-	    seek(pos)
-	}
-	
-	fun handlePlay(intent: Intent) {
-	    val path: String? = intent.getStringExtra(EXTRA_PATH)
-	    play(path)
-	}
-	
-	fun handlePause(intent: Intent) {
-	    pause()
-	}
-	
-	fun handlePrevTrack(intent: Intent) {
-	    prevTrack()
-	}
-	
-	fun handleNextTrack(intent: Intent) {
-	    nextTrack()
-	}
-	
-	fun handleSwitchContext(intent: Intent) {
-	    switchContext()
-	}
-	
-	fun handleSetTopDir(intent: Intent) {
-	    val topDir = intent.getStringExtra(EXTRA_TOPDIR)
-	    setTopDir(topDir)
-	}
-	
-	fun handleSetVolume(intent: Intent) {
-	    val volume = intent.getIntExtra(EXTRA_VOLUME, 0)
-	    setVolume(volume)
-	}
-	
-	fun handleRequestCurrentStatus(intent: Intent) {
-	    broadcastStatus()
-	}
-	
-	fun handleForeground() {
-	    /* startForegroundService() の後は必ず startForeground() しなければならない。
-	    * 従って、volume 操作等 startForeground() しない処理の後は、
-	    * 必ず startForeground() をしてやる必要がある。
-	    * volume 操作は連続するが、毎回 startForeground() するのは無駄なので、
-	    * 1秒分まとめて1回やる。
-	    */
-	    Log.d("curPlayer=${curPlayer}")
-	    if (!inForeground)
-		setForegroundJustInstant()
-	}
-    }
-    
-    private val intentHandler = IntentHandler()
-    private lateinit var intentHandlerThread: Thread
     
     override fun onCreate() {
-	mutex.lock()
-	
-	intentHandlerThread = Thread(intentHandler)
-	intentHandlerThread.start()
-	
 	playContexts = (getApplication() as Application).getPlayContextList()
 	curContext = playContexts.getCurrent()
 	
@@ -252,20 +102,16 @@ class PlayerService : Service() {
 	if (ba != null) {
 	    ba.getProfileProxy(this, object: BluetoothProfile.ServiceListener {
 		override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
-		    mutex.lock()
 		    if (profile == BluetoothProfile.HEADSET) {
 			Log.i("Connected to bluetooth headset proxy.")
 			bluetoothHeadset = proxy as BluetoothHeadset
 		    }
-		    mutex.unlock()
 		}
 		override fun onServiceDisconnected(profile: Int) {
-		    mutex.lock()
 		    if (profile == BluetoothProfile.HEADSET) {
 			Log.i("Disconnected from bluetooth headset proxy.")
 			bluetoothHeadset = null
 		    }
-		    mutex.unlock()
 		}
 	    }, BluetoothProfile.HEADSET)
 	}
@@ -285,20 +131,41 @@ class PlayerService : Service() {
 	volumeDuck = 100
 	
 	loadContext()
-	
-	mutex.unlock()
     }
     
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-	mutex.lock()
-	
 	val action = intent?.action
 	Log.d("action=${action}")
 	
-	if (intent != null)
-	    intentHandler.enqueue(intent)
-	
-	mutex.unlock()
+	when (action) {
+	    ACTION_A2DP_DISCONNECTED -> pause()
+	    ACTION_HEADSET_UNPLUGGED -> pause()
+	    ACTION_TOGGLE -> toggle()
+	    ACTION_UPDATE_APPWIDGET -> updateAppWidget()
+
+	    ACTION_PLAY -> {
+		val path: String? = intent.getStringExtra(EXTRA_PATH)
+		play(path)
+	    }
+	    ACTION_PAUSE -> pause()
+	    ACTION_SET_TOPDIR -> {
+		val topDir = intent.getStringExtra(EXTRA_TOPDIR)
+		setTopDir(topDir)
+	    }
+	    ACTION_SET_VOLUME -> {
+		val volume = intent.getIntExtra(EXTRA_VOLUME, 0)
+		setVolume(volume)
+	    }
+	    ACTION_SWITCH_CONTEXT -> switchContext()
+	    ACTION_SEEK ->  {
+		val pos = intent.getIntExtra(EXTRA_POS, 0)
+		seek(pos)
+	    }
+	    ACTION_PREV_TRACK -> prevTrack()
+	    ACTION_NEXT_TRACK -> nextTrack()
+	    ACTION_REQUEST_CURRENT_STATUS -> broadcastStatus()
+	}
+
 	return Service.START_NOT_STICKY
     }
     
@@ -536,8 +403,6 @@ class PlayerService : Service() {
     }
     
     private fun handleAudioFocusChangeEvent(focusChange: Int) {
-	mutex.lock()
-	
 	Log.d("focusChange=${focusChange}")
 	when (focusChange) {
 	    AudioManager.AUDIOFOCUS_GAIN -> {
@@ -550,8 +415,6 @@ class PlayerService : Service() {
 		setMediaPlayerVolume()
 	    }
 	}
-	
-	mutex.unlock()
     }
     
     private fun enqueueNext() {
@@ -623,8 +486,6 @@ class PlayerService : Service() {
     }
     
     private fun handleCompletion(mp: MediaPlayer) {
-	mutex.lock()
-	
 	Log.d("shifting")
 	playingPath = nextPath
 	curPlayer = nextPlayer
@@ -643,13 +504,9 @@ class PlayerService : Service() {
 	    enqueueNext()
 	} else
 	    stopPlay()
-	
-	mutex.unlock()
     }
     
     private fun handleError(mp: MediaPlayer, what: Int, extra: Int): Boolean {
-	mutex.lock()
-	
 	Log.d("error reported. ${what}, ${extra}.")
 	
 	// 両方 release して新たに作り直す。
@@ -661,7 +518,6 @@ class PlayerService : Service() {
 	if (ret == null) {
 	    Log.w("No audio file found.")
 	    stopPlay()
-	    mutex.unlock()
 	    return true
 	}
 	
@@ -677,8 +533,6 @@ class PlayerService : Service() {
 	setMediaPlayerVolume()
 	
 	saveContext()
-	
-	mutex.unlock()
 	return true
     }
     
@@ -760,12 +614,8 @@ class PlayerService : Service() {
 	    )
 	    builder.setContentIntent(pendingIntent)
 	    startForeground(1, builder.build())
-
-	    inForeground = true
 	} else {
 	    stopForeground(true)
-
-	    inForeground = false
 	}
     }
     
@@ -859,44 +709,38 @@ class PlayerService : Service() {
     
     private fun startBroadcast() {
 	Log.d("enter.")
-	val code = Runnable {
-	    try {
-		while (true) {
-		    mutex.lockInterruptibly()
-		    broadcastStatus()
-		    mutex.unlock()
-		    
-		    Thread.sleep(500)
-		}
-	    } catch (e: InterruptedException) {
-		Log.d("interrupted.", e)
-	    }
-	}
 	
 	Log.d("stop broadcast.")
 	stopBroadcast()    // 念の為
-	Log.d("creating thread.")
-	val thr = Thread(code)
-	broadcaster = thr
+	
 	Log.d("starting thread.")
-	thr.start()
+	val job = launch {
+	    try {
+		while (true) {
+		    Log.d("broadcast.")
+		    broadcastStatus()
+		    Log.d("delay.")
+		    delay(500)
+		}
+	    } catch (e: CancellationException) {
+		Log.d("canceled.", e)
+	    }
+	}
+	broadcaster = job
+	
 	Log.d("leave.")
     }
     
     private fun stopBroadcast() {
-	val thr = broadcaster
-	if (thr != null) {
-	    Log.d("interrupt")
-	    thr.interrupt()
-	    try {
-		Log.d("joining...")
-		thr.join()
-		Log.d("joining... done")
-	    } catch (e: InterruptedException) {
-		Log.e("interrupted.", e)
-	    }
-	    
+	val job = broadcaster
+	if (job != null) {
 	    broadcaster = null
+	    
+	    Log.d("interrupt&joining...")
+	    runBlocking {
+		job.cancelAndJoin()
+	    }
+	    Log.d("joining... done")
 	}
     }
     
@@ -916,8 +760,6 @@ class PlayerService : Service() {
     }
     
     override fun onDestroy() {
-	mutex.lock()
-	
 	Log.d("save context")
 	saveContext()
 	
@@ -927,9 +769,6 @@ class PlayerService : Service() {
 	Log.d("release curPlayer.")
 	releaseCurPlayer()
 	
-	intentHandlerThread.interrupt()
-	intentHandlerThread.join()
-	
 	if (bluetoothHeadset != null) {
 	    val ba = bluetoothAdapter
 	    if (ba != null)
@@ -937,8 +776,6 @@ class PlayerService : Service() {
 	}
 	
 	unregisterReceiver(headsetReceiver)
-	
-	mutex.unlock()
     }
     
     private fun updateAppWidget() {
