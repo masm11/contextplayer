@@ -714,16 +714,13 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	stopBroadcast()    // 念の為
 	
 	Log.d("starting thread.")
-	val job = launch {
-	    try {
-		while (true) {
-		    Log.d("broadcast.")
-		    broadcastStatus()
-		    Log.d("delay.")
-		    delay(500)
-		}
-	    } catch (e: CancellationException) {
-		Log.d("canceled.", e)
+	val job = GlobalScope.launch {
+	    while (true) {
+		Log.d("broadcast.")
+		broadcastStatus()
+		Log.d("delay.")
+		delay(500)
+		Log.d("delay. done.")
 	    }
 	}
 	broadcaster = job
