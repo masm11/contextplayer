@@ -147,7 +147,7 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	
 	volumeDuck = 100
 	
-	prevJob = launch(context=Dispatchers.Default) {
+	launch_job {
 	    loadContext()
 	}
     }
