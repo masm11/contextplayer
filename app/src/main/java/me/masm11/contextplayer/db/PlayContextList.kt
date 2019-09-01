@@ -89,9 +89,8 @@ class PlayContextList {
     fun put(uuid: String) {
 	val ctxt = dat.get(uuid)
 	if (ctxt != null) {
-	    val ct = ctxt.dup()
 	    enqueue_job {
-		dao.update(ct)
+		dao.update(ctxt)
 	    }
 	}
     }
@@ -99,10 +98,8 @@ class PlayContextList {
     fun delete(uuid: String) {
 	val ctxt = dat.remove(uuid)
 	if (ctxt != null) {
-	    val ct = ctxt.dup()
-	    ct.deleted = true
 	    enqueue_job {
-		dao.delete(ct.uuid)
+		dao.delete(ctxt.uuid)
 	    }
 	}
     }
@@ -110,10 +107,8 @@ class PlayContextList {
     fun new(): PlayContext {
 	val ctxt = PlayContext()
 	dat.put(ctxt.uuid, ctxt)
-	val ct = ctxt.dup()
-	ct.created = true
 	enqueue_job {
-	    dao.insert(ct)
+	    dao.insert(ctxt)
 	}
 	return ctxt
     }

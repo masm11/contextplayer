@@ -48,7 +48,6 @@ class PlayContext {
 	r.pos = this.pos
 	r.volume = this.volume
 	r.current = this.current
-	r.deleted = this.deleted
 	return r
     }
     
@@ -68,12 +67,6 @@ class PlayContext {
     var volume: Int = 100
     
     @ColumnInfo(name = "current") var current: Int? = null
-    
-    @Ignore
-    var deleted: Boolean = false
-    
-    @Ignore
-    var created: Boolean = false
     
     override fun toString(): String {
 	return name
