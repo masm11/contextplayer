@@ -39,18 +39,6 @@ class PlayContext {
 	uuid = UUID.randomUUID().toString()
     }
     
-    fun dup(): PlayContext {
-	val r = PlayContext()
-	r.uuid = this.uuid
-	r.name = this.name
-	r.topDir = this.topDir
-	r.path = this.path
-	r.pos = this.pos
-	r.volume = this.volume
-	r.current = this.current
-	return r
-    }
-    
     @PrimaryKey
     var uuid: String
     
