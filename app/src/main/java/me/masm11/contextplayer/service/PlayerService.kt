@@ -81,6 +81,8 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothHeadset: BluetoothHeadset? = null
     private lateinit var localBroadcastManager: LocalBroadcastManager
+    private var isForeground = false
+    private var promotor: Job? = null
     
     override fun onCreate() {
 	playContexts = (getApplication() as Application).getPlayContextList()
@@ -164,6 +166,30 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	    ACTION_PREV_TRACK -> prevTrack()
 	    ACTION_NEXT_TRACK -> nextTrack()
 	    ACTION_REQUEST_CURRENT_STATUS -> broadcastStatus()
+	}
+
+	/*
+	* background から background service を起動することはできない。
+	* なので、startForegroundService() を使う。
+	* しかしこれを使うと startForeground() を呼ばないといけなくなる。
+	* 呼べばいいのだけど、volume の変更とか連続した処理に毎回呼ぶのは
+	* 無駄なので、1秒おきとする。
+	*/
+	val p = promotor
+	if (p != null && !p.isActive) {
+	    Log.d("promotor.join")
+	    runBlocking {
+		p.join()
+	    }
+	    Log.d("promotor.join done.")
+	    promotor = null
+	}
+	if (promotor == null) {
+	    Log.d("enqueue promotor")
+	    promotor = launch {
+		delay(1000)
+		setForegroundJustInstant()
+	    }
 	}
 
 	return Service.START_NOT_STICKY
@@ -617,11 +643,19 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	} else {
 	    stopForeground(true)
 	}
+	isForeground = on
     }
     
     private fun setForegroundJustInstant() {
 	Log.d("")
-
+	
+	/* 既に foreground になってる場合、
+	* stopForeground すると本当に foreground でなくなってしまう。
+	* ので、その場合はこの処理をしないことにする。
+	*/
+	if (isForeground)
+	    return
+	
 	val builder = Notification.Builder(this, "notify_channel_2")
 	builder.setSmallIcon(R.drawable.notification)
 	val intent = Intent(this, MainActivity::class.java)
