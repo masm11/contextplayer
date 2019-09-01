@@ -18,12 +18,14 @@ package me.masm11.contextplayer.db
 
 import java.util.concurrent.locks.ReentrantLock
 
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+
 class PlayContextList {
     private val db = AppDatabase.getDB()
     private val dao = db.playContextDao()
     private val dat = HashMap<String, PlayContext>()
-    private val updater = Updater()
-    private val thread = Thread(updater)
+    private val updaterChannel = Channel<() -> Unit>(Channel.UNLIMITED)
     private val reader = Reader()
     private val thread2 = Thread(reader)
     
@@ -31,8 +33,12 @@ class PlayContextList {
 	thread2.start()
 	thread2.join()
 	
-	thread.setDaemon(true)
-	thread.start()
+	GlobalScope.launch(context=Dispatchers.IO) {
+	    while (true) {
+		val block = updaterChannel.receive()
+		block()
+	    }
+	}
 	
 	/* 一つも存在しない場合は作成しておく */
 	if (dat.size == 0)
@@ -45,6 +51,15 @@ class PlayContextList {
     
     fun get(uuid: String): PlayContext? {
 	return dat.get(uuid)
+    }
+    
+    private fun enqueue_job(block: () -> Unit) {
+	/* unlimited なので block はしないはず。
+	* いや queue へのアクセスが競合したら block することもあるか。
+	*/
+	runBlocking {
+	    updaterChannel.send(block)
+	}
     }
     
     fun getCurrent(): PlayContext {
@@ -62,16 +77,22 @@ class PlayContextList {
 	    return
 	val cur = getCurrent()
 	cur.current = null
-	updater.enqueue(cur.dup())
+	enqueue_job {
+	    dao.update(cur)
+	}
 	ctxt.current = CURRENT
-	updater.enqueue(ctxt.dup())
+	enqueue_job {
+	    dao.update(ctxt)
+	}
     }
     
     fun put(uuid: String) {
 	val ctxt = dat.get(uuid)
 	if (ctxt != null) {
 	    val ct = ctxt.dup()
-	    updater.enqueue(ct)
+	    enqueue_job {
+		dao.update(ct)
+	    }
 	}
     }
     
@@ -80,7 +101,9 @@ class PlayContextList {
 	if (ctxt != null) {
 	    val ct = ctxt.dup()
 	    ct.deleted = true
-	    updater.enqueue(ct)
+	    enqueue_job {
+		dao.delete(ct.uuid)
+	    }
 	}
     }
     
@@ -89,40 +112,10 @@ class PlayContextList {
 	dat.put(ctxt.uuid, ctxt)
 	val ct = ctxt.dup()
 	ct.created = true
-	updater.enqueue(ct)
+	enqueue_job {
+	    dao.insert(ct)
+	}
 	return ctxt
-    }
-    
-    private inner class Updater: Runnable {
-	private val mutex = ReentrantLock()
-	private val cond = mutex.newCondition()
-	private val jobs: MutableList<PlayContext> = ArrayList()
-	
-	fun enqueue(ctxt: PlayContext) {
-	    mutex.lock()
-	    jobs.add(ctxt)
-	    cond.signal()
-	    mutex.unlock()
-	}
-	
-	override fun run() {
-	    try {
-		while (true) {
-		    mutex.lock()
-		    while (jobs.size == 0)
-			cond.await()
-		    val ctxt = jobs.removeAt(0)
-		    mutex.unlock()
-		    if (ctxt.deleted)
-			dao.delete(ctxt.uuid)
-		    else if (ctxt.created)
-			dao.insert(ctxt)
-		    else
-			dao.update(ctxt)
-		}
-	    } catch (e: InterruptedException) {
-	    }
-	}
     }
     
     private inner class Reader: Runnable {
