@@ -54,6 +54,7 @@ import me.masm11.contextplayer.db.AppDatabase
 import me.masm11.contextplayer.db.PlayContext
 import me.masm11.contextplayer.db.PlayContextList
 import me.masm11.contextplayer.widget.WidgetProvider
+import me.masm11.contextplayer.player.Player
 import me.masm11.contextplayer.Application
 
 import me.masm11.logger.Log
@@ -65,10 +66,7 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     private lateinit var playContexts: PlayContextList
     private lateinit var curContext: PlayContext
     private var topDir: String = "/"
-    private var playingPath: String? = null
-    private var nextPath: String? = null
-    private var curPlayer: MediaPlayer? = null
-    private var nextPlayer: MediaPlayer? = null
+    private lateinit var player: Player
     private lateinit var audioManager: AudioManager
     private lateinit var audioAttributes: AudioAttributes
     private var audioSessionId: Int = 0
@@ -84,20 +82,6 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     private var isForeground = false
     private var promotor: Job? = null
     private var prevJob: Job? = null
-    
-    private fun launch_job(block: suspend () -> Unit) {
-	val p = prevJob
-	if (p != null) {
-	    prevJob = null
-	    runBlocking {
-		p.join()
-	    }
-	}
-	
-	prevJob = launch(context=Dispatchers.Default) {
-	    block()
-	}
-    }
 
     override fun onCreate() {
 	playContexts = (getApplication() as Application).getPlayContextList()
@@ -139,6 +123,21 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	    .build()
 	audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
 	audioSessionId = audioManager.generateAudioSessionId()
+	player = Player.create(
+	    this, audioAttributes, audioSessionId, {
+		-> saveContext()
+	    }, {
+		onoff -> setForeground(onoff)
+	    }, {
+		onoff -> if (onoff) startBroadcast() else stopBroadcast()
+	    }, {
+		-> updateAppWidget()
+	    }, {
+		onoff -> if (onoff) audioManager.requestAudioFocus(audioFocusRequest) else audioManager.abandonAudioFocusRequest(audioFocusRequest)
+	    }, {
+		-> broadcastStatus()
+	    }
+	)
 	
 	val builder = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
 	builder.setOnAudioFocusChangeListener { focusChange -> handleAudioFocusChangeEvent(focusChange) }
@@ -147,9 +146,7 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	
 	volumeDuck = 100
 	
-	launch_job {
-	    loadContext()
-	}
+	loadContext()
     }
     
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -158,70 +155,50 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	
 	when (action) {
 	    ACTION_A2DP_DISCONNECTED -> {
-		launch_job {
-		    pause()
-		}
+		saveContext()
+		player.stop()
 	    }
 	    ACTION_HEADSET_UNPLUGGED -> {
-		launch_job {
-		    pause()
-		}
+		saveContext()
+		player.stop()
 	    }
 	    ACTION_TOGGLE -> {
-		launch_job {
-		    toggle()
-		}
+		saveContext()
+		player.toggle()
 	    }
 	    ACTION_UPDATE_APPWIDGET -> updateAppWidget()
 
 	    ACTION_PLAY -> {
 		val path: String? = intent.getStringExtra(EXTRA_PATH)
-		launch_job {
-		    play(path)
-		}
+		player.play(path)
 	    }
 	    ACTION_PAUSE -> {
-		launch_job {
-		    pause()
-		}
+		saveContext()
+		player.stop()
 	    }
 	    ACTION_SET_TOPDIR -> {
 		val topDir = intent.getStringExtra(EXTRA_TOPDIR)
-		launch_job {
-		    setTopDir(topDir)
-		}
+		setTopDir(topDir)
 	    }
 	    ACTION_SET_VOLUME -> {
 		val volume = intent.getIntExtra(EXTRA_VOLUME, 0)
-		launch_job {
-		    setVolume(volume)
-		}
+		setVolume(volume)
 	    }
 	    ACTION_SWITCH_CONTEXT -> {
-		launch_job {
-		    switchContext()
-		}
+		switchContext()
 	    }
 	    ACTION_SEEK ->  {
 		val pos = intent.getIntExtra(EXTRA_POS, 0)
-		launch_job {
-		    seek(pos)
-		}
+		player.seek(pos)
 	    }
 	    ACTION_PREV_TRACK -> {
-		launch_job {
-		    prevTrack()
-		}
+		player.prev()
 	    }
 	    ACTION_NEXT_TRACK -> {
-		launch_job {
-		    nextTrack()
-		}
+		player.next()
 	    }
 	    ACTION_REQUEST_CURRENT_STATUS -> {
-		launch_job {
-		    broadcastStatus()
-		}
+		broadcastStatus()
 	    }
 	}
 
@@ -256,233 +233,9 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	return null
     }
     
-    /* 再生を開始する。
-    *  - path が指定されている場合:
-    *    → その path から開始し、再生できる曲を曲先頭から再生する。
-    *  - path が指定されていない場合:
-    *    - curPlayer != null の場合:
-    *      → curPlayer.play() する。
-    *    - curPlayer == null の場合:
-    *      - playingPath != null の場合:
-    *        → その path から開始し、再生できる曲を曲先頭から再生する。
-    *      - playingPath == null の場合:
-    *        → topDir 内で最初に再生できる曲を再生する。
-    */
-    private suspend fun play(path: String?) {
-	Log.i("path=${path}")
-	
-	Log.d("release nextPlayer")
-	releaseNextPlayer()
-	
-	if (path != null) {
-	    // path が指定された。
-	    // その path から開始し、再生できる曲を曲先頭から再生する。
-	    Log.d("path=${path}")
-	    
-	    Log.d("release curPlayer")
-	    releaseCurPlayer()
-	    
-	    Log.d("createMediaPlayer")
-	    val ret = createMediaPlayer(path, 0, false)
-	    if (ret == null) {
-		Log.w("No audio file found.")
-		return
-	    }
-	    Log.d("createMediaPlayer OK.")
-	    curPlayer = ret.mediaPlayer
-	    playingPath = ret.path
-	    Log.d("curPlayer=${curPlayer}")
-	    Log.d("playingPath=${playingPath}")
-	} else if (curPlayer != null) {
-	    // path が指定されてない && 再生途中だった
-	    // 再生再開
-	    Log.d("curPlayer exists. starting it.")
-	} else if (playingPath != null) {
-	    // path が指定されてない && 再生途中でない && context に playingPath がある
-	    // その path から開始し、再生できる曲を曲先頭から再生する。
-	    Log.d("playingPath=${playingPath}")
-	    
-	    Log.d("release nextPlayer")
-	    releaseCurPlayer()
-	    
-	    Log.d("creating mediaplayer.")
-	    val ret = createMediaPlayer(playingPath, 0, false)
-	    if (ret == null) {
-		Log.w("No audio file found.")
-		return
-	    }
-	    Log.d("creating mediaplayer OK.")
-	    curPlayer = ret.mediaPlayer
-	    playingPath = ret.path
-	    Log.d("curPlayer=${curPlayer}")
-	    Log.d("playingPath=${playingPath}")
-	} else {
-	    // 何もない
-	    // topDir 内から再生できる曲を探し、曲先頭から再生する。
-	    Log.d("none.")
-	    
-	    Log.d("release curPlayer.")
-	    releaseCurPlayer()
-	    
-	    Log.d("creating mediaplayer.")
-	    val ret = createMediaPlayer("", 0, false)
-	    if (ret == null) {
-		Log.w("No audio file found.")
-		return
-	    }
-	    Log.d("creating mediaplayer OK.")
-	    curPlayer = ret.mediaPlayer
-	    playingPath = ret.path
-	    Log.d("curPlayer=${curPlayer}")
-	    Log.d("playingPath=${playingPath}")
-	}
-	
-	Log.d("starting.")
-	setMediaPlayerVolume()
-	startPlay()
-	Log.d("enqueue next player.")
-	enqueueNext()
-    }
-    
-    /* 再生を一時停止する。
-    *  - curPlayer != null の場合
-    *    → pause() し、context を保存する
-    *  - curPlayer == null の場合
-    *    → 何もしない
-    */
-    private suspend fun pause() {
-	Log.d("")
-	stopPlay()
-    }
-    
-    private suspend fun toggle() {
-	Log.d("")
-	if (curPlayer?.isPlaying ?: false)
-	    pause()
-	else
-	    play(null)
-    }
-    
-    private suspend fun prevTrack() {
-	val player: MediaPlayer? = curPlayer
-	if (player != null) {
-	    val pos = player.currentPosition
-	    if (pos >= 3 * 1000)
-		player.seekTo(0)
-	    else {
-		releaseNextPlayer()
-		releaseCurPlayer()
-		
-		val ret = createMediaPlayer(selectPrev(playingPath, topDir), 0, true)
-		if (ret == null) {
-		    Log.w("No audio file.")
-		    stopPlay()
-		} else {
-		    val mp = ret.mediaPlayer
-		    curPlayer = mp
-		    playingPath = ret.path
-		    setMediaPlayerVolume()
-		    mp.start()
-		    enqueueNext()
-		}
-	    }
-	}
-    }
-    
-    private suspend fun nextTrack() {
-	if (curPlayer != null) {
-	    releaseCurPlayer()
-	    
-	    playingPath = nextPath
-	    curPlayer = nextPlayer
-	    nextPath = null
-	    nextPlayer = null
-	    
-	    val p = curPlayer
-	    if (p != null) {
-		p.start()
-		enqueueNext()
-	    }
-	}
-    }
-    
-    private fun seek(pos: Int) {
-	Log.d("pos=${pos}")
-	val p = curPlayer
-	if (pos != -1 && p != null)
-	    p.seekTo(pos)
-    }
-    
-    // curPlayer がセットされた状態で呼ばれ、
-    // 再生を start する。
-    private fun startPlay() {
-	val p = curPlayer
-	if (p != null) {
-	    Log.d("request audio focus.")
-	    audioManager.requestAudioFocus(audioFocusRequest)
-	    
-	    Log.d("volume on.")
-	    volumeOnOff = 100
-	    setMediaPlayerVolume()
-	    
-	    try {
-		Log.d("starting.")
-		p.start()
-	    } catch (e: Exception) {
-		Log.e("exception", e)
-	    }
-	    
-	    Log.d("set to foreground")
-	    setForeground(true)
-	    
-	    startBroadcast()
-	    
-	    updateAppWidget()
-	    
-	    saveContext()
-	}
-    }
-    
-    private fun stopPlay() {
-	try {
-	    stopBroadcast()
-	    
-	    Log.d("set to non-foreground")
-	    setForeground(false)
-	    
-	    Log.d("volume off.")
-	    volumeOnOff = 0
-	    setMediaPlayerVolume()
-	    
-	    val p = curPlayer
-	    if (p != null) {
-		/* paused から pause() は問題ないが、
-		* prepared から pause() は正しくないみたい。
-		*/
-		if (p.isPlaying) {
-		    Log.d("pause ${curPlayer}")
-		    p.pause()
-		} else
-		    Log.d("already paused ${curPlayer}")
-	    }
-	    
-	    updateAppWidget()
-	    
-	    Log.d("abandon audio focus.")
-	    audioManager.abandonAudioFocusRequest(audioFocusRequest)
-	    
-	    Log.d("save context")
-	    saveContext()
-	} catch (e: Exception) {
-	    Log.e("exception", e)
-	}
-	
-    }
-    
     private fun setMediaPlayerVolume() {
-	val vol = (volume * volumeDuck * volumeOnOff).toFloat() / 100.0f / 100.0f / 100.0f
-	curPlayer?.setVolume(vol, vol)
-	nextPlayer?.setVolume(vol, vol)
+	val vol = ((volume * volumeDuck * volumeOnOff).toFloat() / 100.0f / 100.0f).toInt()
+	player.setVolume(vol)
     }
     
     private fun handleAudioFocusChangeEvent(focusChange: Int) {
@@ -494,7 +247,8 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	    }
 	    AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
 		runBlocking {
-		    pause()
+		    saveContext()
+		    player.stop()
 		}
 	    }
 	    AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
@@ -504,202 +258,39 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	}
     }
     
-    private suspend fun enqueueNext() {
-	Log.d("release nextPlayer")
-	releaseNextPlayer()
-	
-	Log.d("creating mediaplayer")
-	val ret = createMediaPlayer(selectNext(playingPath, topDir), 0, false)
-	if (ret == null) {
-	    Log.w("No audio file found.")
-	    return
-	}
-	Log.d("creating mediaplayer OK.")
-	nextPlayer = ret.mediaPlayer
-	nextPath = ret.path
-	setMediaPlayerVolume()
-	Log.d("nextPlayer=${nextPlayer}")
-	Log.d("nextPath=${nextPath}")
-	try {
-	    Log.d("setting it as nextmediaplayer.")
-	    curPlayer?.setNextMediaPlayer(nextPlayer)
-	} catch (e: Exception) {
-	    Log.e("exception", e)
-	}
-	
-    }
-    
-    private suspend fun createMediaPlayer(startPath: String?, startPos: Int, back: Boolean): CreatedMediaPlayer? {
-	var path = startPath
-	var pos = startPos
-	Log.d("path=${path}")
-	Log.d("pos=${pos}")
-	var tested = emptySet<String>()
-	while (true) {
-	    Log.d("iter")
-	    try {
-		Log.d("path=${path}")
-		if (path == null || tested.contains(path)) {
-		    // 再生できるものがない…
-		    Log.d("No audio file.")
-		    return null
-		}
-		tested = tested + path
-		
-		Log.d("try create mediaplayer.")
-		val player = MediaPlayer.create(this, Uri.parse("file://${MFile(path).file.absolutePath}"), null, audioAttributes, audioSessionId)
-		if (player == null) {
-		    Log.w("MediaPlayer.create() failed: ${path}")
-		    path = if (back) selectPrev(path, topDir) else selectNext(path, topDir)
-		    pos = 0    // お目当てのファイルが見つからなかった。次のファイルの先頭からとする。
-		    continue
-		}
-		Log.d("create mediaplayer ok.")
-		if (pos > 0) {    // 0 の場合に seekTo() すると、曲の頭が切れるみたい?
-		    Log.d("seek to ${pos}")
-		    player.seekTo(pos)
-		}
-		player.setOnCompletionListener { mp -> handleCompletion(mp) }
-		player.setOnErrorListener { mp, what, extra -> handleError(mp, what, extra) }
-		
-		Log.d("done. player=${player}, path=${path}")
-		return CreatedMediaPlayer(player, path)
-	    } catch (e: Exception) {
-		Log.e("exception", e)
-	    }
-	    
-	    return null
-	}
-    }
-    
-    private fun handleCompletion(mp: MediaPlayer) {
-	launch_job {
-	    handleCompletion_body(mp)
-	}
-    }
-    
-    private suspend fun handleCompletion_body(mp: MediaPlayer) {
-	Log.d("shifting")
-	playingPath = nextPath
-	curPlayer = nextPlayer
-	Log.d("now playingPath=${playingPath}")
-	Log.d("now curPlayer=${curPlayer}")
-	Log.d("releasing ${mp}")
-	mp.release()
-	Log.d("clearing nextPath/nextPlayer")
-	nextPath = null
-	nextPlayer = null
-	
-	saveContext()
-	
-	if (curPlayer != null) {
-	    Log.d("enqueue next mediaplayer.")
-	    enqueueNext()
-	} else
-	    stopPlay()
-    }
-    
-    private fun handleError(mp: MediaPlayer, what: Int, extra: Int): Boolean {
-	launch_job {
-	    handleError_body(mp, what, extra)
-	}
-	
-	return true
-    }
-    
-    private suspend fun handleError_body(mp: MediaPlayer, what: Int, extra: Int): Boolean {
-	Log.d("error reported. ${what}, ${extra}.")
-	
-	// 両方 release して新たに作り直す。
-	releaseNextPlayer()
-	releaseCurPlayer()
-	
-	Log.d("creating mediaplayer.")
-	val ret = createMediaPlayer(nextPath, 0, false)
-	if (ret == null) {
-	    Log.w("No audio file found.")
-	    stopPlay()
-	    return true
-	}
-	
-	curPlayer = ret.mediaPlayer
-	playingPath = ret.path
-	setMediaPlayerVolume()
-	
-	Log.d("starting it.")
-	curPlayer?.start()
-	
-	Log.d("enqueuing next.")
-	enqueueNext()
-	setMediaPlayerVolume()
-	
-	saveContext()
-	return true
-    }
-    
-    private fun releaseCurPlayer() {
-	Log.d("")
-	try {
-	    Log.d("releasing...")
-	    curPlayer?.release()
-	    Log.d("releasing... ok")
-	    curPlayer = null
-	} catch (e: Exception) {
-	    Log.e("exception", e)
-	}
-    }
-    
-    private fun releaseNextPlayer() {
-	Log.d("")
-	try {
-	    Log.d("releasing...")
-	    nextPlayer?.release()
-	    Log.d("releasing... ok")
-	    nextPlayer = null
-	} catch (e: Exception) {
-	    Log.e("exception", e)
-	}
-    }
-    
     /* topDir を変更する。
     *    topDir を設定し、enqueueNext() し直す。
     */
-    private suspend fun setTopDir(path: String) {
+    private fun setTopDir(path: String) {
 	Log.d("path=${path}")
 	topDir = path
-	// 「次の曲」が変わる可能性があるので、enqueue しなおす。
-	if (curPlayer != null) {
-	    Log.d("enqueue next player.")
-	    enqueueNext()
-	}
+	player.setTopDir(path)
     }
     
     /* context を switch する。
     * 今再生中なら pause() し、context を保存する。
     * context を読み出し、再生を再開する。
     */
-    private suspend fun switchContext() {
-	Log.d("curPlayer=${curPlayer}")
-	stopPlay()    // saveContext() を含む。
-	
-	Log.d("load context.")
-	loadContext()
-	
-	Log.d("curPlayer=${curPlayer}")
-	if (curPlayer != null) {
-	    Log.d("starting")
-	    startPlay()
-	    
-	    Log.d("set to foreground")
-	    setForeground(true)
-	    Log.d("enqueue next player.")
-	    enqueueNext()
-	}
+    private fun switchContext() {
+	Log.d("save context.")
+	saveContext()
+
+        Log.d("player stopping.")
+        player.stop()
+
+        Log.d("load context.")
+        loadContext()
+
+        Log.d("start playing.")
+        player.play(null)
     }
     
     private fun setForeground(on: Boolean) {
 	Log.d("on=${on}")
 	if (on) {
+	    volumeOnOff = 100		// fixme: 仮でこの場所に
+	    setMediaPlayerVolume()
+	    
 	    val ctxt = curContext
 	    var contextName = ctxt.name
 	    val builder = Notification.Builder(this, "notify_channel_1")
@@ -716,6 +307,9 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	    builder.setContentIntent(pendingIntent)
 	    startForeground(1, builder.build())
 	} else {
+	    volumeOnOff = 0
+	    setMediaPlayerVolume()
+	    
 	    stopForeground(true)
 	}
 	isForeground = on
@@ -749,12 +343,11 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     private fun saveContext() {
 	Log.d("contextId=----")
 	val ctxt = curContext
-	val p = curPlayer
-	if (ctxt != null && p != null) {
+	if (ctxt != null && player != null) {
 	    Log.d("Id=${ctxt.uuid}")
-	    ctxt.path = playingPath
+	    ctxt.path = player.playingPath
 	    Log.d("path=${ctxt.path}")
-	    ctxt.pos = p.currentPosition.toLong()
+	    ctxt.pos = player.currentPosition.toLong()
 	    Log.d("pos=${ctxt.pos}")
 	    ctxt.volume = volume
 	    Log.d("volume=${volume}")
@@ -763,56 +356,18 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	}
     }
     
-    private suspend fun loadContext() {
-	Log.d("release nextPlayer.")
-	releaseNextPlayer()
-	
-	stopPlay()
-	
-	Log.d("release curPlayer.")
-	releaseCurPlayer()
-	Log.d("set to non-foreground.")
-	setForeground(false)
-	
-	Log.d("getting context_id")
-	Log.d("contextId=----")
-	val ctxt = playContexts.getCurrent()
-	if (ctxt != null) {
-	    curContext = ctxt
-	    playingPath = ctxt.path
-	    topDir = ctxt.topDir
-	    volume = ctxt.volume
-	    Log.d("playingPath=${playingPath}")
-	    Log.d("topDir=${topDir}")
-	    
-	    if (playingPath != null) {
-		Log.d("creating mediaplayer.")
-		val ret = createMediaPlayer(playingPath, ctxt.pos.toInt(), false)
-		if (ret == null) {
-		    Log.w("No audio file found.")
-		    return
-		}
-		Log.d("creating mediaplayer. ok.")
-		curPlayer = ret.mediaPlayer
-		playingPath = ret.path
-		Log.d("curPlayer=${curPlayer}")
-		Log.d("playingPath=${playingPath}")
-		setMediaPlayerVolume()
-	    } else {
-		// 作られたばかりの context の場合。
-		Log.d("creating mediaplayer.")
-		val ret = createMediaPlayer("", 0, false)
-		if (ret == null) {
-		    Log.w("No audio file found.")
-		    return
-		}
-		Log.d("creating mediaplayer. ok.")
-		curPlayer = ret.mediaPlayer
-		playingPath = ret.path
-		Log.d("curPlayer=${curPlayer}")
-		Log.d("playingPath=${playingPath}")
-		setMediaPlayerVolume()
-	    }
+    private fun loadContext() {
+        Log.d("getting context")
+        val ctxt = playContexts.getCurrent()
+        if (ctxt != null) {
+            val path = ctxt.path
+            topDir = ctxt.topDir
+            volume = ctxt.volume
+            Log.d("path=${path}")
+            Log.d("topDir=${topDir}")
+            player.setTopDir(topDir)
+            player.setFile(path, ctxt.pos.toInt())
+            setMediaPlayerVolume()
 	}
     }
     
@@ -849,17 +404,17 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	}
     }
     
-    private suspend fun broadcastStatus() {
+    private fun broadcastStatus() {
 	val ctxt = curContext
+	Log.d("${player.playingPath}")
 	val intent = Intent(ACTION_CURRENT_STATUS)
 	    .putExtra(EXTRA_CONTEXT_ID, ctxt.uuid)
-	    .putExtra(EXTRA_PATH, playingPath)
+	    .putExtra(EXTRA_PATH, player.playingPath)
 	    .putExtra(EXTRA_TOPDIR, topDir)
 	    .putExtra(EXTRA_VOLUME, volume)
-	val p = curPlayer
-	if (p != null) {
-	    intent.putExtra(EXTRA_POS, p.currentPosition)
-	    intent.putExtra(EXTRA_DURATION, p.duration)
+	if (player != null) {
+	    intent.putExtra(EXTRA_POS, player.currentPosition)
+	    intent.putExtra(EXTRA_DURATION, player.duration)
 	}
 	localBroadcastManager.sendBroadcast(intent)
     }
@@ -868,12 +423,9 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	Log.d("save context")
 	saveContext()
 	
-	Log.d("release nextPlayer.")
-	releaseNextPlayer()
-	stopPlay()
-	Log.d("release curPlayer.")
-	releaseCurPlayer()
-	
+	Log.d("stopping player.")
+	player.stop()
+
 	if (bluetoothHeadset != null) {
 	    val ba = bluetoothAdapter
 	    if (ba != null)
@@ -890,7 +442,7 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	    contextName = ctxt.name
 	
 	var icon = android.R.drawable.ic_media_play
-	if (curPlayer?.isPlaying ?: false)
+	if (player?.isPlaying ?: false)
 	    icon = android.R.drawable.ic_media_pause
 	
 	WidgetProvider.updateAppWidget(this, null, icon, contextName)
