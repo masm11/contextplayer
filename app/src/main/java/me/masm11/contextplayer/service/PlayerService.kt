@@ -246,10 +246,8 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 		setMediaPlayerVolume()
 	    }
 	    AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-		runBlocking {
-		    saveContext()
-		    player.stop()
-		}
+		saveContext()
+		player.stop()
 	    }
 	    AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
 		volumeDuck = 25
