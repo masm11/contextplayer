@@ -83,7 +83,22 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     private lateinit var localBroadcastManager: LocalBroadcastManager
     private var isForeground = false
     private var promotor: Job? = null
+    private var prevJob: Job? = null
     
+    private fun launch_job(block: suspend () -> Unit) {
+	val p = prevJob
+	if (p != null) {
+	    prevJob = null
+	    runBlocking {
+		p.join()
+	    }
+	}
+	
+	prevJob = launch(context=Dispatchers.Default) {
+	    block()
+	}
+    }
+
     override fun onCreate() {
 	playContexts = (getApplication() as Application).getPlayContextList()
 	curContext = playContexts.getCurrent()
@@ -132,7 +147,9 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	
 	volumeDuck = 100
 	
-	loadContext()
+	prevJob = launch(context=Dispatchers.Default) {
+	    loadContext()
+	}
     }
     
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -140,32 +157,72 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	Log.d("action=${action}")
 	
 	when (action) {
-	    ACTION_A2DP_DISCONNECTED -> pause()
-	    ACTION_HEADSET_UNPLUGGED -> pause()
-	    ACTION_TOGGLE -> toggle()
+	    ACTION_A2DP_DISCONNECTED -> {
+		launch_job {
+		    pause()
+		}
+	    }
+	    ACTION_HEADSET_UNPLUGGED -> {
+		launch_job {
+		    pause()
+		}
+	    }
+	    ACTION_TOGGLE -> {
+		launch_job {
+		    toggle()
+		}
+	    }
 	    ACTION_UPDATE_APPWIDGET -> updateAppWidget()
 
 	    ACTION_PLAY -> {
 		val path: String? = intent.getStringExtra(EXTRA_PATH)
-		play(path)
+		launch_job {
+		    play(path)
+		}
 	    }
-	    ACTION_PAUSE -> pause()
+	    ACTION_PAUSE -> {
+		launch_job {
+		    pause()
+		}
+	    }
 	    ACTION_SET_TOPDIR -> {
 		val topDir = intent.getStringExtra(EXTRA_TOPDIR)
-		setTopDir(topDir)
+		launch_job {
+		    setTopDir(topDir)
+		}
 	    }
 	    ACTION_SET_VOLUME -> {
 		val volume = intent.getIntExtra(EXTRA_VOLUME, 0)
-		setVolume(volume)
+		launch_job {
+		    setVolume(volume)
+		}
 	    }
-	    ACTION_SWITCH_CONTEXT -> switchContext()
+	    ACTION_SWITCH_CONTEXT -> {
+		launch_job {
+		    switchContext()
+		}
+	    }
 	    ACTION_SEEK ->  {
 		val pos = intent.getIntExtra(EXTRA_POS, 0)
-		seek(pos)
+		launch_job {
+		    seek(pos)
+		}
 	    }
-	    ACTION_PREV_TRACK -> prevTrack()
-	    ACTION_NEXT_TRACK -> nextTrack()
-	    ACTION_REQUEST_CURRENT_STATUS -> broadcastStatus()
+	    ACTION_PREV_TRACK -> {
+		launch_job {
+		    prevTrack()
+		}
+	    }
+	    ACTION_NEXT_TRACK -> {
+		launch_job {
+		    nextTrack()
+		}
+	    }
+	    ACTION_REQUEST_CURRENT_STATUS -> {
+		launch_job {
+		    broadcastStatus()
+		}
+	    }
 	}
 
 	/*
@@ -211,7 +268,7 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     *      - playingPath == null の場合:
     *        → topDir 内で最初に再生できる曲を再生する。
     */
-    private fun play(path: String?) {
+    private suspend fun play(path: String?) {
 	Log.i("path=${path}")
 	
 	Log.d("release nextPlayer")
@@ -293,12 +350,12 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     *  - curPlayer == null の場合
     *    → 何もしない
     */
-    private fun pause() {
+    private suspend fun pause() {
 	Log.d("")
 	stopPlay()
     }
     
-    private fun toggle() {
+    private suspend fun toggle() {
 	Log.d("")
 	if (curPlayer?.isPlaying ?: false)
 	    pause()
@@ -306,7 +363,7 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	    play(null)
     }
     
-    private fun prevTrack() {
+    private suspend fun prevTrack() {
 	val player: MediaPlayer? = curPlayer
 	if (player != null) {
 	    val pos = player.currentPosition
@@ -332,7 +389,7 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	}
     }
     
-    private fun nextTrack() {
+    private suspend fun nextTrack() {
 	if (curPlayer != null) {
 	    releaseCurPlayer()
 	    
@@ -435,7 +492,11 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 		volumeDuck = 100
 		setMediaPlayerVolume()
 	    }
-	    AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> pause()
+	    AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+		runBlocking {
+		    pause()
+		}
+	    }
 	    AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
 		volumeDuck = 25
 		setMediaPlayerVolume()
@@ -443,7 +504,7 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	}
     }
     
-    private fun enqueueNext() {
+    private suspend fun enqueueNext() {
 	Log.d("release nextPlayer")
 	releaseNextPlayer()
 	
@@ -468,7 +529,7 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	
     }
     
-    private fun createMediaPlayer(startPath: String?, startPos: Int, back: Boolean): CreatedMediaPlayer? {
+    private suspend fun createMediaPlayer(startPath: String?, startPos: Int, back: Boolean): CreatedMediaPlayer? {
 	var path = startPath
 	var pos = startPos
 	Log.d("path=${path}")
@@ -512,6 +573,12 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     }
     
     private fun handleCompletion(mp: MediaPlayer) {
+	launch_job {
+	    handleCompletion_body(mp)
+	}
+    }
+    
+    private suspend fun handleCompletion_body(mp: MediaPlayer) {
 	Log.d("shifting")
 	playingPath = nextPath
 	curPlayer = nextPlayer
@@ -533,6 +600,14 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     }
     
     private fun handleError(mp: MediaPlayer, what: Int, extra: Int): Boolean {
+	launch_job {
+	    handleError_body(mp, what, extra)
+	}
+	
+	return true
+    }
+    
+    private suspend fun handleError_body(mp: MediaPlayer, what: Int, extra: Int): Boolean {
 	Log.d("error reported. ${what}, ${extra}.")
 	
 	// 両方 release して新たに作り直す。
@@ -589,7 +664,7 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     /* topDir を変更する。
     *    topDir を設定し、enqueueNext() し直す。
     */
-    private fun setTopDir(path: String) {
+    private suspend fun setTopDir(path: String) {
 	Log.d("path=${path}")
 	topDir = path
 	// 「次の曲」が変わる可能性があるので、enqueue しなおす。
@@ -603,7 +678,7 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     * 今再生中なら pause() し、context を保存する。
     * context を読み出し、再生を再開する。
     */
-    private fun switchContext() {
+    private suspend fun switchContext() {
 	Log.d("curPlayer=${curPlayer}")
 	stopPlay()    // saveContext() を含む。
 	
@@ -688,7 +763,7 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	}
     }
     
-    private fun loadContext() {
+    private suspend fun loadContext() {
 	Log.d("release nextPlayer.")
 	releaseNextPlayer()
 	
@@ -774,7 +849,7 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	}
     }
     
-    private fun broadcastStatus() {
+    private suspend fun broadcastStatus() {
 	val ctxt = curContext
 	val intent = Intent(ACTION_CURRENT_STATUS)
 	    .putExtra(EXTRA_CONTEXT_ID, ctxt.uuid)
