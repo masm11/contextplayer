@@ -714,7 +714,7 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	stopBroadcast()    // 念の為
 	
 	Log.d("starting thread.")
-	val job = GlobalScope.launch {
+	broadcaster = GlobalScope.launch {
 	    while (true) {
 		Log.d("broadcast.")
 		broadcastStatus()
@@ -723,7 +723,6 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 		Log.d("delay. done.")
 	    }
 	}
-	broadcaster = job
 	
 	Log.d("leave.")
     }
