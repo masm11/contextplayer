@@ -24,14 +24,20 @@ import kotlinx.coroutines.channels.Channel
 class PlayContextList {
     private val db = AppDatabase.getDB()
     private val dao = db.playContextDao()
-    private val dat = HashMap<String, PlayContext>()
+    private val hash = HashMap<String, PlayContext>()	// key: uuid
     private val updaterChannel = Channel<() -> Unit>(Channel.UNLIMITED)
-    private val reader = Reader()
-    private val thread2 = Thread(reader)
     
     init {
-	thread2.start()
-	thread2.join()
+	/* 起動時の処理なので、
+	*  ブロックしてでも全部読む。
+	*/
+	runBlocking {
+	    GlobalScope.launch(context=Dispatchers.IO) {
+		val list = dao.getAll()
+		for (ctxt in list)
+		    hash.put(ctxt.uuid, ctxt)
+	    }.join()
+	}
 	
 	GlobalScope.launch(context=Dispatchers.IO) {
 	    while (true) {
@@ -41,16 +47,16 @@ class PlayContextList {
 	}
 	
 	/* 一つも存在しない場合は作成しておく */
-	if (dat.size == 0)
+	if (hash.size == 0)
 	    new()
     }
     
     fun uuids(): Set<String> {
-	return dat.keys
+	return hash.keys
     }
     
     fun get(uuid: String): PlayContext? {
-	return dat.get(uuid)
+	return hash.get(uuid)
     }
     
     private fun enqueue_job(block: () -> Unit) {
@@ -63,11 +69,11 @@ class PlayContextList {
     }
     
     fun getCurrent(): PlayContext {
-	for (ctxt in dat.values) {
+	for (ctxt in hash.values) {
 	    if (ctxt.current == CURRENT)
 		return ctxt
 	}
-	for (ctxt in dat.values)
+	for (ctxt in hash.values)
 	    return ctxt
 	return new()
     }
@@ -87,7 +93,7 @@ class PlayContextList {
     }
     
     fun put(uuid: String) {
-	val ctxt = dat.get(uuid)
+	val ctxt = hash.get(uuid)
 	if (ctxt != null) {
 	    enqueue_job {
 		dao.update(ctxt)
@@ -96,7 +102,7 @@ class PlayContextList {
     }
     
     fun delete(uuid: String) {
-	val ctxt = dat.remove(uuid)
+	val ctxt = hash.remove(uuid)
 	if (ctxt != null) {
 	    enqueue_job {
 		dao.delete(ctxt.uuid)
@@ -106,19 +112,11 @@ class PlayContextList {
     
     fun new(): PlayContext {
 	val ctxt = PlayContext()
-	dat.put(ctxt.uuid, ctxt)
+	hash.put(ctxt.uuid, ctxt)
 	enqueue_job {
 	    dao.insert(ctxt)
 	}
 	return ctxt
-    }
-    
-    private inner class Reader: Runnable {
-	override fun run() {
-	    val list = dao.getAll()
-	    for (ctxt in list)
-		dat.put(ctxt.uuid, ctxt)
-	}
     }
     
     companion object {
