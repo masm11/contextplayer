@@ -40,6 +40,8 @@ import android.content.ComponentName
 import kotlinx.android.synthetic.main.activity_explorer.*
 import kotlinx.android.synthetic.main.list_explorer.view.*
 
+import kotlinx.coroutines.*
+
 import java.util.ArrayList
 import java.util.Arrays
 import java.util.Collections
@@ -62,7 +64,10 @@ import me.masm11.logger.Log
 
 class ExplorerActivity : ComponentActivity() {
     private var backKeyShortPress: Boolean = false
-
+    
+    private var supervisorJob = SupervisorJob()
+    private var supervisorScope = CoroutineScope(Dispatchers.Default + supervisorJob)
+    
     private class FileItem(val file: MFile) {
         var title: String? = null
             private set
@@ -98,7 +103,7 @@ class ExplorerActivity : ComponentActivity() {
             }
         }
 
-        fun retrieveMetadata() {
+        suspend fun retrieveMetadata() {
             if (isAudioType(mimeType)) {
                 val meta = Metadata(file.file.absolutePath)
                 if (meta.extract()) {
@@ -163,43 +168,17 @@ class ExplorerActivity : ComponentActivity() {
             return view
         }
     }
-
-    private inner class BackgroundRetriever(private val adapter: FileAdapter) : Runnable {
-        private val list = mutableListOf<FileItem>()
-	private val mutex = ReentrantLock()
-	private val cond = mutex.newCondition()
-
-        override fun run() {
-            try {
-                while (true) {
-                    var item: FileItem
-
-		    mutex.lock()
-		    try {
-			while (list.isEmpty())
-                            cond.await()
-			item = list.removeAt(0)
-		    } finally {
-			mutex.unlock()
-		    }
-
-                    item.retrieveMetadata()
-                    handler.post { adapter.notifyDataSetChanged() }
-                }
-            } catch (e: InterruptedException) {
-            }
-        }
-
-        fun setNewItems(newList: List<FileItem>) {
-	    mutex.lock()
-	    try {
-		list.clear()
-		list.addAll(newList)
-		cond.signal()
-	    } finally {
-		mutex.unlock()
+    
+    private fun invokeNewItemsUpdater(newList: List<FileItem>) {
+	supervisorJob.cancel()
+	supervisorJob = Job()
+	supervisorScope = CoroutineScope(Dispatchers.Default + supervisorJob)
+	for (item in newList) {
+	    supervisorScope.launch {
+		item.retrieveMetadata()
+		adapter.notifyDataSetChanged()
 	    }
-        }
+	}
     }
     
     private lateinit var db: AppDatabase
@@ -209,7 +188,6 @@ class ExplorerActivity : ComponentActivity() {
     private var curDir: MFile = MFile("//")
     private lateinit var adapter: FileAdapter
     private lateinit var ctxt: PlayContext
-    private lateinit var bretr: BackgroundRetriever
     private var thread: Thread? = null
     private lateinit var handler: Handler
 
@@ -226,12 +204,6 @@ class ExplorerActivity : ComponentActivity() {
 
 	ctxt = playContexts.getCurrent()
 	
-        bretr = BackgroundRetriever(adapter)
-	val t = Thread(bretr)
-        thread = t
-        t.priority = Thread.MIN_PRIORITY
-        t.start()
-
         var dir = MFile(ctxt.topDir)
         topDir = dir
 	val path = ctxt.path
@@ -367,8 +339,7 @@ class ExplorerActivity : ComponentActivity() {
 
         adapter.clear()
         adapter.addAll(items)
-
-        bretr.setNewItems(items)
+        invokeNewItemsUpdater(items)
 
         list.adapter = adapter
 
@@ -404,6 +375,8 @@ class ExplorerActivity : ComponentActivity() {
 
             thread = null
         }
+
+	supervisorJob.cancel()
 
         super.onDestroy()
     }
