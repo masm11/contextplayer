@@ -66,7 +66,7 @@ class ExplorerActivity : ComponentActivity() {
     private var backKeyShortPress: Boolean = false
     
     private var supervisorJob = SupervisorJob()
-    private var supervisorScope = CoroutineScope(Dispatchers.Default + supervisorJob)
+    private var supervisorScope = CoroutineScope(supervisorJob)
     
     private class FileItem(val file: MFile) {
         var title: String? = null
@@ -171,11 +171,16 @@ class ExplorerActivity : ComponentActivity() {
     
     private fun invokeNewItemsUpdater(newList: List<FileItem>) {
 	supervisorJob.cancel()
+	runBlocking {
+	    supervisorJob.join()
+	}
 	supervisorJob = Job()
-	supervisorScope = CoroutineScope(Dispatchers.Default + supervisorJob)
+	supervisorScope = CoroutineScope(supervisorJob)
 	for (item in newList) {
 	    supervisorScope.launch {
-		item.retrieveMetadata()
+		withContext(Dispatchers.Default) {
+		    item.retrieveMetadata()
+		}
 		adapter.notifyDataSetChanged()
 	    }
 	}
@@ -188,7 +193,6 @@ class ExplorerActivity : ComponentActivity() {
     private var curDir: MFile = MFile("//")
     private lateinit var adapter: FileAdapter
     private lateinit var ctxt: PlayContext
-    private var thread: Thread? = null
     private lateinit var handler: Handler
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -365,18 +369,10 @@ class ExplorerActivity : ComponentActivity() {
     }
 
     public override fun onDestroy() {
-	val t = thread
-        if (t != null) {
-            t.interrupt()
-            try {
-                t.join()
-            } catch (e: InterruptedException) {
-            }
-
-            thread = null
-        }
-
 	supervisorJob.cancel()
+	runBlocking {
+	    supervisorJob.join()
+	}
 
         super.onDestroy()
     }
