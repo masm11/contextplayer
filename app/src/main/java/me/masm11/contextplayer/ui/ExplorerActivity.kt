@@ -32,6 +32,10 @@ import android.view.ViewGroup
 import android.view.LayoutInflater
 import android.view.KeyEvent
 import android.view.ViewConfiguration
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.TranslateAnimation
 import android.webkit.MimeTypeMap
 import android.content.Intent
 import android.content.ServiceConnection
@@ -167,9 +171,28 @@ class ExplorerActivity : ComponentActivity() {
 
             return view
         }
+
+	companion object {
+	    fun create(dir: MFile, explorer: ExplorerActivity): FileAdapter {
+		val files = listFiles(dir, false)
+		val items = MutableList<FileItem>(files.size, { i -> FileItem(files[i]) })
+		
+		Log.d("dir=${dir}")
+		if (dir.absolutePath != "//")
+		    items.add(0, FileItem(MFile(dir.absolutePath + "/.")))  // リストの一番上に "." を表示
+		else
+		    items.add(0, FileItem(MFile(dir.absolutePath + ".")))
+		
+		val adapter = FileAdapter(explorer, ArrayList<FileItem>())
+		adapter.addAll(items)
+		explorer.invokeNewItemsUpdater(items, adapter)
+		
+		return adapter
+	    }
+	}
     }
     
-    private fun invokeNewItemsUpdater(newList: List<FileItem>) {
+    private fun invokeNewItemsUpdater(newList: List<FileItem>, adapter: FileAdapter) {
 	supervisorJob.cancel()
 	runBlocking {
 	    supervisorJob.join()
@@ -186,51 +209,32 @@ class ExplorerActivity : ComponentActivity() {
 	}
     }
     
-    private lateinit var db: AppDatabase
-    private lateinit var playContexts: PlayContextList
-    private val rootDir: MFile = MFile("//")
-    private var topDir: MFile = MFile("//")
-    private var curDir: MFile = MFile("//")
-    private lateinit var adapter: FileAdapter
-    private lateinit var ctxt: PlayContext
-    private lateinit var handler: Handler
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_explorer)
+    private fun createListView(adapter: FileAdapter): ListView {
+	val list = ListView(this)
+        list.adapter = adapter
 	
-	db = AppDatabase.getDB()
-	playContexts = (getApplication() as Application).getPlayContextList()
-
-        handler = Handler()
-
-        adapter = FileAdapter(this, ArrayList<FileItem>())
-
-	ctxt = playContexts.getCurrent()
-	
-        var dir = MFile(ctxt.topDir)
-        topDir = dir
-	val path = ctxt.path
-        if (path != null && path.startsWith(ctxt.topDir)) {
-            val slash = path.lastIndexOf('/')
-            if (slash != -1)
-                dir = MFile(path.substring(0, slash))
-        }
-        if (savedInstanceState != null) {
-            val str = savedInstanceState.getString(STATE_CUR_DIR)
-            if (str != null)
-                dir = MFile(str)
-        }
-        renewAdapter(dir)
-
         list.setOnItemClickListener { parent, _, position, _ ->
 	    val listView = parent as ListView
 	    val item = listView.getItemAtPosition(position) as FileItem
 	    Log.d("clicked=${item.filename}")
 
+/* こんな感じ。
+	    val anim = TranslateAnimation(
+		Animation.RELATIVE_TO_PARENT, 0f,
+		Animation.RELATIVE_TO_PARENT, -1f,
+		Animation.RELATIVE_TO_PARENT, 0f,
+		Animation.RELATIVE_TO_PARENT, 0f
+	    )
+	    anim.setDuration(300)
+	    anim.setRepeatCount(0)
+	    anim.setFillAfter(true)
+	    listView.startAnimation(anim)
+*/
+
 	    if (item.isDir) {
 		if (item.filename != ".")
-		    renewAdapter(item.file)
+		    // renewAdapter(item.file)
+		    enterDir(item.file, true)
 	    } else {
 		play(item.file)
 	    }
@@ -247,6 +251,133 @@ class ExplorerActivity : ComponentActivity() {
 	    }
 	    ret
 	}
+	
+	return list
+    }
+    
+    private fun createDirFrame(path: MFile): DirFrame {
+	val adapter = FileAdapter.create(path, this)
+	val list = createListView(adapter)
+	return DirFrame(path, adapter, list)
+    }
+    
+    private fun enterDir(path: MFile, anime: Boolean) {
+	val frame = createDirFrame(path)
+	renewAdapter(frame.path)
+	list_viewport.addView(frame.listView)
+	val anim1 = TranslateAnimation(
+	    Animation.RELATIVE_TO_PARENT, 1.5f,
+	    Animation.RELATIVE_TO_PARENT, 0f,
+	    Animation.RELATIVE_TO_PARENT, 0f,
+	    Animation.RELATIVE_TO_PARENT, 0f
+	)
+	anim1.setDuration(if (anime) 300 else 0)
+	anim1.setRepeatCount(0)
+	anim1.setFillAfter(true)
+	frame.listView.startAnimation(anim1)
+	
+	if (!dirStack.isEmpty()) {
+	    val last = dirStack[dirStack.size - 1]
+	    val anim0 = TranslateAnimation(
+		Animation.RELATIVE_TO_PARENT, 0f,
+		Animation.RELATIVE_TO_PARENT, -1.5f,
+		Animation.RELATIVE_TO_PARENT, 0f,
+		Animation.RELATIVE_TO_PARENT, 0f
+	    )
+	    anim0.setDuration(if (anime) 300 else 0)
+	    anim0.setRepeatCount(0)
+	    anim0.setFillAfter(true)
+	    last.listView.startAnimation(anim0)
+	}
+	
+	dirStack.add(frame)
+    }
+    
+    private fun leaveDir(anime: Boolean): Boolean {
+	if (dirStack.size < 2)
+	    return false
+
+	run {
+	    val frame = dirStack[dirStack.size - 1]
+	    val anim0 = TranslateAnimation(
+		Animation.RELATIVE_TO_PARENT, 0f,
+		Animation.RELATIVE_TO_PARENT, 1.5f,
+		Animation.RELATIVE_TO_PARENT, 0f,
+		Animation.RELATIVE_TO_PARENT, 0f
+	    )
+	    anim0.setDuration(if (anime) 300 else 0)
+	    anim0.setRepeatCount(0)
+	    anim0.setFillAfter(true)
+	    frame.listView.startAnimation(anim0)
+	}
+	
+	run {
+	    val frame = dirStack[dirStack.size - 2]
+	    val anim0 = TranslateAnimation(
+		Animation.RELATIVE_TO_PARENT, -1.5f,
+		Animation.RELATIVE_TO_PARENT, 0f,
+		Animation.RELATIVE_TO_PARENT, 0f,
+		Animation.RELATIVE_TO_PARENT, 0f
+	    )
+	    anim0.setDuration(if (anime) 300 else 0)
+	    anim0.setRepeatCount(0)
+	    anim0.setFillAfter(true)
+	    frame.listView.startAnimation(anim0)
+	    
+	    renewAdapter(frame.path)
+	}
+	
+	dirStack.removeAt(dirStack.size - 1)
+	
+	return true
+    }
+    
+    private lateinit var db: AppDatabase
+    private lateinit var playContexts: PlayContextList
+    private val rootDir: MFile = MFile("//")
+    private var topDir: MFile = MFile("//")
+    private var curDir: MFile = MFile("//")
+    private lateinit var adapter: FileAdapter
+    private lateinit var ctxt: PlayContext
+    private lateinit var handler: Handler
+    private data class DirFrame(val path: MFile, val adapter: FileAdapter, val listView: View)
+    private val dirStack = mutableListOf<DirFrame>()    // [0]: //,  [last]: current
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_explorer)
+	
+	db = AppDatabase.getDB()
+	playContexts = (getApplication() as Application).getPlayContextList()
+
+        handler = Handler()
+
+	ctxt = playContexts.getCurrent()
+	
+        var dir = MFile(ctxt.topDir)
+        topDir = dir
+	val path = ctxt.path
+        if (path != null && path.startsWith(ctxt.topDir)) {
+            val slash = path.lastIndexOf('/')
+            if (slash != -1)
+                dir = MFile(path.substring(0, slash))
+        }
+        if (savedInstanceState != null) {
+            val str = savedInstanceState.getString(STATE_CUR_DIR)
+            if (str != null)
+                dir = MFile(str)
+        }
+
+	val dirs = mutableListOf(MFile("//"))
+	var slpos = 1
+	while (true) {
+	    slpos = dir.absolutePath.indexOf('/', slpos + 1)
+	    if (slpos == -1)
+		break
+	    dirs.add(MFile(dir.absolutePath.substring(0, slpos)))
+	}
+	for (mf in dirs)
+	    enterDir(mf, false)
     }
 
     /* 参考:
@@ -302,8 +433,10 @@ class ExplorerActivity : ComponentActivity() {
             if (backKeyShortPress) {
                 if (curDir == rootDir || curDir.absolutePath == "/")
                     finish()
-                else
-                    renewAdapter(curDir.parentFile)
+                else {
+                    // renewAdapter(curDir.parentFile)
+		    leaveDir(true)
+		}
             }
             backKeyShortPress = false
             return true
@@ -331,21 +464,6 @@ class ExplorerActivity : ComponentActivity() {
     }
 
     private fun renewAdapter(newDir: MFile) {
-        val files = listFiles(newDir, false)
-        val items = MutableList<FileItem>(files.size, { i -> FileItem(files[i]) })
-
-        Log.d("newDir=${newDir}")
-        Log.d("rootDir=${rootDir}")
-	if (newDir.absolutePath != "//")
-            items.add(0, FileItem(MFile(newDir.absolutePath + "/.")))  // リストの一番上に "." を表示
-	else
-            items.add(0, FileItem(MFile(newDir.absolutePath + ".")))
-
-        adapter.clear()
-        adapter.addAll(items)
-        invokeNewItemsUpdater(items)
-
-        list.adapter = adapter
 
         // topDir からの相対で newDir を表示
         path.rootDir = rootDir.toString()
