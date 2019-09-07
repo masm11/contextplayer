@@ -193,18 +193,14 @@ class ExplorerActivity : ComponentActivity() {
     }
     
     private fun invokeNewItemsUpdater(newList: List<FileItem>, adapter: FileAdapter) {
-	supervisorJob.cancel()
-	runBlocking {
-	    supervisorJob.join()
-	}
-	supervisorJob = Job()
-	supervisorScope = CoroutineScope(supervisorJob)
 	for (item in newList) {
 	    supervisorScope.launch {
 		withContext(Dispatchers.Default) {
 		    item.retrieveMetadata()
 		}
-		adapter.notifyDataSetChanged()
+		withContext(Dispatchers.Main) {
+		    adapter.notifyDataSetChanged()
+		}
 	    }
 	}
     }
