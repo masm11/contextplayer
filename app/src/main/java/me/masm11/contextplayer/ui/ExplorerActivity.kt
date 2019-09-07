@@ -357,9 +357,12 @@ class ExplorerActivity : ComponentActivity() {
 	var slpos = 1
 	while (true) {
 	    slpos = dir.absolutePath.indexOf('/', slpos + 1)
-	    if (slpos == -1)
+	    if (slpos != -1) {
+		dirs.add(MFile(dir.absolutePath.substring(0, slpos)))
+	    } else {
+		dirs.add(dir)
 		break
-	    dirs.add(MFile(dir.absolutePath.substring(0, slpos)))
+	    }
 	}
 	for (mf in dirs)
 	    enterDir(mf, false)
