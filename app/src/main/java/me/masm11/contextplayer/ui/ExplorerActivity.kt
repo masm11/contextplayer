@@ -218,25 +218,13 @@ class ExplorerActivity : ComponentActivity() {
 	    val item = listView.getItemAtPosition(position) as FileItem
 	    Log.d("clicked=${item.filename}")
 
-/* こんな感じ。
-	    val anim = TranslateAnimation(
-		Animation.RELATIVE_TO_PARENT, 0f,
-		Animation.RELATIVE_TO_PARENT, -1f,
-		Animation.RELATIVE_TO_PARENT, 0f,
-		Animation.RELATIVE_TO_PARENT, 0f
-	    )
-	    anim.setDuration(300)
-	    anim.setRepeatCount(0)
-	    anim.setFillAfter(true)
-	    listView.startAnimation(anim)
-*/
-
-	    if (item.isDir) {
-		if (item.filename != ".")
-		    // renewAdapter(item.file)
-		    enterDir(item.file, true)
-	    } else {
-		play(item.file)
+	    if (dirStack[dirStack.size - 1].listView == listView) {
+		if (item.isDir) {
+		    if (item.filename != ".")
+			enterDir(item.file, true)
+		} else {
+		    play(item.file)
+		}
 	    }
         }
         list.setOnItemLongClickListener { parent, _, position, _ ->
@@ -296,7 +284,7 @@ class ExplorerActivity : ComponentActivity() {
     private fun leaveDir(anime: Boolean): Boolean {
 	if (dirStack.size < 2)
 	    return false
-
+	
 	run {
 	    val frame = dirStack[dirStack.size - 1]
 	    val anim0 = TranslateAnimation(
@@ -309,6 +297,7 @@ class ExplorerActivity : ComponentActivity() {
 	    anim0.setRepeatCount(0)
 	    anim0.setFillAfter(true)
 	    frame.listView.startAnimation(anim0)
+	    list_viewport.removeView(frame.listView)
 	}
 	
 	run {
@@ -332,15 +321,15 @@ class ExplorerActivity : ComponentActivity() {
 	return true
     }
     
+    private data class DirFrame(val path: MFile, val adapter: FileAdapter, val listView: View)
+    
     private lateinit var db: AppDatabase
     private lateinit var playContexts: PlayContextList
     private val rootDir: MFile = MFile("//")
     private var topDir: MFile = MFile("//")
     private var curDir: MFile = MFile("//")
-    private lateinit var adapter: FileAdapter
     private lateinit var ctxt: PlayContext
     private lateinit var handler: Handler
-    private data class DirFrame(val path: MFile, val adapter: FileAdapter, val listView: View)
     private val dirStack = mutableListOf<DirFrame>()    // [0]: //,  [last]: current
     
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -433,10 +422,8 @@ class ExplorerActivity : ComponentActivity() {
             if (backKeyShortPress) {
                 if (curDir == rootDir || curDir.absolutePath == "/")
                     finish()
-                else {
-                    // renewAdapter(curDir.parentFile)
+                else
 		    leaveDir(true)
-		}
             }
             backKeyShortPress = false
             return true
