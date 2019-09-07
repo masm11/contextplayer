@@ -42,7 +42,7 @@
     
     <TextView
 	android:id="@+id/title"
-	android:textColor="#000000"
+	android:textColor="#ffffff"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:textIsSelectable="false"/>
@@ -62,7 +62,7 @@
     
     <TextView
 	android:id="@+id/dirname"
-	android:textColor="#000000"
+	android:textColor="#ffffff"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:textIsSelectable="false"/>
