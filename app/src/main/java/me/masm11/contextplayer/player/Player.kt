@@ -341,24 +341,39 @@ class Player : Runnable {
     val currentPosition: Int
     get() {
 	val plr = curPlayer
-	if (plr != null)
-	    return plr.currentPosition
+	if (plr != null) {
+	    try {
+		return plr.currentPosition
+	    } catch (e: IllegalStateException) {
+		// return 0
+	    }
+	}
 	return 0
     }
     
     val duration: Int
     get() {
 	val plr = curPlayer
-	if (plr != null)
-	    return plr.duration
+	if (plr != null) {
+	    try {
+		return plr.duration
+	    } catch (e: IllegalStateException) {
+		// return 0
+	    }
+	}
 	return 0
     }
     
     val isPlaying: Boolean
     get() {
 	val plr = curPlayer
-	if (plr != null)
-	    return plr.isPlaying
+	if (plr != null) {
+	    try {
+		return plr.isPlaying
+	    } catch (e: IllegalStateException) {
+		// return false
+	    }
+	}
 	return false
     }
     
