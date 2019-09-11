@@ -24,6 +24,7 @@
 	android:layout_height="wrap_content"
 	android:paddingTop="15dp"
 	android:paddingBottom="15dp"
+	android:background="@drawable/border_ripple"
 	android:transitionName="transit_cat"
 	android:textIsSelectable="false"/>
     
@@ -42,6 +43,7 @@
 	  android:layout_height="wrap_content"
 	  android:paddingTop="15dp"
 	  android:paddingBottom="15dp"
+	  android:background="@drawable/border_ripple"
 	  android:orientation="vertical">
 	
 	<me.masm11.contextplayer.ui.PathView
