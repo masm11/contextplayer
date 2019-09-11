@@ -65,7 +65,7 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     
     private lateinit var playContexts: PlayContextList
     private lateinit var curContext: PlayContext
-    private var topDir: String = "/"
+    private var topDir: String = "//"
     private lateinit var player: Player
     private lateinit var audioManager: AudioManager
     private lateinit var audioAttributes: AudioAttributes
