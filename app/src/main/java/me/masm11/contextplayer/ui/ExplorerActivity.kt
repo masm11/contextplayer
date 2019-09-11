@@ -339,6 +339,7 @@ class ExplorerActivity : ComponentActivity() {
 
 	ctxt = playContexts.getCurrent()
 	
+	/* 再生中のファイルがある場所に移動 */
         var dir = MFile(ctxt.topDir)
         topDir = dir
 	val path = ctxt.path
@@ -347,6 +348,7 @@ class ExplorerActivity : ComponentActivity() {
             if (slash != -1)
                 dir = MFile(path.substring(0, slash))
         }
+	/* 画面を回転させた場合は、その時いた場所に移動 */
         if (savedInstanceState != null) {
             val str = savedInstanceState.getString(STATE_CUR_DIR)
             if (str != null)
