@@ -378,32 +378,28 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     private fun saveContext() {
 	Log.d("contextId=----")
 	val ctxt = curContext
-	if (ctxt != null && player != null) {
-	    Log.d("Id=${ctxt.uuid}")
-	    ctxt.path = player.playingPath
-	    Log.d("path=${ctxt.path}")
-	    ctxt.pos = player.currentPosition.toLong()
-	    Log.d("pos=${ctxt.pos}")
-	    ctxt.volume = volume
-	    Log.d("volume=${volume}")
-	    Log.d("ctxt saving...")
-	    playContexts.put(ctxt.uuid)
-	}
+	Log.d("Id=${ctxt.uuid}")
+	ctxt.path = player.playingPath
+	Log.d("path=${ctxt.path}")
+	ctxt.pos = player.currentPosition.toLong()
+	Log.d("pos=${ctxt.pos}")
+	ctxt.volume = volume
+	Log.d("volume=${volume}")
+	Log.d("ctxt saving...")
+	playContexts.put(ctxt.uuid)
     }
     
     private fun loadContext() {
         Log.d("getting context")
         val ctxt = playContexts.getCurrent()
-        if (ctxt != null) {
-            val path = ctxt.path
-            topDir = ctxt.topDir
-            volume = ctxt.volume
-            Log.d("path=${path}")
-            Log.d("topDir=${topDir}")
-            player.setTopDir(topDir)
-            player.setFile(path, ctxt.pos.toInt())
-            setMediaPlayerVolume()
-	}
+        val path = ctxt.path
+        topDir = ctxt.topDir
+        volume = ctxt.volume
+        Log.d("path=${path}")
+        Log.d("topDir=${topDir}")
+        player.setTopDir(topDir)
+        player.setFile(path, ctxt.pos.toInt())
+        setMediaPlayerVolume()
     }
     
     private fun startBroadcast() {
@@ -447,10 +443,8 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	    .putExtra(EXTRA_PATH, player.playingPath)
 	    .putExtra(EXTRA_TOPDIR, topDir)
 	    .putExtra(EXTRA_VOLUME, volume)
-	if (player != null) {
-	    intent.putExtra(EXTRA_POS, player.currentPosition)
-	    intent.putExtra(EXTRA_DURATION, player.duration)
-	}
+	intent.putExtra(EXTRA_POS, player.currentPosition)
+	intent.putExtra(EXTRA_DURATION, player.duration)
 	localBroadcastManager.sendBroadcast(intent)
     }
     
@@ -475,12 +469,10 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     
     private fun updateAppWidget() {
 	val ctxt = curContext
-	var contextName: String? = null
-	if (ctxt != null)
-	    contextName = ctxt.name
+	val contextName = ctxt.name
 	
 	var icon = android.R.drawable.ic_media_play
-	if (player?.isPlaying ?: false)
+	if (player.isPlaying)
 	    icon = android.R.drawable.ic_media_pause
 	
 	WidgetProvider.updateAppWidget(this, null, icon, contextName)
