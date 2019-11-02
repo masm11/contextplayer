@@ -41,13 +41,9 @@ class WidgetProvider : AppWidgetProvider() {
         for (i in appWidgetIds.indices)
             Log.d("appWidgetId=${appWidgetIds[i]}")
 
-	val db = AppDatabase.getDB()
-
 	val playContexts = (context.getApplicationContext() as Application).getPlayContextList()
         val ctxt = playContexts.getCurrent()
-        var contextName: String? = null
-        if (ctxt != null)
-            contextName = ctxt.name
+        var contextName = ctxt.name
 
         updateAppWidget(context, appWidgetIds, 0, contextName)
 

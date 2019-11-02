@@ -16,7 +16,7 @@
 */
 package me.masm11.contextplayer.ui
 
-import android.app.Fragment
+import androidx.fragment.app.Fragment
 import android.app.Service
 import android.widget.ImageButton
 import android.view.View
@@ -45,19 +45,27 @@ class OperationFragment : Fragment() {
         val view = inflater.inflate(R.layout.operation_fragment, container, false)
 
         view.op_play.setOnClickListener {
-            PlayerService.play(context, null)
+	    val ctxt = context
+	    if (ctxt != null)
+		PlayerService.play(ctxt, null)
         }
 
         view.op_pause.setOnClickListener {
-            PlayerService.pause(context)
+	    val ctxt = context
+	    if (ctxt != null)
+		PlayerService.pause(ctxt)
         }
 
         view.op_prev.setOnClickListener {
-            PlayerService.prevTrack(context)
+	    val ctxt = context
+	    if (ctxt != null)
+		PlayerService.prevTrack(ctxt)
         }
 
         view.op_next.setOnClickListener {
-            PlayerService.nextTrack(context)
+	    val ctxt = context
+	    if (ctxt != null)
+		PlayerService.nextTrack(ctxt)
         }
 
         return view

@@ -22,11 +22,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
-import androidx.activity.ComponentActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.app.Service
 import android.app.AlertDialog
-import android.app.FragmentManager
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentActivity
 import android.os.IBinder
 import android.os.Bundle
 import android.view.View
@@ -64,7 +64,7 @@ import me.masm11.contextplayer.Application
 
 import me.masm11.logger.Log
 
-class MainActivity : ComponentActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
+class MainActivity : FragmentActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
 
     private lateinit var playContexts: PlayContextList
     private val rootDir = MFile("//")

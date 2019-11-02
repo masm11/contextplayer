@@ -16,7 +16,6 @@
 */
 package me.masm11.contextplayer.ui
 
-import androidx.activity.ComponentActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.os.Bundle
 import android.os.IBinder
@@ -39,7 +38,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.app.AlertDialog
 import android.app.Service
-import android.app.FragmentManager
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentActivity
 import android.text.InputType
 
 import kotlinx.android.synthetic.main.activity_context.*
@@ -56,7 +56,7 @@ import me.masm11.contextplayer.Application
 
 import me.masm11.logger.Log
 
-class ContextActivity : ComponentActivity() {
+class ContextActivity : FragmentActivity() {
 
     private lateinit var db: AppDatabase
     private lateinit var playContexts: PlayContextList

@@ -16,9 +16,9 @@
 */
 package me.masm11.contextplayer.ui
 
-import androidx.activity.ComponentActivity
 import android.app.Service
-import android.app.FragmentManager
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
@@ -66,7 +66,7 @@ import me.masm11.contextplayer.Application
 
 import me.masm11.logger.Log
 
-class ExplorerActivity : ComponentActivity() {
+class ExplorerActivity : FragmentActivity() {
     private var backKeyShortPress: Boolean = false
     
     private var supervisorJob = SupervisorJob()
@@ -144,7 +144,9 @@ class ExplorerActivity : ComponentActivity() {
 
         override fun getItemId(position: Int): Long {
             val item = getItem(position)
-            return item.hashCode().toLong()
+	    if (item != null)
+		return item.hashCode().toLong()
+	    return 0
         }
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {

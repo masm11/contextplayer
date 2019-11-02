@@ -17,7 +17,7 @@
 package me.masm11.contextplayer.ui
 
 import androidx.appcompat.widget.Toolbar
-import android.app.Fragment
+import androidx.fragment.app.Fragment
 import android.view.View
 import android.view.ViewGroup
 import android.view.LayoutInflater
@@ -42,8 +42,11 @@ class ActionBarFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
 	// xml ファイルに attribute を書きたい…
-	if (context::class != AboutActivity::class)
-            setHasOptionsMenu(true)
+	val ctxt = context
+	if (ctxt != null) {
+	    if (ctxt::class != AboutActivity::class)
+		setHasOptionsMenu(true)
+	}
     }
     
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -61,9 +64,11 @@ class ActionBarFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_about -> {
-                val context = context
-		val i = Intent(context, AboutActivity::class.java)
-		context.startActivity(i)
+                val ctxt = context
+		if (ctxt != null) {
+		    val i = Intent(ctxt, AboutActivity::class.java)
+		    ctxt.startActivity(i)
+		}
                 return true
             }
 	    
