@@ -34,6 +34,7 @@ import android.content.IntentFilter
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.os.IBinder
+import android.os.Handler
 import android.appwidget.AppWidgetManager
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothAdapter
@@ -76,14 +77,18 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     private var volume: Int = 0
     private var volumeDuck: Int = 0
     private var volumeOnOff: Int = 0
+    private lateinit var handler: Handler
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothHeadset: BluetoothHeadset? = null
+    private lateinit var headsetMonitor: Thread
     private lateinit var localBroadcastManager: LocalBroadcastManager
     private var isForeground = false
     private var promotor: Job? = null
     private var prevJob: Job? = null
 
     override fun onCreate() {
+	handler = Handler()
+
 	playContexts = (getApplication() as Application).getPlayContextList()
 	curContext = playContexts.getCurrent()
 	
@@ -117,6 +122,38 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	    }, BluetoothProfile.HEADSET)
 	}
 	
+	/* bluetooth headset への接続が切れたら、再生を停止する。
+	* intent だとかなり遅延することがあるので、
+	* 自前で BluetoothHeadset class で接続状況を監視する。
+	* log がかなりうざい…
+	*/
+	val code = Runnable {
+	    var connected = false
+	    try {
+		while (true) {
+		    val headset = bluetoothHeadset
+		    var newConnected = false
+		    if (headset != null) {
+			val devices = headset.getConnectedDevices()
+			if (devices.size >= 1)
+			    newConnected = true
+		    }
+		    if (connected != newConnected) {
+			Log.d("bluetooth headset: ${connected} -> ${newConnected}")
+			connected = newConnected
+			if (!connected)
+			    handler.post { saveContext(); player.stop() }
+		    }
+		    Thread.sleep(500)
+		}
+	    } catch (e: InterruptedException) {
+		Log.d("interrupted.", e)
+	    }
+	}
+	headsetMonitor = Thread(code)
+	headsetMonitor.start()
+
+
 	audioAttributes = AudioAttributes.Builder()
 	    .setUsage(AudioAttributes.USAGE_MEDIA)
 	    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
@@ -423,6 +460,9 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	
 	Log.d("stopping player.")
 	player.stop()
+
+	headsetMonitor.interrupt()
+	headsetMonitor.join()
 
 	if (bluetoothHeadset != null) {
 	    val ba = bluetoothAdapter
