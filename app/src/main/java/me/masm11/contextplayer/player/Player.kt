@@ -268,7 +268,7 @@ class Player : Runnable {
 	}
 	
 	private fun handle_finish(@Suppress("UNUSED_PARAMETER") msg: Message) {
-	    Looper.myLooper().quitSafely()
+	    Looper.myLooper()?.quitSafely()
 	    stopPlay()
 	}
     }

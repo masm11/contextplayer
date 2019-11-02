@@ -81,8 +81,8 @@ class ContextActivity : ComponentActivity() {
 	    view.context_name.text = item?.name ?: "(?)"
 
 	    view.context_topdir.rootDir = rootDir.absolutePath
-	    view.context_topdir.topDir = item.topDir
-	    view.context_topdir.path = item.path
+	    view.context_topdir.topDir = item?.topDir ?: "//"
+	    view.context_topdir.path = item?.path
 
             return view
         }

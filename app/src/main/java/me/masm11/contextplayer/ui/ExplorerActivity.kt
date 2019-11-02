@@ -154,20 +154,22 @@ class ExplorerActivity : ComponentActivity() {
 
             val item = getItem(position)
 
-            if (!item.isDir) {
-                view.filename.text = item.filename
-                view.mime_type.text = item.mimeType
-                view.title.text = item.title ?: view.context.resources.getString(R.string.unknown_title)
-                view.artist.text = item.artist ?: view.context.resources.getString(R.string.unknown_artist)
+	    if (item != null) {
+		if (item?.isDir) {
+		    view.filename.text = item.filename
+		    view.mime_type.text = item.mimeType
+		    view.title.text = item.title ?: view.context.resources.getString(R.string.unknown_title)
+		    view.artist.text = item.artist ?: view.context.resources.getString(R.string.unknown_artist)
 
-                view.for_file.visibility = View.VISIBLE
-                view.for_dir.visibility = View.GONE
-            } else {
-                view.dirname.text = "${item.filename}/"
+		    view.for_file.visibility = View.VISIBLE
+		    view.for_dir.visibility = View.GONE
+		} else {
+		    view.dirname.text = "${item.filename}/"
 
-                view.for_file.visibility = View.GONE
-                view.for_dir.visibility = View.VISIBLE
-            }
+		    view.for_file.visibility = View.GONE
+		    view.for_dir.visibility = View.VISIBLE
+		}
+	    }
 
             return view
         }
