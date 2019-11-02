@@ -155,7 +155,7 @@ class ExplorerActivity : ComponentActivity() {
             val item = getItem(position)
 
 	    if (item != null) {
-		if (item?.isDir) {
+		if (!item.isDir) {
 		    view.filename.text = item.filename
 		    view.mime_type.text = item.mimeType
 		    view.title.text = item.title ?: view.context.resources.getString(R.string.unknown_title)
