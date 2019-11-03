@@ -375,12 +375,14 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	Log.d("contextId=----")
 	val ctxt = curContext
 	Log.d("Id=${ctxt.uuid}")
-	ctxt.path = player.playingPath
-	Log.d("path=${ctxt.path}")
-	ctxt.pos = player.currentPosition.toLong()
-	Log.d("pos=${ctxt.pos}")
-	ctxt.volume = volume
-	Log.d("volume=${volume}")
+	ctxt.withTransaction().use {
+	    it.path = player.playingPath
+	    Log.d("path=${it.path}")
+	    it.pos = player.currentPosition.toLong()
+	    Log.d("pos=${it.pos}")
+	    it.volume = volume
+	    Log.d("volume=${it.volume}")
+	}
 	Log.d("ctxt saving...")
 	playContexts.put(ctxt.uuid)
     }
@@ -388,14 +390,16 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     private fun loadContext() {
         Log.d("getting context")
         val ctxt = playContexts.getCurrent()
-        val path = ctxt.path
-        topDir = ctxt.topDir
-        volume = ctxt.volume
-        Log.d("path=${path}")
-        Log.d("topDir=${topDir}")
-        player.setTopDir(topDir)
-        player.setFile(path, ctxt.pos.toInt())
-        setMediaPlayerVolume()
+	ctxt.withTransaction().use {
+            val path = it.path
+            topDir = it.topDir
+            volume = it.volume
+            Log.d("path=${path}")
+            Log.d("topDir=${topDir}")
+            player.setTopDir(topDir)
+            player.setFile(path, it.pos.toInt())
+            setMediaPlayerVolume()
+	}
     }
     
     private fun startBroadcast() {

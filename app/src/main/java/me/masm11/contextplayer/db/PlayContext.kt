@@ -67,42 +67,43 @@ class PlayContext {
     }
     
     inner class PlayContextTransaction: AutoCloseable {
-	var topDir: String = "//"
+	val owner = this@PlayContext
+	var topDir: String = owner.topDir
 	set(topDir) {
 	    if (field != topDir) {
 		field = topDir
 		topDirChanged = true
 	    }
 	}
-	var path: String? = null
+	var path: String? = owner.path
 	set(path) {
 	    if (field != path) {
 		field = path
 		pathChanged = true
 	    }
 	}
-	var pos: Long = 0
+	var pos: Long = owner.pos
 	set(pos) {
 	    if (field != pos) {
 		field = pos
 		posChanged = true
 	    }
 	}
-	var volume: Int = 100
+	var volume: Int = owner.volume
 	set(volume) {
 	    if (field != volume) {
 		field = volume
 		volumeChanged = true
 	    }
 	}
-	var realtimePos: Long = 0
+	var realtimePos: Long = owner.realtimePos
 	set(realtimePos) {
 	    if (field != realtimePos) {
 		field = realtimePos
 		realtimePosChanged = true
 	    }
 	}
-	var realtimeDuration: Long = 0
+	var realtimeDuration: Long = owner.realtimeDuration
 	set(realtimeDuration) {
 	    if (field != realtimeDuration) {
 		field = realtimeDuration
