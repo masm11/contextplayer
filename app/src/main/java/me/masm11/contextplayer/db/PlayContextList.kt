@@ -21,11 +21,14 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 
+import me.masm11.contextplayer.util.MutableWeakSet
+
 class PlayContextList {
     private val db = AppDatabase.getDB()
     private val dao = db.playContextDao()
     private val hash = HashMap<String, PlayContext>()	// key: uuid
     private val updaterChannel = Channel<() -> Unit>(Channel.UNLIMITED)
+    private val onContextSwitchListeners = MutableWeakSet<(PlayContext) -> Unit>()
     
     init {
 	/* 起動時の処理なので、
@@ -90,6 +93,8 @@ class PlayContextList {
 	enqueue_job {
 	    dao.update(ctxt)
 	}
+	for (listener in onContextSwitchListeners)
+	    listener(ctxt)
     }
     
     fun put(uuid: String) {
@@ -119,6 +124,14 @@ class PlayContextList {
 	return ctxt
     }
     
+    fun addOnContextSwitchListener(listener: (PlayContext) -> Unit) {
+	onContextSwitchListeners.add(listener)
+    }
+    
+    fun removeOnContextSwitchListener(listener: (PlayContext) -> Unit) {
+	onContextSwitchListeners.remove(listener)
+    }
+
     companion object {
 	val CURRENT = 1
     }

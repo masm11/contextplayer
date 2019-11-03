@@ -65,6 +65,9 @@ class PlayContext {
     fun addOnChangedListener(listener: (PlayContext) -> Unit) {
 	onChangedListener.add(listener)
     }
+    fun removeOnChangedListener(listener: (PlayContext) -> Unit) {
+	onChangedListener.remove(listener)
+    }
     
     inner class PlayContextTransaction: AutoCloseable {
 	val owner = this@PlayContext

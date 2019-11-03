@@ -66,6 +66,9 @@ import me.masm11.logger.Log
 class MainActivity : FragmentActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
 
     private lateinit var playContexts: PlayContextList
+    private lateinit var curContext: PlayContext
+    private lateinit var onContextChangedListener: (PlayContext) -> Unit
+    private lateinit var onContextSwitchListener: (PlayContext) -> Unit
     private val rootDir = MFile("//")
     private var curPath: String? = null
     private var curTopDir: String? = null
@@ -156,34 +159,6 @@ class MainActivity : FragmentActivity(), ActivityCompat.OnRequestPermissionsResu
             // permission がある
             // rootDir.mkdirs()
         }
-
-        val intent = getIntent()
-        if (intent != null) {
-            val action = intent.getAction()
-            if (action != null && action == Intent.ACTION_MAIN) {
-                val uuid = intent.getStringExtra("me.masm11.contextplayer.CONTEXT_ID")
-
-                if (uuid != null) {
-		    val ctxt = playContexts.get(uuid)
-		    if (ctxt != null)
-			playContexts.setCurrent(ctxt)
-		    
-                    needSwitchContext = true
-                }
-            }
-        }
-	
-	val ctxt = playContexts.getCurrent()
-	ctxt.addOnChangedListener { c ->
-	    val path = c.path
-	    val topDir = c.topDir
-	    val volume = c.volume
-	    val pos = c.realtimePos.toInt()
-	    val duration = c.realtimeDuration.toInt()
-	    updateTrackInfo(path, topDir, pos, duration, volume)
-	}
-	
-	PlayerService.requestCurrentStatus(this)
     }
     
     override fun onRequestPermissionsResult(requestCode: Int,
@@ -198,18 +173,60 @@ class MainActivity : FragmentActivity(), ActivityCompat.OnRequestPermissionsResu
         }
     }
     
+    fun setContextListener() {
+	onContextSwitchListener = { ctxt ->
+	    curContext.removeOnChangedListener(onContextChangedListener)
+	    curContext = ctxt
+	    curContext.addOnChangedListener(onContextChangedListener)
+
+	    updateTrackInfo(ctxt)
+	    updateContextName(ctxt)
+	}
+	onContextChangedListener = { ctxt ->
+	    updateTrackInfo(ctxt)
+	}
+	
+	curContext = playContexts.getCurrent()
+	
+	curContext.addOnChangedListener(onContextChangedListener)
+	playContexts.addOnContextSwitchListener(onContextSwitchListener)
+	
+	updateContextName(curContext)
+	updateTrackInfo(curContext)
+    }
+    
+    fun unsetContextListener() {
+	playContexts.removeOnContextSwitchListener(onContextSwitchListener)
+	curContext.removeOnChangedListener(onContextChangedListener)
+    }
+    
     override fun onResume() {
-        val ctxt = playContexts.getCurrent()
-        context_name.text = ctxt.name
+	setContextListener()
 	
         super.onResume()
+    }
+    
+    override fun onPause() {
+	unsetContextListener()
+	
+	super.onPause()
     }
     
     override fun onDestroy() {
 	super.onDestroy()
     }
     
-    private fun updateTrackInfo(path: String?, topDir: String, pos: Int, duration: Int, vol1: Int) {
+    private fun updateContextName(ctxt: PlayContext) {
+	context_name.text = ctxt.name
+    }
+
+    private fun updateTrackInfo(ctxt: PlayContext) {
+	val path = ctxt.path
+	val topDir = ctxt.topDir
+	val vol1 = ctxt.volume
+	val pos = ctxt.realtimePos.toInt()
+	val duration = ctxt.realtimeDuration.toInt()
+
 	var p = path
 	if (p == null)
 	    p = "//"
