@@ -39,7 +39,6 @@ import android.appwidget.AppWidgetManager
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothHeadset
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 import java.util.Locale
 
@@ -81,7 +80,6 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothHeadset: BluetoothHeadset? = null
     private lateinit var headsetMonitor: Thread
-    private lateinit var localBroadcastManager: LocalBroadcastManager
     private var isForeground = false
     private var promotor: Job? = null
     private var prevJob: Job? = null
@@ -91,8 +89,6 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 
 	playContexts = (getApplication() as Application).getPlayContextList()
 	curContext = playContexts.getCurrent()
-	
-	localBroadcastManager = LocalBroadcastManager.getInstance(this)
 	
 	val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 	val channel_1 = NotificationChannel("notify_channel_1", getString(R.string.notification), NotificationManager.IMPORTANCE_LOW)
@@ -412,7 +408,9 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
 	broadcaster = GlobalScope.launch {
 	    while (true) {
 		Log.d("broadcast.")
-		broadcastStatus()
+		handler.post {
+		    broadcastStatus()
+		}
 		Log.d("delay.")
 		delay(500)
 		Log.d("delay. done.")
@@ -437,15 +435,13 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     
     private fun broadcastStatus() {
 	val ctxt = curContext
-	Log.d("${player.playingPath}")
-	val intent = Intent(ACTION_CURRENT_STATUS)
-	    .putExtra(EXTRA_CONTEXT_ID, ctxt.uuid)
-	    .putExtra(EXTRA_PATH, player.playingPath)
-	    .putExtra(EXTRA_TOPDIR, topDir)
-	    .putExtra(EXTRA_VOLUME, volume)
-	intent.putExtra(EXTRA_POS, player.currentPosition)
-	intent.putExtra(EXTRA_DURATION, player.duration)
-	localBroadcastManager.sendBroadcast(intent)
+	ctxt.withTransaction().use {
+	    it.path = player.playingPath
+	    it.topDir = topDir
+	    it.volume = volume
+	    it.realtimePos = player.currentPosition.toLong()
+	    it.realtimeDuration = player.duration.toLong()
+	}
     }
     
     override fun onDestroy() {

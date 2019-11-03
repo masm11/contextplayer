@@ -22,7 +22,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.app.Service
 import android.app.AlertDialog
 import androidx.fragment.app.FragmentManager
@@ -75,8 +74,6 @@ class MainActivity : FragmentActivity(), ActivityCompat.OnRequestPermissionsResu
     private var seeking: Boolean = false
     private var vol: Int = 100
     private var needSwitchContext: Boolean = false
-    private lateinit var localBroadcastManager: LocalBroadcastManager
-    private lateinit var localBroadcastReceiver: BroadcastReceiver
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -176,19 +173,15 @@ class MainActivity : FragmentActivity(), ActivityCompat.OnRequestPermissionsResu
             }
         }
 	
-	localBroadcastManager = LocalBroadcastManager.getInstance(this)
-	localBroadcastReceiver = object: BroadcastReceiver() {
-	    override fun onReceive(context: Context, intent: Intent) {
-		val path = intent.getStringExtra(PlayerService.EXTRA_PATH)
-		val topDir = intent.getStringExtra(PlayerService.EXTRA_TOPDIR)
-		val volume = intent.getIntExtra(PlayerService.EXTRA_VOLUME, 0)
-		val pos = intent.getIntExtra(PlayerService.EXTRA_POS, 0)
-		val duration = intent.getIntExtra(PlayerService.EXTRA_DURATION, 0)
-		updateTrackInfo(path, topDir, pos, duration, volume)
-	    }
+	val ctxt = playContexts.getCurrent()
+	ctxt.addOnChangedListener { c ->
+	    val path = c.path
+	    val topDir = c.topDir
+	    val volume = c.volume
+	    val pos = c.realtimePos.toInt()
+	    val duration = c.realtimeDuration.toInt()
+	    updateTrackInfo(path, topDir, pos, duration, volume)
 	}
-	val filter = IntentFilter(PlayerService.ACTION_CURRENT_STATUS)
-	localBroadcastManager.registerReceiver(localBroadcastReceiver, filter)
 	
 	PlayerService.requestCurrentStatus(this)
     }
@@ -213,8 +206,6 @@ class MainActivity : FragmentActivity(), ActivityCompat.OnRequestPermissionsResu
     }
     
     override fun onDestroy() {
-	localBroadcastManager.unregisterReceiver(localBroadcastReceiver)
-	
 	super.onDestroy()
     }
     

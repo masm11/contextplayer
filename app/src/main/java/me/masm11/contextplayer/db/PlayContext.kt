@@ -25,6 +25,8 @@ import androidx.room.PrimaryKey
 import androidx.room.ColumnInfo
 import androidx.room.Index
 
+import me.masm11.contextplayer.util.MutableWeakSet
+
 @Entity(
     tableName = "PlayContext_2",
     indices = arrayOf(
@@ -56,6 +58,103 @@ class PlayContext {
     
     @ColumnInfo(name = "current") var current: Int? = null
     
+    @Ignore var realtimePos: Long = 0
+    @Ignore var realtimeDuration: Long = 0
+    
+    @Ignore val onChangedListener = MutableWeakSet<(PlayContext) -> Unit>()
+    fun addOnChangedListener(listener: (PlayContext) -> Unit) {
+	onChangedListener.add(listener)
+    }
+    
+    inner class PlayContextTransaction: AutoCloseable {
+	var topDir: String = "//"
+	set(topDir) {
+	    if (field != topDir) {
+		field = topDir
+		topDirChanged = true
+	    }
+	}
+	var path: String? = null
+	set(path) {
+	    if (field != path) {
+		field = path
+		pathChanged = true
+	    }
+	}
+	var pos: Long = 0
+	set(pos) {
+	    if (field != pos) {
+		field = pos
+		posChanged = true
+	    }
+	}
+	var volume: Int = 100
+	set(volume) {
+	    if (field != volume) {
+		field = volume
+		volumeChanged = true
+	    }
+	}
+	var realtimePos: Long = 0
+	set(realtimePos) {
+	    if (field != realtimePos) {
+		field = realtimePos
+		realtimePosChanged = true
+	    }
+	}
+	var realtimeDuration: Long = 0
+	set(realtimeDuration) {
+	    if (field != realtimeDuration) {
+		field = realtimeDuration
+		realtimeDurationChanged = true
+	    }
+	}
+	
+	var topDirChanged = false
+	var pathChanged = false
+	var posChanged = false
+	var volumeChanged = false
+	var realtimePosChanged = false
+	var realtimeDurationChanged = false
+	
+	override fun close() {
+	    val owner = this@PlayContext
+	    var changed = false
+	    if (topDirChanged) {
+		owner.topDir = topDir
+		changed = true
+	    }
+	    if (pathChanged) {
+		owner.path = path
+		changed = true
+	    }
+	    if (posChanged) {
+		owner.pos = pos
+		changed = true
+	    }
+	    if (volumeChanged) {
+		owner.volume = volume
+		changed = true
+	    }
+	    if (realtimePosChanged) {
+		owner.realtimePos = realtimePos
+		changed = true
+	    }
+	    if (realtimeDurationChanged) {
+		owner.realtimeDuration = realtimeDuration
+		changed = true
+	    }
+	    if (changed) {
+		for (listener in onChangedListener)
+		    listener(owner)
+	    }
+	}
+    }
+
+    fun withTransaction(): PlayContextTransaction {
+	return PlayContextTransaction()
+    }
+
     override fun toString(): String {
 	return name
     }
