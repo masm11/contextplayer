@@ -16,7 +16,6 @@
 */
 package me.masm11.contextplayer.ui
 
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Parcelable
@@ -63,10 +62,32 @@ class ContextActivity : FragmentActivity() {
     private val rootDir = MFile("//")
     private lateinit var items: MutableList<Item>
     private lateinit var adapter: ItemAdapter
-    private lateinit var localBroadcastManager: LocalBroadcastManager
-    private lateinit var localBroadcastReceiver: BroadcastReceiver
     
-    private inner class Item(val uuid: String, var name: String?, val topDir: String, var path: String?, var current: Boolean)
+    private inner class Item(val ctxt: PlayContext) {
+	val uuid = ctxt.uuid
+	var name = ctxt.name
+	var topDir = ctxt.topDir
+	var path = ctxt.path
+	var current = ctxt.current != null
+	private var onChangedListener: (PlayContext) -> Unit
+	init {
+	    onChangedListener = { c ->
+		Log.d("uuid=${c.uuid}")
+		Log.d("name=${c.name}")
+		Log.d("topdir=${c.topDir}")
+		Log.d("path=${c.path}")
+		name = c.name
+		topDir = c.topDir
+		path = c.path
+		current = c.current != null
+		adapter.notifyDataSetChanged()
+	    }
+	    ctxt.addOnChangedListener(onChangedListener)
+	}
+	fun stopListen() {
+	    ctxt.removeOnChangedListener(onChangedListener)
+	}
+    }
     
     private inner class ItemAdapter(context: Context, items: List<Item>) : ArrayAdapter<Item>(context, R.layout.list_context, items) {
         private val inflater = LayoutInflater.from(context)
@@ -96,11 +117,10 @@ class ContextActivity : FragmentActivity() {
 	playContexts = (getApplication() as Application).getPlayContextList()
 
         items = emptyMutableListOf<Item>()
-	val current_ctxt = playContexts.getCurrent()
         for (uuid in playContexts.uuids()) {
 	    val ctxt = playContexts.get(uuid)
 	    if (ctxt != null) {
-		val item = Item(ctxt.uuid, ctxt.name, ctxt.topDir, ctxt.path, ctxt == current_ctxt)
+		val item = Item(ctxt)
 		items.add(item)
 	    }
         }
@@ -205,33 +225,10 @@ class ContextActivity : FragmentActivity() {
                 ctxt.topDir = rootDir.absolutePath
 		playContexts.put(ctxt.uuid)
 
-                val item = Item(ctxt.uuid, newName, ctxt.topDir, null, false)
+                val item = Item(ctxt)
                 adapter.add(item)
             }
             builder.show()
         }
-	
-	localBroadcastManager = LocalBroadcastManager.getInstance(this)
-	localBroadcastReceiver = object: BroadcastReceiver() {
-	    override fun onReceive(context: Context, intent: Intent) {
-		Log.d("received.")
-		val contextId = intent.getStringExtra(PlayerService.EXTRA_CONTEXT_ID)
-		val path = intent.getStringExtra(PlayerService.EXTRA_PATH)
-		
-		var changed = false
-		for (item in items) {
-		    if (item.uuid == contextId) {
-			if (item.path != path) {
-			    item.path = path
-			    changed = true
-			}
-		    }
-		}
-		if (changed)
-		    adapter.notifyDataSetChanged()
-	    }
-	}
-	val filter = IntentFilter(PlayerService.ACTION_CURRENT_STATUS)
-	localBroadcastManager.registerReceiver(localBroadcastReceiver, filter)	// fixme: 登録されっぱなし
     }
 }

@@ -372,7 +372,6 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     }
 
     private fun saveContext() {
-	Log.d("contextId=----")
 	val ctxt = curContext
 	Log.d("Id=${ctxt.uuid}")
 	ctxt.withTransaction().use {
@@ -390,6 +389,7 @@ class PlayerService : Service(), CoroutineScope by MainScope() {
     private fun loadContext() {
         Log.d("getting context")
         val ctxt = playContexts.getCurrent()
+	curContext = ctxt
 	ctxt.withTransaction().use {
             val path = it.path
             topDir = it.topDir

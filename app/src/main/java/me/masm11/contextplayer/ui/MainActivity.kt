@@ -218,6 +218,8 @@ class MainActivity : FragmentActivity(), ActivityCompat.OnRequestPermissionsResu
     
     private fun updateContextName(ctxt: PlayContext) {
 	context_name.text = ctxt.name
+	Log.d("Id=${ctxt.uuid}")
+	Log.d("name=${ctxt.name}")
     }
 
     private fun updateTrackInfo(ctxt: PlayContext) {
@@ -226,6 +228,7 @@ class MainActivity : FragmentActivity(), ActivityCompat.OnRequestPermissionsResu
 	val vol1 = ctxt.volume
 	val pos = ctxt.realtimePos.toInt()
 	val duration = ctxt.realtimeDuration.toInt()
+	Log.d("path=${path}")
 
 	var p = path
 	if (p == null)
