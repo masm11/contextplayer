@@ -28,7 +28,8 @@ import android.content.ComponentName
 import android.content.BroadcastReceiver
 import android.widget.ArrayAdapter
 import android.widget.AdapterView
-import android.widget.ListView
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.widget.TextView
 import android.widget.EditText
 import android.widget.Button
@@ -89,24 +90,39 @@ class ContextActivity : FragmentActivity() {
 	}
     }
     
-    private inner class ItemAdapter(context: Context, items: List<Item>) : ArrayAdapter<Item>(context, R.layout.list_context, items) {
-        private val inflater = LayoutInflater.from(context)
+    private inner class ItemAdapter(val items: List<Item>) : RecyclerView.Adapter<ItemViewHolder>() {
+	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
+            val inflate = LayoutInflater.from(parent.context).inflate(R.layout.list_context, parent, false);
+            return ItemViewHolder(inflate);
+	}
 
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            var view = convertView
-            if (view == null)
-                view = inflater.inflate(R.layout.list_context, parent, false)!!
+	override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
+	    Log.d("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\")
+	    Log.d("position=${position}")
+	    val item = items.get(position)
+	    Log.d("name=${item.name}")
+	    Log.d("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\")
+	    holder.textView.text = item.name
+	    holder.pathView.rootDir = rootDir.absolutePath
+	    holder.pathView.topDir = item.topDir
+	    holder.pathView.path = item.path
+	}
 
-            val item = getItem(position)
-
-	    view.context_name.text = item?.name ?: "(?)"
-
-	    view.context_topdir.rootDir = rootDir.absolutePath
-	    view.context_topdir.topDir = item?.topDir ?: "//"
-	    view.context_topdir.path = item?.path
-
-            return view
-        }
+	override fun getItemCount(): Int {
+	    Log.d("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\")
+	    Log.d("count=${items.size}")
+	    Log.d("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\")
+	    return items.size
+	}
+    }
+    
+    private inner class ItemViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+	var textView: TextView
+	var pathView: PathView
+	init {
+	    textView = itemView.findViewById(R.id.context_name) as TextView
+	    pathView = itemView.findViewById(R.id.context_topdir) as PathView
+	}
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -125,10 +141,16 @@ class ContextActivity : FragmentActivity() {
 	    }
         }
 
-        adapter = ItemAdapter(this, items)
+        adapter = ItemAdapter(items)
 
-        context_list.adapter = adapter
+        val llm = LinearLayoutManager(this);
 
+        context_list.setHasFixedSize(false);
+        context_list.setLayoutManager(llm);
+        context_list.setAdapter(adapter);
+
+
+/*
         context_list.setOnItemClickListener { parent, _, position, _ ->
             val listView = parent as ListView
             val item = listView.getItemAtPosition(position) as Item
@@ -208,6 +230,7 @@ class ContextActivity : FragmentActivity() {
                 }
             }
         })
+*/
 
         context_add.setOnClickListener {
             val editText = EditText(this@ContextActivity)
@@ -226,7 +249,7 @@ class ContextActivity : FragmentActivity() {
 		playContexts.put(ctxt.uuid)
 
                 val item = Item(ctxt)
-                adapter.add(item)
+                // adapter.add(item)
             }
             builder.show()
         }
