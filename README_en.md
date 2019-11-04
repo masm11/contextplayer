@@ -40,10 +40,10 @@ It uses these permissions:
 
 Environments I use:
 
-- Xperia X Performance (au SOV33, Japan)
-- Android 8.0
+- ASUS ZenFone Max (M2)
+- Android 9
 
-Android 8.0 or later is required.
+Android 9 or later is required.
 
 ## Contexts
 
