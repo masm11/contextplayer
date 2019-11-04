@@ -44,6 +44,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentActivity
 import android.text.InputType
 import android.graphics.Color
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 import me.masm11.contextplayer.R
 import me.masm11.contextplayer.service.PlayerService
@@ -268,7 +269,7 @@ class ContextActivity : FragmentActivity() {
         })
 */
 
-        findViewById<Button>(R.id.context_add).setOnClickListener {
+	findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
             val editText = EditText(this@ContextActivity)
             editText.inputType = InputType.TYPE_CLASS_TEXT
             val builder = AlertDialog.Builder(this@ContextActivity)
@@ -289,6 +290,6 @@ class ContextActivity : FragmentActivity() {
 		itemAdapter.notifyDataSetChanged()
             }
             builder.show()
-        }
+	}
     }
 }

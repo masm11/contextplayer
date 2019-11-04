@@ -24,15 +24,14 @@
 	android:scrollbars="vertical"
 	android:transitionName="transit_cat"/>
     
-    <Button
-	android:id="@+id/context_add"
-	android:layout_width="match_parent"
-	android:layout_height="wrap_content"
-	android:text="@string/create_new_context"
-	android:padding="3dp"
-	android:layout_margin="4dp"
-	android:background="@drawable/image_button"
-	android:stateListAnimator="@anim/image_button"/>
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:contentDescription="create"
+        android:src="@drawable/ic_add_black_24px"
+        android:layout_margin="16dp" />
     
     <fragment
 	class="me.masm11.contextplayer.ui.OperationFragment"
