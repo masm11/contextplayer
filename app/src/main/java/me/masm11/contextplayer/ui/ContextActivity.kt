@@ -26,11 +26,12 @@ import android.content.DialogInterface
 import android.content.ServiceConnection
 import android.content.ComponentName
 import android.content.BroadcastReceiver
-import android.widget.ArrayAdapter
-import android.widget.AdapterView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
+import android.widget.LinearLayout
+import android.widget.ArrayAdapter
+import android.widget.AdapterView
 import android.widget.TextView
 import android.widget.EditText
 import android.widget.Button
@@ -42,9 +43,6 @@ import android.app.Service
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentActivity
 import android.text.InputType
-
-import kotlinx.android.synthetic.main.activity_context.*
-import kotlinx.android.synthetic.main.list_context.view.*
 
 import me.masm11.contextplayer.R
 import me.masm11.contextplayer.service.PlayerService
@@ -63,7 +61,7 @@ class ContextActivity : FragmentActivity() {
     private lateinit var playContexts: PlayContextList
     private val rootDir = MFile("//")
     private lateinit var items: MutableList<Item>
-    private lateinit var adapter: ItemAdapter
+    private lateinit var itemAdapter: ItemAdapter
     
     private inner class Item(val ctxt: PlayContext) {
 	val uuid = ctxt.uuid
@@ -82,7 +80,7 @@ class ContextActivity : FragmentActivity() {
 		topDir = c.topDir
 		path = c.path
 		current = c.current != null
-		adapter.notifyDataSetChanged()
+		itemAdapter.notifyDataSetChanged()
 	    }
 	    ctxt.addOnChangedListener(onChangedListener)
 	}
@@ -92,6 +90,8 @@ class ContextActivity : FragmentActivity() {
     }
     
     private inner class ItemAdapter(val items: List<Item>) : RecyclerView.Adapter<ItemViewHolder>() {
+	private var onClickListener = { _: Item -> }
+
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
             val inflate = LayoutInflater.from(parent.context).inflate(R.layout.list_context, parent, false);
             return ItemViewHolder(inflate);
@@ -105,21 +105,25 @@ class ContextActivity : FragmentActivity() {
 	    holder.pathView.rootDir = rootDir.absolutePath
 	    holder.pathView.topDir = item.topDir
 	    holder.pathView.path = item.path
+	    holder.layoutView.setOnClickListener {
+		onClickListener(items.get(position))
+	    }
 	}
 
 	override fun getItemCount(): Int {
 	    Log.d("count=${items.size}")
 	    return items.size
 	}
+
+	fun setOnClickListener(listener: (Item) -> Unit) {
+	    onClickListener = listener
+	}
     }
     
-    private inner class ItemViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
-	var textView: TextView
-	var pathView: PathView
-	init {
-	    textView = itemView.findViewById(R.id.context_name) as TextView
-	    pathView = itemView.findViewById(R.id.context_topdir) as PathView
-	}
+    private inner class ItemViewHolder(view: View): RecyclerView.ViewHolder(view) {
+	public val layoutView: LinearLayout = view.findViewById<LinearLayout>(R.id.context_item)
+	public val textView: TextView = view.findViewById<TextView>(R.id.context_name)
+	public val pathView: PathView = view.findViewById<PathView>(R.id.context_topdir)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -143,13 +147,15 @@ class ContextActivity : FragmentActivity() {
 	    }
 	})
 
-        adapter = ItemAdapter(items)
+        itemAdapter = ItemAdapter(items)
 
-        val llm = LinearLayoutManager(this);
-
-        context_list.setHasFixedSize(false);
-        context_list.setLayoutManager(llm);
-        context_list.setAdapter(adapter);
+        val llm = LinearLayoutManager(this)
+	
+        findViewById<RecyclerView>(R.id.context_list).apply {
+	    setHasFixedSize(false)
+            setLayoutManager(llm)
+	    setAdapter(itemAdapter)
+	}
 
 	val itemDecor = ItemTouchHelper(
             object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN, ItemTouchHelper.RIGHT) {
@@ -164,33 +170,27 @@ class ContextActivity : FragmentActivity() {
 			items.get(i).ctxt.displayOrder = i
 		    for (i in 0 .. items.size-1)
 			playContexts.put(items.get(i).ctxt.uuid)
-		    adapter.notifyItemMoved(fromPos, toPos)
+		    itemAdapter.notifyItemMoved(fromPos, toPos)
 		    return true
 		}
 		override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
 		    val fromPos = viewHolder.getAdapterPosition()
 		    Log.d("fromPos=${fromPos}")
-		    val item = items.removeAt(fromPos);
+		    val item = items.removeAt(fromPos)
 		    item.stopListen()
 		    playContexts.delete(item.ctxt.uuid)
-		    adapter.notifyItemRemoved(fromPos);
+		    itemAdapter.notifyItemRemoved(fromPos)
 		}
             }
 	)
-	itemDecor.attachToRecyclerView(context_list);
+	itemDecor.attachToRecyclerView(findViewById<RecyclerView>(R.id.context_list))
+
+	itemAdapter.setOnClickListener { item ->
+	    playContexts.setCurrent(item.ctxt)
+            PlayerService.switchContext(this)
+	}
 
 /*
-        context_list.setOnItemClickListener { parent, _, position, _ ->
-            val listView = parent as ListView
-            val item = listView.getItemAtPosition(position) as Item
-	    
-	    val ctxt = playContexts.get(item.uuid)
-	    if (ctxt != null)
-		playContexts.setCurrent(ctxt)
-	    
-            PlayerService.switchContext(this)
-        }
-
         context_list.setOnItemLongClickListener(object : AdapterView.OnItemLongClickListener {
             override fun onItemLongClick(parent: AdapterView<*>, view: View, position: Int, id: Long): Boolean {
                 val listView = parent as ListView
@@ -261,7 +261,7 @@ class ContextActivity : FragmentActivity() {
         })
 */
 
-        context_add.setOnClickListener {
+        findViewById<Button>(R.id.context_add).setOnClickListener {
             val editText = EditText(this@ContextActivity)
             editText.inputType = InputType.TYPE_CLASS_TEXT
             val builder = AlertDialog.Builder(this@ContextActivity)
@@ -279,7 +279,7 @@ class ContextActivity : FragmentActivity() {
 
                 val item = Item(ctxt)
 		items.add(item)
-		adapter.notifyDataSetChanged()
+		itemAdapter.notifyDataSetChanged()
             }
             builder.show()
         }
