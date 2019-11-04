@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">(テスト)コンテキストプレイヤー</string>
+    <string name="app_name">コンテキストプレイヤー</string>
     
     <!-- activity_main.xml -->
     <string name="initial_time">0:00</string>
