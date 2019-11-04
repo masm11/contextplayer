@@ -115,6 +115,13 @@ class PlayContext {
 		realtimeDurationChanged = true
 	    }
 	}
+	var current: Int? = owner.current
+	set(current) {
+	    if (field != current) {
+		field = current
+		currentChanged = true
+	    }
+	}
 	
 	var topDirChanged = false
 	var pathChanged = false
@@ -122,6 +129,7 @@ class PlayContext {
 	var volumeChanged = false
 	var realtimePosChanged = false
 	var realtimeDurationChanged = false
+	var currentChanged = false
 	
 	override fun close() {
 	    val owner = this@PlayContext
@@ -148,6 +156,10 @@ class PlayContext {
 	    }
 	    if (realtimeDurationChanged) {
 		owner.realtimeDuration = realtimeDuration
+		changed = true
+	    }
+	    if (currentChanged) {
+		owner.current = current
 		changed = true
 	    }
 	    if (changed) {

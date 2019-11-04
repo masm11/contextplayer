@@ -85,11 +85,15 @@ class PlayContextList {
 	if (ctxt.current == CURRENT)
 	    return
 	val cur = getCurrent()
-	cur.current = null
+	cur.withTransaction().use {
+	    it.current = null
+	}
 	enqueue_job {
 	    dao.update(cur)
 	}
-	ctxt.current = CURRENT
+	ctxt.withTransaction().use {
+	    it.current = CURRENT
+	}
 	enqueue_job {
 	    dao.update(ctxt)
 	}

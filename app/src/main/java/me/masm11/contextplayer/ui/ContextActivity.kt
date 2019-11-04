@@ -43,6 +43,7 @@ import android.app.Service
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentActivity
 import android.text.InputType
+import android.graphics.Color
 
 import me.masm11.contextplayer.R
 import me.masm11.contextplayer.service.PlayerService
@@ -63,6 +64,8 @@ class ContextActivity : FragmentActivity() {
     private lateinit var items: MutableList<Item>
     private lateinit var itemAdapter: ItemAdapter
     
+    private val bg_current = Color.parseColor("#002244")
+
     private inner class Item(val ctxt: PlayContext) {
 	val uuid = ctxt.uuid
 	var name = ctxt.name
@@ -105,6 +108,10 @@ class ContextActivity : FragmentActivity() {
 	    holder.pathView.rootDir = rootDir.absolutePath
 	    holder.pathView.topDir = item.topDir
 	    holder.pathView.path = item.path
+	    if (item.current)
+		holder.layoutView.setBackgroundColor(bg_current)
+	    else
+		holder.layoutView.setBackground(null)
 	    holder.layoutView.setOnClickListener {
 		onClickListener(items.get(position))
 	    }
