@@ -58,6 +58,8 @@ class PlayContext {
     
     @ColumnInfo(name = "current") var current: Int? = null
     
+    var displayOrder: Int = 0
+
     @Ignore var realtimePos: Long = 0
     @Ignore var realtimeDuration: Long = 0
     

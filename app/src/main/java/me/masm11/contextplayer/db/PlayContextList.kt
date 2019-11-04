@@ -117,6 +117,7 @@ class PlayContextList {
     
     fun new(): PlayContext {
 	val ctxt = PlayContext()
+	ctxt.displayOrder = nextDisplayOrder()
 	hash.put(ctxt.uuid, ctxt)
 	enqueue_job {
 	    dao.insert(ctxt)
@@ -124,6 +125,15 @@ class PlayContextList {
 	return ctxt
     }
     
+    private fun nextDisplayOrder(): Int {
+	var lastDisplayOrder = -1
+	for (ctxt in hash.values) {
+	    if (lastDisplayOrder < ctxt.displayOrder)
+		lastDisplayOrder = ctxt.displayOrder
+	}
+	return lastDisplayOrder + 1
+    }
+
     fun addOnContextSwitchListener(listener: (PlayContext) -> Unit) {
 	onContextSwitchListeners.add(listener)
     }

@@ -30,6 +30,7 @@ import android.widget.ArrayAdapter
 import android.widget.AdapterView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ItemTouchHelper
 import android.widget.TextView
 import android.widget.EditText
 import android.widget.Button
@@ -97,11 +98,9 @@ class ContextActivity : FragmentActivity() {
 	}
 
 	override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
-	    Log.d("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\")
 	    Log.d("position=${position}")
 	    val item = items.get(position)
 	    Log.d("name=${item.name}")
-	    Log.d("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\")
 	    holder.textView.text = item.name
 	    holder.pathView.rootDir = rootDir.absolutePath
 	    holder.pathView.topDir = item.topDir
@@ -109,9 +108,7 @@ class ContextActivity : FragmentActivity() {
 	}
 
 	override fun getItemCount(): Int {
-	    Log.d("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\")
 	    Log.d("count=${items.size}")
-	    Log.d("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\")
 	    return items.size
 	}
     }
@@ -140,6 +137,11 @@ class ContextActivity : FragmentActivity() {
 		items.add(item)
 	    }
         }
+	items.sortWith(object: Comparator<Item> {		// lambda だけで書けない…?
+	    override fun compare(p0: Item, p1: Item): Int {
+		return p0.ctxt.displayOrder - p1.ctxt.displayOrder
+	    }
+	})
 
         adapter = ItemAdapter(items)
 
@@ -149,6 +151,33 @@ class ContextActivity : FragmentActivity() {
         context_list.setLayoutManager(llm);
         context_list.setAdapter(adapter);
 
+	val itemDecor = ItemTouchHelper(
+            object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN, ItemTouchHelper.RIGHT) {
+		override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+		    val fromPos = viewHolder.getAdapterPosition()
+		    val toPos = target.getAdapterPosition()
+		    Log.d("fromPos=${fromPos}")
+		    Log.d("toPos=${toPos}")
+		    val item = items.removeAt(fromPos)
+		    items.add(toPos, item)
+		    for (i in 0 .. items.size-1)
+			items.get(i).ctxt.displayOrder = i
+		    for (i in 0 .. items.size-1)
+			playContexts.put(items.get(i).ctxt.uuid)
+		    adapter.notifyItemMoved(fromPos, toPos)
+		    return true
+		}
+		override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+		    val fromPos = viewHolder.getAdapterPosition()
+		    Log.d("fromPos=${fromPos}")
+		    val item = items.removeAt(fromPos);
+		    item.stopListen()
+		    playContexts.delete(item.ctxt.uuid)
+		    adapter.notifyItemRemoved(fromPos);
+		}
+            }
+	)
+	itemDecor.attachToRecyclerView(context_list);
 
 /*
         context_list.setOnItemClickListener { parent, _, position, _ ->
@@ -249,7 +278,8 @@ class ContextActivity : FragmentActivity() {
 		playContexts.put(ctxt.uuid)
 
                 val item = Item(ctxt)
-                // adapter.add(item)
+		items.add(item)
+		adapter.notifyDataSetChanged()
             }
             builder.show()
         }

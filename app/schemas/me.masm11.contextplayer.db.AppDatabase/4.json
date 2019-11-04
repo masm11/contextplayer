@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "2facaa2c9fe65f10dcf6abc74c7f7e56",
+    "identityHash": "6deb67970bd301770f44d86be08ea4b7",
     "entities": [
       {
         "tableName": "PlayContext_2",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uuid` TEXT NOT NULL, `name` TEXT NOT NULL, `topDir` TEXT NOT NULL, `path` TEXT, `pos` INTEGER NOT NULL, `volume` INTEGER NOT NULL, `current` INTEGER, PRIMARY KEY(`uuid`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uuid` TEXT NOT NULL, `name` TEXT NOT NULL, `topDir` TEXT NOT NULL, `path` TEXT, `pos` INTEGER NOT NULL, `volume` INTEGER NOT NULL, `current` INTEGER, `displayOrder` INTEGER NOT NULL, PRIMARY KEY(`uuid`))",
         "fields": [
           {
             "fieldPath": "uuid",
@@ -49,6 +49,12 @@
             "columnName": "current",
             "affinity": "INTEGER",
             "notNull": false
+          },
+          {
+            "fieldPath": "displayOrder",
+            "columnName": "displayOrder",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -73,7 +79,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2facaa2c9fe65f10dcf6abc74c7f7e56')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6deb67970bd301770f44d86be08ea4b7')"
     ]
   }
 }
