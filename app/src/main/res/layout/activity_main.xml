@@ -11,93 +11,18 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="me.masm11.contextplayer.ui.MainActivity">
-  
-  <!-- カテゴリ名 -->
-  
-  <LinearLayout
+
+  <fragment
+      class="me.masm11.contextplayer.ui.MainFragment"
+      android:id="@+id/top_half"
       android:layout_width="match_parent"
       android:layout_height="0dp"
       android:layout_weight="1"
-      android:orientation="vertical">
-    
-    <LinearLayout
-	android:layout_width="match_parent"
-	android:layout_height="0dp"
-	android:layout_weight="1"
-	android:orientation="vertical"/>
-    
-    <TextView
-	android:id="@+id/context_name"
-	android:layout_width="match_parent"
-	android:layout_height="wrap_content"
-	android:paddingTop="15dp"
-	android:paddingBottom="15dp"
-	android:background="@drawable/border_ripple"
-	android:transitionName="transit_cat"
-	android:textIsSelectable="false"/>
-    
-    <LinearLayout
-	android:layout_width="match_parent"
-	android:layout_height="0dp"
-	android:layout_weight="1"
-	android:orientation="vertical"/>
-    
-  </LinearLayout>
-  
-  <!-- 曲名等 -->
-  
-  <LinearLayout
-      android:layout_width="match_parent"
-      android:layout_height="0dp"
-      android:layout_weight="2"
-      android:orientation="vertical">
-    
-    <LinearLayout
-	android:layout_width="match_parent"
-	android:layout_height="0dp"
-	android:layout_weight="1"
-	android:orientation="vertical"/>
-      
-    <LinearLayout
-	android:id="@+id/playing_info"
-	android:layout_width="match_parent"
-	android:layout_height="wrap_content"
-	android:paddingTop="15dp"
-	android:paddingBottom="15dp"
-	android:background="@drawable/border_ripple"
-	android:orientation="vertical">
-	
-      <me.masm11.contextplayer.ui.PathView
-	  android:id="@+id/playing_filename"
-	  android:layout_width="match_parent"
-	  android:layout_height="wrap_content"
-	  android:textIsSelectable="false"/>
-      <TextView
-	  android:id="@+id/playing_title"
-	  android:layout_width="match_parent"
-	  android:layout_height="wrap_content"
-	  android:textAppearance="?android:attr/textAppearanceLarge"
-	  android:textIsSelectable="false"/>
-      <TextView
-	  android:id="@+id/playing_artist"
-	  android:layout_width="match_parent"
-	  android:layout_height="wrap_content"
-	  android:textIsSelectable="false"/>
-      
-    </LinearLayout>
-    
-    <LinearLayout
-	android:layout_width="match_parent"
-	android:layout_height="0dp"
-	android:layout_weight="1"
-	android:orientation="vertical"/>
-    
-  </LinearLayout>
+      android:transitionName="transit_op"/>
 
-  <!-- control panel -->
   <fragment
       class="me.masm11.contextplayer.ui.ControlPanelFragment"
-      android:id="@+id/op_frag"
+      android:id="@+id/bottom_half"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:transitionName="transit_op"/>
