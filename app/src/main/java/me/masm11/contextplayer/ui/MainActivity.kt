@@ -72,10 +72,12 @@ class MainActivity : FragmentActivity(), ActivityCompat.OnRequestPermissionsResu
     private val rootDir = MFile("//")
     private var curPath: String? = null
     private var curTopDir: String? = null
+/*
     private var curPos: Int = 0    // msec
     private var maxPos: Int = 0    // msec
     private var seeking: Boolean = false
     private var vol: Int = 100
+*/
     private var needSwitchContext: Boolean = false
     
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,6 +108,7 @@ class MainActivity : FragmentActivity(), ActivityCompat.OnRequestPermissionsResu
             startActivity(i, opt.toBundle())
         }
 
+/*
         playing_pos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 if (fromUser)
@@ -120,7 +123,9 @@ class MainActivity : FragmentActivity(), ActivityCompat.OnRequestPermissionsResu
                 seeking = false
             }
         })
+*/
 
+/*
         volume.max = 100 - VOLUME_BASE
         volume.progress = vol - VOLUME_BASE
         volume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -138,6 +143,7 @@ class MainActivity : FragmentActivity(), ActivityCompat.OnRequestPermissionsResu
                 /*NOP*/
             }
         })
+*/
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
@@ -225,9 +231,11 @@ class MainActivity : FragmentActivity(), ActivityCompat.OnRequestPermissionsResu
     private fun updateTrackInfo(ctxt: PlayContext) {
 	val path = ctxt.path
 	val topDir = ctxt.topDir
+/*
 	val vol1 = ctxt.volume
 	val pos = ctxt.realtimePos.toInt()
 	val duration = ctxt.realtimeDuration.toInt()
+*/
 	Log.d("path=${path}")
 
 	var p = path
@@ -262,6 +270,7 @@ class MainActivity : FragmentActivity(), ActivityCompat.OnRequestPermissionsResu
             playing_filename.topDir = if (dir != null) dir else "//"
         }
 
+/*
         if (maxPos != duration) {
             maxPos = duration
 
@@ -286,10 +295,13 @@ class MainActivity : FragmentActivity(), ActivityCompat.OnRequestPermissionsResu
 	    vol = vol1
 	    volume.progress = vol - VOLUME_BASE
 	}
+*/
     }
 
     companion object {
         private val REQ_PERMISSION_ON_CREATE = 1
+/*
 	private val VOLUME_BASE = 50
+*/
     }
 }

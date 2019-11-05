@@ -37,7 +37,7 @@
     </RelativeLayout>
 
   <fragment
-      class="me.masm11.contextplayer.ui.OperationFragment"
+      class="me.masm11.contextplayer.ui.ControlPanelFragment"
       android:id="@+id/op_frag"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"/>
