@@ -28,7 +28,7 @@
     
     <!-- MainActivity.java -->
     <string name="default_context">既定のコンテキスト</string>
-    <string name="please_grant_permission">このアプリは内部ストレージの音楽ファイルにアクセスします。次のダイアログで権限を許可してください。許可しない場合、このアプリは終了します。</string>
+    <string name="please_grant_permission">このアプリはストレージの音楽ファイルにアクセスします。次のダイアログで権限を許可してください。許可しない場合、このアプリは終了します。</string>
     
     <!-- PlayerService.java -->
     <string name="playing">%1$sを再生中&#8230;</string>
