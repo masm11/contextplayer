@@ -74,6 +74,7 @@ class MainFragment : Fragment() {
     private var curPath: String? = null
     private var curTopDir: String? = null
     private var needSwitchContext: Boolean = false
+    private lateinit var moveToOtherFragmentListener: (Int) -> Unit
     
     private lateinit var playingFilenameView: PathView
     private lateinit var playingTitleView: TextView
@@ -97,13 +98,11 @@ class MainFragment : Fragment() {
 	contextNameView = view.findViewById<TextView>(R.id.context_name)
 	
         view.findViewById<TextView>(R.id.context_name).setOnClickListener {
-            val i = Intent(activity, ContextActivity::class.java)
-            startActivity(i)
+	    moveToOtherFragmentListener(1)
         }
 
         view.findViewById<LinearLayout>(R.id.playing_info).setOnClickListener {
-            val i = Intent(activity, ExplorerActivity::class.java)
-            startActivity(i)
+	    moveToOtherFragmentListener(2)
         }
 
         if (ContextCompat.checkSelfPermission(context!!, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -185,6 +184,10 @@ class MainFragment : Fragment() {
 	super.onDestroy()
     }
     
+    fun setMoveToOtherFragmentListener(listener: (Int) -> Unit) {
+	moveToOtherFragmentListener = listener
+    }
+
     private fun updateContextName(ctxt: PlayContext) {
 	contextNameView.text = ctxt.name
 	Log.d("Id=${ctxt.uuid}")

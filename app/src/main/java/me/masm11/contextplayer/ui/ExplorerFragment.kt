@@ -25,8 +25,10 @@ import android.os.Handler
 import android.os.IBinder
 import android.widget.ArrayAdapter
 import android.widget.ListView
-import android.widget.TextView
 import android.widget.AdapterView
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.TextView
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
@@ -41,9 +43,6 @@ import android.webkit.MimeTypeMap
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.ComponentName
-
-import kotlinx.android.synthetic.main.activity_explorer.*
-import kotlinx.android.synthetic.main.list_explorer.view.*
 
 import kotlinx.coroutines.*
 
@@ -72,6 +71,9 @@ class ExplorerFragment: Fragment() {
     
     private var supervisorJob = SupervisorJob()
     private var supervisorScope = CoroutineScope(supervisorJob)
+    
+    private lateinit var pathView: PathView
+    private lateinit var listViewportView: RelativeLayout
     
     private class FileItem(val file: MFile) {
         var title: String? = null
@@ -159,18 +161,18 @@ class ExplorerFragment: Fragment() {
 
 	    if (item != null) {
 		if (!item.isDir) {
-		    view.filename.text = item.filename
-		    view.mime_type.text = item.mimeType
-		    view.title.text = item.title ?: view.context.resources.getString(R.string.unknown_title)
-		    view.artist.text = item.artist ?: view.context.resources.getString(R.string.unknown_artist)
+		    view.findViewById<TextView>(R.id.filename).text = item.filename
+		    view.findViewById<TextView>(R.id.mime_type).text = item.mimeType
+		    view.findViewById<TextView>(R.id.title).text = item.title ?: view.context.resources.getString(R.string.unknown_title)
+		    view.findViewById<TextView>(R.id.artist).text = item.artist ?: view.context.resources.getString(R.string.unknown_artist)
 
-		    view.for_file.visibility = View.VISIBLE
-		    view.for_dir.visibility = View.GONE
+		    view.findViewById<LinearLayout>(R.id.for_file).visibility = View.VISIBLE
+		    view.findViewById<LinearLayout>(R.id.for_dir).visibility = View.GONE
 		} else {
-		    view.dirname.text = "${item.filename}/"
+		    view.findViewById<TextView>(R.id.dirname).text = "${item.filename}/"
 
-		    view.for_file.visibility = View.GONE
-		    view.for_dir.visibility = View.VISIBLE
+		    view.findViewById<LinearLayout>(R.id.for_file).visibility = View.GONE
+		    view.findViewById<LinearLayout>(R.id.for_dir).visibility = View.VISIBLE
 		}
 	    }
 
@@ -253,7 +255,7 @@ class ExplorerFragment: Fragment() {
     private fun enterDir(path: MFile, anime: Boolean) {
 	val frame = createDirFrame(path)
 	renewAdapter(frame.path)
-	list_viewport.addView(frame.listView)
+	listViewportView.addView(frame.listView)
 	val anim1 = TranslateAnimation(
 	    Animation.RELATIVE_TO_PARENT, 1.5f,
 	    Animation.RELATIVE_TO_PARENT, 0f,
@@ -298,7 +300,7 @@ class ExplorerFragment: Fragment() {
 	    anim0.setRepeatCount(0)
 	    anim0.setFillAfter(true)
 	    frame.listView.startAnimation(anim0)
-	    list_viewport.removeView(frame.listView)
+	    listViewportView.removeView(frame.listView)
 	}
 	
 	run {
@@ -347,6 +349,9 @@ class ExplorerFragment: Fragment() {
 
 	ctxt = playContexts.getCurrent()
 	
+	pathView = view.findViewById<PathView>(R.id.path)
+	listViewportView = view.findViewById<RelativeLayout>(R.id.list_viewport)
+	
 	/* 再生中のファイルがある場所に移動 */
         var dir = MFile(ctxt.topDir)
         topDir = dir
@@ -377,6 +382,15 @@ class ExplorerFragment: Fragment() {
 	for (mf in dirs)
 	    enterDir(mf, false)
 	
+	(activity as MainActivity).setOnBackPressedListener { ->
+            if (curDir == rootDir || curDir.absolutePath == "/") {
+                false
+	    } else {
+		leaveDir(true)
+		true
+	    }
+	}
+
 	return view
     }
 
@@ -450,12 +464,12 @@ class ExplorerFragment: Fragment() {
         topDir = newDir
 
         // topDir からの相対で curDir を表示
-        path.rootDir = rootDir.toString()
-        path.topDir = topDir.toString()
+        pathView.rootDir = rootDir.toString()
+        pathView.topDir = topDir.toString()
 	var cur: String = "//"
 	if (curDir.toString() != "//")
 	    cur = curDir.toString() + "/"
-        path.path = cur
+        pathView.path = cur
 
 	val c = context
 	if (c != null)
@@ -470,12 +484,12 @@ class ExplorerFragment: Fragment() {
     private fun renewAdapter(newDir: MFile) {
 
         // topDir からの相対で newDir を表示
-        path.rootDir = rootDir.toString()
+        pathView.rootDir = rootDir.toString()
 	var cur: String = "//"
 	if (newDir.toString() != "//")
 	    cur = newDir.toString() + "/"
-        path.path = cur
-        path.topDir = topDir.toString()
+        pathView.path = cur
+        pathView.topDir = topDir.toString()
 
         curDir = newDir
     }

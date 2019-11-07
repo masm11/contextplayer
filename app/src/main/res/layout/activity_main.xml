@@ -12,13 +12,11 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="me.masm11.contextplayer.ui.MainActivity">
 
-  <fragment
-      class="me.masm11.contextplayer.ui.MainFragment"
+  <LinearLayout
       android:id="@+id/top_half"
       android:layout_width="match_parent"
       android:layout_height="0dp"
-      android:layout_weight="1"
-      android:transitionName="transit_op"/>
+      android:layout_weight="1"/>
 
   <fragment
       class="me.masm11.contextplayer.ui.ControlPanelFragment"

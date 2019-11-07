@@ -58,7 +58,7 @@ import me.masm11.contextplayer.Application
 
 import me.masm11.logger.Log
 
-class ContextFragment : Fragment() {
+class ContextFragment: Fragment() {
 
     private lateinit var db: AppDatabase
     private lateinit var playContexts: PlayContextList
@@ -298,6 +298,10 @@ class ContextFragment : Fragment() {
             builder.show()
 	}
 	
+	(activity as MainActivity).setOnBackPressedListener { ->
+	    false
+	}
+
 	return view
     }
 }
