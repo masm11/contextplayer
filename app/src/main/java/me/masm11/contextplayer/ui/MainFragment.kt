@@ -160,7 +160,7 @@ class MainFragment : Fragment() {
 	playContexts.addOnContextSwitchListener(onContextSwitchListener)
 	
 	updateContextName(curContext)
-	updateTrackInfo(curContext)
+	updateTrackInfo(curContext, true)
     }
     
     fun unsetContextListener() {
@@ -194,7 +194,7 @@ class MainFragment : Fragment() {
 	Log.d("name=${ctxt.name}")
     }
 
-    private fun updateTrackInfo(ctxt: PlayContext) {
+    private fun updateTrackInfo(ctxt: PlayContext, force: Boolean = false) {
 	val path = ctxt.path
 	val topDir = ctxt.topDir
 	Log.d("path=${path}")
@@ -202,7 +202,7 @@ class MainFragment : Fragment() {
 	var p = path
 	if (p == null)
 	    p = "//"
-        if (curPath != p) {
+        if (curPath != p || force) {
             curPath = p
 	    
             playingFilenameView.rootDir = rootDir.absolutePath
@@ -221,11 +221,12 @@ class MainFragment : Fragment() {
             if (artist == null)
                 artist = resources.getString(R.string.unknown_artist)
 
+	    Log.d("title=${title}, artist=${artist}")
             playingTitleView.text = title
             playingArtistView.text = artist
         }
 
-        if (curTopDir != topDir) {
+        if (curTopDir != topDir || force) {
             curTopDir = topDir
 	    val dir = curTopDir
             playingFilenameView.topDir = if (dir != null) dir else "//"
