@@ -56,7 +56,7 @@ import me.masm11.contextplayer.util.emptyMutableListOf
 import me.masm11.contextplayer.fs.MFile
 import me.masm11.contextplayer.Application
 
-import me.masm11.logger.Log
+import me.masm11.contextplayer.util.Log
 
 class ContextFragment: Fragment() {
 

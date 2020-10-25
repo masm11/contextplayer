@@ -28,7 +28,7 @@ import kotlinx.android.synthetic.main.activity_about.*
 
 import me.masm11.contextplayer.R
 
-import me.masm11.logger.Log
+import me.masm11.contextplayer.util.Log
 
 class AboutActivity : ComponentActivity() {
     private inner class WebAppInterface(private val context: Context) {

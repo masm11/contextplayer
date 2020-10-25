@@ -38,7 +38,7 @@ import me.masm11.contextplayer.db.PlayContextList
 import me.masm11.contextplayer.db.PlayContext
 import me.masm11.contextplayer.Application
 
-import me.masm11.logger.Log
+import me.masm11.contextplayer.util.Log
 
 class ControlPanelFragment : Fragment() {
     private lateinit var playContexts: PlayContextList

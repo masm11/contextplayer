@@ -22,8 +22,7 @@ import android.content.Context
 import android.media.AudioManager
 
 import me.masm11.contextplayer.service.PlayerService
-
-import me.masm11.logger.Log
+import me.masm11.contextplayer.util.Log
 
 class HeadsetReceiver : BroadcastReceiver() {
     private var isPlugged = -1

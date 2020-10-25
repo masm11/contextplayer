@@ -31,7 +31,7 @@ import kotlinx.android.synthetic.main.actionbar_fragment.view.*
 
 import me.masm11.contextplayer.R
 
-import me.masm11.logger.Log
+import me.masm11.contextplayer.util.Log
 
 class ActionBarFragment : Fragment() {
     var toolbar: Toolbar? = null

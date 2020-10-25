@@ -18,10 +18,7 @@ package me.masm11.contextplayer
 
 import androidx.room.Room
 
-import com.crashlytics.android.Crashlytics
-import io.fabric.sdk.android.Fabric
-
-import me.masm11.logger.Log
+import me.masm11.contextplayer.util.Log
 import me.masm11.contextplayer.db.AppDatabase
 import me.masm11.contextplayer.db.PlayContextList
 
@@ -33,8 +30,7 @@ class Application : android.app.Application() {
     override fun onCreate() {
         super.onCreate()
 	
-        Fabric.with(this, Crashlytics())
-        Log.init(getExternalFilesDir(null), BuildConfig.DEBUG)
+        // Log.init(getExternalFilesDir(null), BuildConfig.DEBUG)
 	
 	AppDatabase.setApplication(this)
 	playContexts = PlayContextList()

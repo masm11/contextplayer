@@ -26,8 +26,7 @@ import android.bluetooth.BluetoothHeadset
 import android.os.Parcelable
 
 import me.masm11.contextplayer.service.PlayerService
-
-import me.masm11.logger.Log
+import me.masm11.contextplayer.util.Log
 
 class BluetoothReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {

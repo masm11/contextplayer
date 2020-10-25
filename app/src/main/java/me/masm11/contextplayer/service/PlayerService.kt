@@ -56,8 +56,7 @@ import me.masm11.contextplayer.db.PlayContextList
 import me.masm11.contextplayer.widget.WidgetProvider
 import me.masm11.contextplayer.player.Player
 import me.masm11.contextplayer.Application
-
-import me.masm11.logger.Log
+import me.masm11.contextplayer.util.Log
 
 class PlayerService : Service(), CoroutineScope by MainScope() {
 

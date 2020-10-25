@@ -26,8 +26,7 @@ import android.os.Message
 
 import me.masm11.contextplayer.ui.ExplorerActivity
 import me.masm11.contextplayer.fs.MFile
-
-import me.masm11.logger.Log
+import me.masm11.contextplayer.util.Log
 
 import java.util.Locale
 

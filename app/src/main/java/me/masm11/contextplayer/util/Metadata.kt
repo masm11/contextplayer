@@ -24,7 +24,7 @@ import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
 import java.util.concurrent.locks.ReentrantLock
 
-import me.masm11.logger.Log
+import me.masm11.contextplayer.util.Log
 
 class Metadata(private val path: String) {
     var title: String? = null

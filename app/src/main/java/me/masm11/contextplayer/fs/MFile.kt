@@ -18,7 +18,7 @@ package me.masm11.contextplayer.fs
 
 import java.io.File
 
-import me.masm11.logger.Log
+import me.masm11.contextplayer.util.Log
 
 import android.os.Environment
 import android.content.Context

@@ -32,7 +32,7 @@ import me.masm11.contextplayer.db.AppDatabase
 import me.masm11.contextplayer.db.PlayContext
 import me.masm11.contextplayer.Application
 
-import me.masm11.logger.Log
+import me.masm11.contextplayer.util.Log
 
 class WidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {

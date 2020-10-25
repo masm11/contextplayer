@@ -64,7 +64,7 @@ import me.masm11.contextplayer.fs.MFile
 import me.masm11.contextplayer.service.PlayerService
 import me.masm11.contextplayer.Application
 
-import me.masm11.logger.Log
+import me.masm11.contextplayer.util.Log
 
 class ExplorerFragment: Fragment() {
     private var backKeyShortPress: Boolean = false
