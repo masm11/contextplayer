@@ -30,7 +30,7 @@ class Application : android.app.Application() {
     override fun onCreate() {
         super.onCreate()
 	
-        // Log.init(getExternalFilesDir(null), BuildConfig.DEBUG)
+        Log.init()
 	
 	AppDatabase.setApplication(this)
 	playContexts = PlayContextList()
